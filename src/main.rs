@@ -1,12 +1,18 @@
+mod types;
+
 use iced::{
-    executor, theme,
+    executor,
+    highlighter::{self, Highlighter},
+    theme,
     widget::{
         button, column, container,
         pane_grid::{self, Pane, PaneGrid},
-        row, text, Column,
+        row, text, text_editor, Column,
     },
-    Alignment, Application, Color, Command, Element, Length, Settings,
+    Alignment, Application, Color, Command, Element, Font, Length, Settings,
 };
+use rust_format::{Formatter, RustFmt};
+use types::{DesignerPage, DesignerState};
 
 fn main() -> iced::Result {
     App::run(Settings::default())
@@ -15,22 +21,24 @@ fn main() -> iced::Result {
 struct App {
     is_saved: bool,
     current_project: Option<String>,
-    theme: theme::Theme,
-    panes: pane_grid::State<Panes>,
+    dark_theme: bool,
+    pane_state: pane_grid::State<Panes>,
     focus: Option<Pane>,
+    designer_state: DesignerState,
     element_list: Vec<String>,
+    editor_content: text_editor::Content,
 }
 
 #[derive(Debug, Clone)]
 enum Message {
-    ToggleTheme(theme::Theme),
-    Dragged(pane_grid::DragEvent),
+    ToggleTheme,
     Resized(pane_grid::ResizeEvent),
+    Clicked(pane_grid::Pane),
 }
 
 #[derive(Clone, Debug)]
 enum Panes {
-    Preview,
+    Designer,
     ElementList,
 }
 
@@ -41,19 +49,28 @@ impl Application for App {
     type Flags = ();
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
-        let (mut panes, pane) = pane_grid::State::new(Panes::Preview);
-        panes.split(pane_grid::Axis::Vertical, pane, Panes::ElementList);
+        let state = pane_grid::State::with_configuration(pane_grid::Configuration::Split {
+            axis: pane_grid::Axis::Vertical,
+            ratio: 0.8,
+            a: Box::new(pane_grid::Configuration::Pane(Panes::Designer)),
+            b: Box::new(pane_grid::Configuration::Pane(Panes::ElementList)),
+        });
         (
             Self {
                 is_saved: true,
                 current_project: None,
-                theme: theme::Theme::TokyoNight,
-                panes,
+                dark_theme: true,
+                pane_state: state,
                 focus: None,
+                designer_state: DesignerState {
+                    designer_content: vec![],
+                    designer_page: DesignerPage::Designer,
+                },
                 element_list: vec!["Column", "Row", "PickList", "PaneGrid", "Button", "Text"]
                     .into_iter()
                     .map(|c| c.to_owned())
                     .collect(),
+                editor_content: text_editor::Content::new(),
             },
             Command::none(),
         )
@@ -71,18 +88,21 @@ impl Application for App {
     }
 
     fn theme(&self) -> iced::Theme {
-        self.theme.clone()
+        if self.dark_theme {
+            theme::Theme::CatppuccinMocha
+        } else {
+            theme::Theme::CatppuccinLatte
+        }
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
-            Message::ToggleTheme(theme) => self.theme = theme,
-            Message::Dragged(pane_grid::DragEvent::Dropped { pane, target }) => {
-                self.panes.drop(pane, target);
-            }
-            Message::Dragged(_) => {}
+            Message::ToggleTheme => self.dark_theme = !self.dark_theme,
             Message::Resized(pane_grid::ResizeEvent { split, ratio }) => {
-                self.panes.resize(split, ratio);
+                self.pane_state.resize(split, ratio);
+            }
+            Message::Clicked(pane) => {
+                self.focus = Some(pane);
             }
         }
 
@@ -90,32 +110,26 @@ impl Application for App {
     }
 
     fn view(&self) -> Element<Message> {
-        let header: Element<_> = row![button("Toggle Theme")
+        let header = row![button("Toggle Theme")
             .on_press(Message::ToggleTheme)
             .padding(5)]
-        .width(200)
-        .into();
-        let pane_grid = PaneGrid::new(&self.panes, |id, pane, _is_maximized| {
+        .width(200);
+        let pane_grid = PaneGrid::new(&self.pane_state, |id, pane, _is_maximized| {
             let is_focused = Some(id) == self.focus;
             match pane {
-                Panes::Preview => {
-                    let content = column![text("Preview")]
+                Panes::Designer => {
+                    let content = column![text("Designer")]
                         .align_items(Alignment::Center)
                         .height(Length::Fill)
                         .width(Length::Fill);
-                    let title = text("App Preview").style(if is_focused {
+                    let title = text("Designer").style(if is_focused {
                         PANE_ID_COLOR_FOCUSED
                     } else {
                         PANE_ID_COLOR_UNFOCUSED
                     });
-                    let title_bar =
-                        pane_grid::TitleBar::new(title)
-                            .padding(10)
-                            .style(if is_focused {
-                                style::title_bar_focused
-                            } else {
-                                style::title_bar_active
-                            });
+                    let title_bar = pane_grid::TitleBar::new(title)
+                        .padding(10)
+                        .style(style::title_bar);
                     pane_grid::Content::new(content)
                         .title_bar(title_bar)
                         .style(if is_focused {
@@ -135,14 +149,9 @@ impl Application for App {
                     } else {
                         PANE_ID_COLOR_UNFOCUSED
                     });
-                    let title_bar =
-                        pane_grid::TitleBar::new(title)
-                            .padding(10)
-                            .style(if is_focused {
-                                style::title_bar_focused
-                            } else {
-                                style::title_bar_active
-                            });
+                    let title_bar = pane_grid::TitleBar::new(title)
+                        .padding(10)
+                        .style(style::title_bar);
                     pane_grid::Content::new(content)
                         .title_bar(title_bar)
                         .style(if is_focused {
@@ -150,39 +159,69 @@ impl Application for App {
                         } else {
                             style::pane_active
                         })
-                }
+                } //Panes::CodeView => {
+                  //    let title = text("Generated Code").style(if is_focused {
+                  //        PANE_ID_COLOR_FOCUSED
+                  //    } else {
+                  //        PANE_ID_COLOR_UNFOCUSED
+                  //    });
+                  //    let title_bar =
+                  //        pane_grid::TitleBar::new(title)
+                  //            .padding(10)
+                  //            .style(if is_focused {
+                  //                style::title_bar_focused
+                  //            } else {
+                  //                style::title_bar_active
+                  //            });
+                  //    pane_grid::Content::new(
+                  //        text_editor(&self.editor_content).highlight::<Highlighter>(
+                  //            highlighter::Settings {
+                  //                theme: highlighter::Theme::Base16Mocha,
+                  //                extension: "rs".to_string(),
+                  //            },
+                  //            |highlight, _theme| highlight.to_format(),
+                  //        ),
+                  //    )
+                  //    .title_bar(title_bar)
+                  //    .style(if is_focused {
+                  //        style::pane_focused
+                  //    } else {
+                  //        style::pane_active
+                  //    })
+                  //}
             }
         })
         .width(Length::Fill)
         .height(Length::Fill)
         .spacing(10)
-        .on_drag(Message::Dragged)
-        .on_resize(10, Message::Resized);
-        //
-        //let content = Column::new()
-        //    .push(header)
-        //    .push(pane_grid)
-        //    .spacing(5)
-        //    .align_items(Alignment::Center)
-        //    .width(Length::Fill);
+        .on_resize(10, Message::Resized)
+        .on_click(Message::Clicked);
 
-        container(pane_grid).height(Length::Fill).into()
+        let content = Column::new()
+            .push(header)
+            .push(pane_grid)
+            .spacing(5)
+            .align_items(Alignment::Center)
+            .width(Length::Fill);
+
+        container(content).height(Length::Fill).into()
     }
 }
 
-// #fefefe
-const PANE_ID_COLOR_UNFOCUSED: Color = Color::from_rgb(
-    0xFE as f32 / 255.0,
-    0xFE as f32 / 255.0,
-    0xFE as f32 / 255.0,
-);
+const fn from_grayscale(grayscale: f32) -> Color {
+    Color {
+        r: grayscale,
+        g: grayscale,
+        b: grayscale,
+        a: 1.0,
+    }
+}
 
-// #bbbbbb
-const PANE_ID_COLOR_FOCUSED: Color = Color::from_rgb(
-    0xBB as f32 / 255.0,
-    0xBB as f32 / 255.0,
-    0xBB as f32 / 255.0,
-);
+// #ffffff
+const PANE_ID_COLOR_FOCUSED: Color = from_grayscale(1.0);
+
+// #e8e8e8
+const PANE_ID_COLOR_UNFOCUSED: Color = from_grayscale(0xE8 as f32 / 255.0);
 
 fn items_list_view(items: &Vec<String>) -> Element<'static, Message> {
     let mut column = Column::new()
@@ -201,22 +240,12 @@ mod style {
     use iced::widget::container;
     use iced::{Border, Theme};
 
-    pub fn title_bar_active(theme: &Theme) -> container::Appearance {
+    pub fn title_bar(theme: &Theme) -> container::Appearance {
         let palette = theme.extended_palette();
 
         container::Appearance {
             text_color: Some(palette.background.strong.text),
             background: Some(palette.background.strong.color.into()),
-            ..Default::default()
-        }
-    }
-
-    pub fn title_bar_focused(theme: &Theme) -> container::Appearance {
-        let palette = theme.extended_palette();
-
-        container::Appearance {
-            text_color: Some(palette.primary.strong.text),
-            background: Some(palette.primary.strong.color.into()),
             ..Default::default()
         }
     }
@@ -227,7 +256,7 @@ mod style {
         container::Appearance {
             background: Some(palette.background.weak.color.into()),
             border: Border {
-                width: 2.0,
+                width: 1.0,
                 color: palette.background.strong.color,
                 ..Border::default()
             },
@@ -241,8 +270,8 @@ mod style {
         container::Appearance {
             background: Some(palette.background.weak.color.into()),
             border: Border {
-                width: 2.0,
-                color: palette.primary.strong.color,
+                width: 4.0,
+                color: palette.background.strong.color,
                 ..Border::default()
             },
             ..Default::default()

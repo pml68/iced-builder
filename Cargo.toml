@@ -9,4 +9,6 @@ license = "GPL-3.0-or-later"
 keywords = ["gui", "iced"]
 
 [dependencies]
-iced = { version = "0.12.1", features = [ "image","svg","canvas","qr_code","advanced"] }
+iced = { version = "0.12.1", features = [ "image","svg","canvas","qr_code","advanced","tokio","highlighter"] }
+tokio = {version = "1.39.3",features = ["fs"]}
+rust-format = "0.3.4"

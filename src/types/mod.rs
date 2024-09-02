@@ -1,4 +1,10 @@
-use iced::{Font, Length};
+use std::path::PathBuf;
+
+use iced::{
+    alignment::{Horizontal, Vertical},
+    widget::{text::Shaping, text_editor},
+    Alignment, ContentFit, Font, Length,
+};
 
 pub struct DesignerState {
     pub designer_content: Vec<RenderedElement>,
@@ -7,19 +13,35 @@ pub struct DesignerState {
 
 pub struct RenderedElement {
     pub id: String,
-    pub children: Vec<RenderedElement>,
+    pub children: Option<Vec<RenderedElement>>,
     pub name: ElementName,
-    pub props: Vec<Prop>,
+    pub props: Props,
 }
 
-pub enum ElementName {}
+pub enum ElementName {
+    Text(String),
+    Button(String),
+    TextEditor(text_editor::Content),
+    SVG(PathBuf),
+    Image(PathBuf),
+    Container,
+    Row,
+    Column,
+}
 
-pub enum Prop {
-    String(String, String),
-    Decimal(String, i32),
-    Float(String, f32),
-    Font(String, Font),
-    Length(String, Length),
+pub struct Props {
+    align_items: Option<Alignment>,
+    align_x: Option<Horizontal>,
+    align_y: Option<Vertical>,
+    horizontal_alignment: Option<Horizontal>,
+    vertical_alignment: Option<Vertical>,
+    height: Option<Length>,
+    width: Option<Length>,
+    font: Option<Font>,
+    padding: Option<i32>,
+    spacing: Option<i32>,
+    content_fit: Option<ContentFit>,
+    shaping: Option<Shaping>,
 }
 
 pub enum DesignerPage {

@@ -30,18 +30,18 @@ pub enum ElementName {
 }
 
 pub struct Props {
-    align_items: Option<Alignment>,
-    align_x: Option<Horizontal>,
-    align_y: Option<Vertical>,
-    horizontal_alignment: Option<Horizontal>,
-    vertical_alignment: Option<Vertical>,
-    height: Option<Length>,
-    width: Option<Length>,
-    font: Option<Font>,
-    padding: Option<i32>,
-    spacing: Option<i32>,
-    content_fit: Option<ContentFit>,
-    shaping: Option<Shaping>,
+    pub align_items: Option<Alignment>,
+    pub align_x: Option<Horizontal>,
+    pub align_y: Option<Vertical>,
+    pub horizontal_alignment: Option<Horizontal>,
+    pub vertical_alignment: Option<Vertical>,
+    pub height: Option<Length>,
+    pub width: Option<Length>,
+    pub font: Option<Font>,
+    pub padding: Option<i32>,
+    pub spacing: Option<i32>,
+    pub content_fit: Option<ContentFit>,
+    pub shaping: Option<Shaping>,
 }
 
 pub enum DesignerPage {

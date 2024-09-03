@@ -13,7 +13,7 @@ use iced::{
     Alignment, Application, Color, Command, Element, Font, Length, Settings,
 };
 use rust_format::{Formatter, RustFmt};
-use types::{DesignerPage, DesignerState};
+use types::{rendered_element::RenderedElement, DesignerPage, DesignerState};
 
 fn main() -> iced::Result {
     App::run(Settings::default())

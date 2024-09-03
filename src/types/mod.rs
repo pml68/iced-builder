@@ -11,7 +11,6 @@ pub struct DesignerState {
 }
 
 pub enum ElementName {
-    App(String, iced::Theme),
     Text(String),
     Button(String),
     TextEditor(text_editor::Content),

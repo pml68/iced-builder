@@ -12,7 +12,6 @@ use iced::{
     },
     Alignment, Application, Color, Command, Element, Font, Length, Settings,
 };
-use rust_format::{Formatter, RustFmt};
 use types::{rendered_element::RenderedElement, DesignerPage, DesignerState};
 
 fn main() -> iced::Result {
@@ -65,13 +64,13 @@ impl Application for App {
                 focus: None,
                 designer_state: DesignerState {
                     designer_content: vec![],
-                    designer_page: DesignerPage::Designer,
+                    designer_page: DesignerPage::CodeView,
                 },
                 element_list: vec!["Column", "Row", "PickList", "PaneGrid", "Button", "Text"]
                     .into_iter()
                     .map(|c| c.to_owned())
                     .collect(),
-                editor_content: text_editor::Content::new(),
+                editor_content: text_editor::Content::with_text(&RenderedElement::test()),
             },
             Command::none(),
         )
@@ -118,27 +117,56 @@ impl Application for App {
         let pane_grid = PaneGrid::new(&self.pane_state, |id, pane, _is_maximized| {
             let is_focused = Some(id) == self.focus;
             match pane {
-                Panes::Designer => {
-                    let content = column![text("Designer")]
-                        .align_items(Alignment::Center)
-                        .height(Length::Fill)
-                        .width(Length::Fill);
-                    let title = text("Designer").style(if is_focused {
-                        PANE_ID_COLOR_FOCUSED
-                    } else {
-                        PANE_ID_COLOR_UNFOCUSED
-                    });
-                    let title_bar = pane_grid::TitleBar::new(title)
-                        .padding(10)
-                        .style(style::title_bar);
-                    pane_grid::Content::new(content)
+                Panes::Designer => match self.designer_state.designer_page {
+                    DesignerPage::Designer => {
+                        let content = column![text("Designer"),]
+                            .align_items(Alignment::Center)
+                            .height(Length::Fill)
+                            .width(Length::Fill);
+                        let title = text("Designer").style(if is_focused {
+                            PANE_ID_COLOR_FOCUSED
+                        } else {
+                            PANE_ID_COLOR_UNFOCUSED
+                        });
+                        let title_bar = pane_grid::TitleBar::new(title)
+                            .padding(10)
+                            .style(style::title_bar);
+                        pane_grid::Content::new(content)
+                            .title_bar(title_bar)
+                            .style(if is_focused {
+                                style::pane_focused
+                            } else {
+                                style::pane_active
+                            })
+                    }
+                    DesignerPage::CodeView => {
+                        let title = text("Generated Code").style(if is_focused {
+                            PANE_ID_COLOR_FOCUSED
+                        } else {
+                            PANE_ID_COLOR_UNFOCUSED
+                        });
+                        let title_bar = pane_grid::TitleBar::new(title)
+                            .padding(10)
+                            .style(style::title_bar);
+                        pane_grid::Content::new(
+                            text_editor(&self.editor_content)
+                                .highlight::<Highlighter>(
+                                    highlighter::Settings {
+                                        theme: highlighter::Theme::Base16Mocha,
+                                        extension: "rs".to_string(),
+                                    },
+                                    |highlight, _theme| highlight.to_format(),
+                                )
+                                .padding(20),
+                        )
                         .title_bar(title_bar)
                         .style(if is_focused {
                             style::pane_focused
                         } else {
                             style::pane_active
                         })
-                }
+                    }
+                },
                 Panes::ElementList => {
                     let items_list = items_list_view(&self.element_list);
                     let content = column![items_list]
@@ -160,36 +188,7 @@ impl Application for App {
                         } else {
                             style::pane_active
                         })
-                } //Panes::CodeView => {
-                  //    let title = text("Generated Code").style(if is_focused {
-                  //        PANE_ID_COLOR_FOCUSED
-                  //    } else {
-                  //        PANE_ID_COLOR_UNFOCUSED
-                  //    });
-                  //    let title_bar =
-                  //        pane_grid::TitleBar::new(title)
-                  //            .padding(10)
-                  //            .style(if is_focused {
-                  //                style::title_bar_focused
-                  //            } else {
-                  //                style::title_bar_active
-                  //            });
-                  //    pane_grid::Content::new(
-                  //        text_editor(&self.editor_content).highlight::<Highlighter>(
-                  //            highlighter::Settings {
-                  //                theme: highlighter::Theme::Base16Mocha,
-                  //                extension: "rs".to_string(),
-                  //            },
-                  //            |highlight, _theme| highlight.to_format(),
-                  //        ),
-                  //    )
-                  //    .title_bar(title_bar)
-                  //    .style(if is_focused {
-                  //        style::pane_focused
-                  //    } else {
-                  //        style::pane_active
-                  //    })
-                  //}
+                }
             }
         })
         .width(Length::Fill)

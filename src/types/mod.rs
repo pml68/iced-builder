@@ -1,4 +1,3 @@
-pub mod props;
 pub mod rendered_element;
 
 use iced::widget::text_editor;
@@ -10,9 +9,10 @@ pub struct DesignerState {
     pub designer_page: DesignerPage,
 }
 
+#[derive(Debug)]
 pub enum ElementName {
-    Text(String),
-    Button(String),
+    Text(&'static str),
+    Button(&'static str),
     TextEditor(text_editor::Content),
     SVG(PathBuf),
     Image(PathBuf),

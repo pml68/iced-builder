@@ -1,34 +1,22 @@
 use rust_format::{Config, Edition, Formatter, RustFmt};
 
-use crate::types::{props::Props, rendered_element::RenderedElement, ElementName};
+use crate::types::{rendered_element::RenderedElement, ElementName};
 
-impl Props {
-    pub fn codegen(&self) -> String {
+impl RenderedElement {
+    fn props_codegen(&self) -> String {
         let mut props_string = String::new();
 
-        match self.spacing {
-            Some(s) => {
-                props_string = format!("{props_string}.spacing({s})");
-            }
-            None => {}
-        }
-
-        match self.max_height {
-            Some(h) => {
-                props_string = format!("{props_string}.max_height({h})");
-            }
-            None => {}
+        for (k, v) in self.props.clone() {
+            props_string = format!("{props_string}.{k}({v})");
         }
 
         props_string
     }
-}
 
-impl RenderedElement {
     fn codegen(&self) -> (String, String) {
         let mut imports = String::new();
         let mut view = String::new();
-        let props = self.props.codegen();
+        let props = self.props_codegen();
 
         let mut elements = String::new();
 
@@ -41,7 +29,7 @@ impl RenderedElement {
 
         match &self.name {
             ElementName::Container => {
-                imports = format!("{imports}widget::container,");
+                imports = format!("{imports}container,");
                 view = if self.child_elements.len() < 2 {
                     format!("{view}\ncontainer({elements}){props}")
                 } else {
@@ -49,12 +37,19 @@ impl RenderedElement {
                 };
             }
             ElementName::Row => {
-                imports = format!("{imports}widget::row,");
+                imports = format!("{imports}row,");
                 view = format!("{view}\nrow![{elements}]{props}");
             }
             ElementName::Text(string) => {
-                imports = format!("{imports}widget::text,");
-                view = format!("{view}\ntext(\"{string}\"){props}");
+                imports = format!("{imports}text,");
+                view = format!(
+                    "{view}\ntext(\"{}\"){props}",
+                    if *string == String::new() {
+                        "New Text"
+                    } else {
+                        string
+                    }
+                );
             }
             _ => {}
         }
@@ -62,9 +57,9 @@ impl RenderedElement {
         (imports, view)
     }
 
-    pub fn app_code(&self, title: String) -> Result<String, Box<dyn std::error::Error>> {
+    pub fn app_code(&self, title: &str) -> Result<String, Box<dyn std::error::Error>> {
         let (imports, view) = self.codegen();
-        let mut app_code = format!("use iced::{{{imports}Sandbox,Settings,Element}};");
+        let mut app_code = format!("use iced::{{widget::{{{imports}}},Sandbox,Settings,Element}};");
 
         app_code = format!(
             r#"{app_code}
@@ -97,5 +92,19 @@ impl RenderedElement {
         );
 
         Ok(RustFmt::default().format_str(app_code)?)
+    }
+
+    pub fn test() -> String {
+        let mut text1 = RenderedElement::new(ElementName::Text("wow"));
+        text1.set_property("padding", "[10, 20]");
+        text1.set_property("spacing", "20.0");
+        text1.set_property("max_height", "120.5");
+
+        let element = RenderedElement::new(ElementName::Container).push(RenderedElement::from_vec(
+            ElementName::Row,
+            vec![text1, RenderedElement::new(ElementName::Text("heh"))],
+        ));
+
+        element.app_code("new app").unwrap()
     }
 }

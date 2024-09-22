@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use rust_format::{Config, Edition, Formatter, RustFmt};
 
 use crate::types::{rendered_element::RenderedElement, ElementName};
@@ -23,9 +25,8 @@ impl RenderedElement {
         match self.name {
             ElementName::Column | ElementName::Row | ElementName::Container => {
                 for element in &self.child_elements {
-                    let mut children = String::new();
-
-                    (imports, children) = element.codegen();
+                    let (c_imports, children) = element.codegen();
+                    imports = format!("{imports}{c_imports}");
                     elements = format!("{elements}{},", children);
                 }
             }
@@ -73,11 +74,11 @@ impl RenderedElement {
             }
             ElementName::Image(path) => {
                 imports = format!("{imports}image,");
-                view = format!("{view}\nimage({}){props}", path.display().to_string());
+                view = format!("{view}\nimage(\"{}\"){props}", path.display().to_string());
             }
             ElementName::SVG(path) => {
                 imports = format!("{imports}svg,");
-                view = format!("{view}\nsvg({}){props}", path.display().to_string());
+                view = format!("{view}\nsvg(\"{}\"){props}", path.display().to_string());
             }
         }
 
@@ -116,11 +117,11 @@ impl RenderedElement {
                 iced::Theme::{}
             }}
 
-            fn update(&mut self, message: Message) {{
+            fn update(&mut self, message: Self::Message) {{
 
             }}
 
-            fn view(&self) -> Element<Message> {{
+            fn view(&self) -> Element<Self::Message> {{
                 {view}.into()
             }}
         }}"#,
@@ -130,20 +131,28 @@ impl RenderedElement {
                 "default()".to_owned()
             }
         );
-
-        Ok(RustFmt::default().format_str(app_code)?)
+        let config = Config::new_str()
+            .edition(Edition::Rust2021)
+            .option("trailing_comma", "Never")
+            .option("imports_granularity", "Crate");
+        let rustfmt = RustFmt::from_config(config);
+        Ok(rustfmt.format_str(app_code)?)
     }
 
     pub fn test() -> String {
         let mut text1 = RenderedElement::new(ElementName::Text("wow"));
-        text1.set_property("padding", "[10, 20]");
-        text1.set_property("spacing", "20.0");
-        text1.set_property("max_height", "120.5");
-        text1.set_property("max_width", "230");
+        text1.set_property("height", "120.5");
+        text1.set_property("width", "230");
 
         let element = RenderedElement::new(ElementName::Container).push(RenderedElement::from_vec(
             ElementName::Row,
-            vec![text1, RenderedElement::new(ElementName::Text("heh"))],
+            vec![
+                text1,
+                RenderedElement::new(ElementName::Text("heh")),
+                RenderedElement::new(ElementName::SVG(PathBuf::from(
+                    "/mnt/drive_d/git/obs-website/src/lib/assets/bars-solid.svg",
+                ))),
+            ],
         ));
 
         element.app_code("new app", None).unwrap()

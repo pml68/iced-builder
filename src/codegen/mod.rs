@@ -20,11 +20,16 @@ impl RenderedElement {
 
         let mut elements = String::new();
 
-        for element in &self.child_elements {
-            let mut children = String::new();
+        match self.name {
+            ElementName::Column | ElementName::Row | ElementName::Container => {
+                for element in &self.child_elements {
+                    let mut children = String::new();
 
-            (imports, children) = element.codegen();
-            elements = format!("{elements}{},", children);
+                    (imports, children) = element.codegen();
+                    elements = format!("{elements}{},", children);
+                }
+            }
+            _ => {}
         }
 
         match &self.name {
@@ -40,6 +45,10 @@ impl RenderedElement {
                 imports = format!("{imports}row,");
                 view = format!("{view}\nrow![{elements}]{props}");
             }
+            ElementName::Column => {
+                imports = format!("{imports}column,");
+                view = format!("{view}\ncolumn![{elements}]{props}");
+            }
             ElementName::Text(string) => {
                 imports = format!("{imports}text,");
                 view = format!(
@@ -51,13 +60,35 @@ impl RenderedElement {
                     }
                 );
             }
-            _ => {}
+            ElementName::Button(string) => {
+                imports = format!("{imports}button,");
+                view = format!(
+                    "{view}\nbutton(\"{}\"){props}",
+                    if *string == String::new() {
+                        "New Button"
+                    } else {
+                        string
+                    }
+                );
+            }
+            ElementName::Image(path) => {
+                imports = format!("{imports}image,");
+                view = format!("{view}\nimage({}){props}", path.display().to_string());
+            }
+            ElementName::SVG(path) => {
+                imports = format!("{imports}svg,");
+                view = format!("{view}\nsvg({}){props}", path.display().to_string());
+            }
         }
 
         (imports, view)
     }
 
-    pub fn app_code(&self, title: &str) -> Result<String, Box<dyn std::error::Error>> {
+    pub fn app_code(
+        &self,
+        title: &str,
+        theme: Option<iced::Theme>,
+    ) -> Result<String, Box<dyn std::error::Error>> {
         let (imports, view) = self.codegen();
         let mut app_code = format!("use iced::{{widget::{{{imports}}},Sandbox,Settings,Element}};");
 
@@ -81,6 +112,10 @@ impl RenderedElement {
                 "{title}".into()
             }}
 
+            fn theme(&self) -> iced::Theme {{
+                iced::Theme::{}
+            }}
+
             fn update(&mut self, message: Message) {{
 
             }}
@@ -88,7 +123,12 @@ impl RenderedElement {
             fn view(&self) -> Element<Message> {{
                 {view}.into()
             }}
-        }}"#
+        }}"#,
+            if let Some(c) = theme {
+                c.to_string().replace(' ', "")
+            } else {
+                "default()".to_owned()
+            }
         );
 
         Ok(RustFmt::default().format_str(app_code)?)
@@ -99,12 +139,13 @@ impl RenderedElement {
         text1.set_property("padding", "[10, 20]");
         text1.set_property("spacing", "20.0");
         text1.set_property("max_height", "120.5");
+        text1.set_property("max_width", "230");
 
         let element = RenderedElement::new(ElementName::Container).push(RenderedElement::from_vec(
             ElementName::Row,
             vec![text1, RenderedElement::new(ElementName::Text("heh"))],
         ));
 
-        element.app_code("new app").unwrap()
+        element.app_code("new app", None).unwrap()
     }
 }

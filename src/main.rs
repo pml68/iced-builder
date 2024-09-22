@@ -2,20 +2,23 @@ mod codegen;
 mod types;
 
 use iced::{
-    executor,
+    clipboard, executor,
     highlighter::{self, Highlighter},
     theme,
     widget::{
         button, column, container,
         pane_grid::{self, Pane, PaneGrid},
-        row, text, text_editor, Column,
+        row, text, text_editor, tooltip, Column, Space,
     },
     Alignment, Application, Color, Command, Element, Font, Length, Settings,
 };
 use types::{rendered_element::RenderedElement, DesignerPage, DesignerState};
 
 fn main() -> iced::Result {
-    App::run(Settings::default())
+    App::run(Settings {
+        fonts: vec![include_bytes!("../fonts/icons.ttf").as_slice().into()],
+        ..Settings::default()
+    })
 }
 
 struct App {
@@ -32,6 +35,7 @@ struct App {
 #[derive(Debug, Clone)]
 enum Message {
     ToggleTheme,
+    CopyCode,
     Resized(pane_grid::ResizeEvent),
     Clicked(pane_grid::Pane),
 }
@@ -98,6 +102,7 @@ impl Application for App {
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
             Message::ToggleTheme => self.dark_theme = !self.dark_theme,
+            Message::CopyCode => return clipboard::write(self.editor_content.text()),
             Message::Resized(pane_grid::ResizeEvent { split, ratio }) => {
                 self.pane_state.resize(split, ratio);
             }
@@ -140,11 +145,26 @@ impl Application for App {
                             })
                     }
                     DesignerPage::CodeView => {
-                        let title = text("Generated Code").style(if is_focused {
-                            PANE_ID_COLOR_FOCUSED
-                        } else {
-                            PANE_ID_COLOR_UNFOCUSED
-                        });
+                        let title = row![
+                            text("Generated Code").style(if is_focused {
+                                PANE_ID_COLOR_FOCUSED
+                            } else {
+                                PANE_ID_COLOR_UNFOCUSED
+                            }),
+                            Space::with_width(Length::Fill),
+                            tooltip(
+                                button(
+                                    container(
+                                        text('\u{0e801}').font(Font::with_name("editor-icons"))
+                                    )
+                                    .width(30)
+                                    .center_x()
+                                )
+                                .on_press(Message::CopyCode),
+                                "Copy code to clipboard",
+                                tooltip::Position::Left
+                            )
+                        ];
                         let title_bar = pane_grid::TitleBar::new(title)
                             .padding(10)
                             .style(style::title_bar);
@@ -157,6 +177,7 @@ impl Application for App {
                                     },
                                     |highlight, _theme| highlight.to_format(),
                                 )
+                                .height(Length::Fill)
                                 .padding(20),
                         )
                         .title_bar(title_bar)

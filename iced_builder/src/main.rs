@@ -12,6 +12,7 @@ use iced::{
     },
     Alignment, Application, Color, Command, Element, Font, Length, Settings,
 };
+use iced_drop::droppable;
 use types::{rendered_element::RenderedElement, DesignerPage, DesignerState};
 
 fn main() -> iced::Result {
@@ -28,7 +29,7 @@ struct App {
     pane_state: pane_grid::State<Panes>,
     focus: Option<Pane>,
     designer_state: DesignerState,
-    element_list: Vec<String>,
+    element_list: Vec<types::ElementName>,
     editor_content: text_editor::Content,
 }
 
@@ -36,8 +37,14 @@ struct App {
 enum Message {
     ToggleTheme,
     CopyCode,
+    Drop(types::ElementName, iced::Point, iced::Rectangle),
+    HandleZones(
+        types::ElementName,
+        Vec<(iced::advanced::widget::Id, iced::Rectangle)>,
+    ),
     Resized(pane_grid::ResizeEvent),
     Clicked(pane_grid::Pane),
+    PaneDragged(pane_grid::DragEvent),
 }
 
 #[derive(Clone, Debug)]
@@ -68,12 +75,9 @@ impl Application for App {
                 focus: None,
                 designer_state: DesignerState {
                     designer_content: vec![],
-                    designer_page: DesignerPage::CodeView,
+                    designer_page: DesignerPage::Designer,
                 },
-                element_list: vec!["Column", "Row", "PickList", "PaneGrid", "Button", "Text"]
-                    .into_iter()
-                    .map(|c| c.to_owned())
-                    .collect(),
+                element_list: types::ElementName::ALL.to_vec(),
                 editor_content: text_editor::Content::with_text(&RenderedElement::test()),
             },
             Command::none(),
@@ -109,6 +113,22 @@ impl Application for App {
             Message::Clicked(pane) => {
                 self.focus = Some(pane);
             }
+            Message::Drop(name, point, _) => {
+                return iced_drop::zones_on_point(
+                    move |zones| Message::HandleZones(name, zones),
+                    point,
+                    None,
+                    None,
+                )
+                .into()
+            }
+            Message::HandleZones(name, zones) => {
+                println!("{:?}\n{name}", zones);
+            }
+            Message::PaneDragged(pane_grid::DragEvent::Dropped { pane, target }) => {
+                self.pane_state.drop(pane, target);
+            }
+            Message::PaneDragged(_) => {}
         }
 
         Command::none()
@@ -124,8 +144,8 @@ impl Application for App {
             match pane {
                 Panes::Designer => match self.designer_state.designer_page {
                     DesignerPage::Designer => {
-                        let content = column![text("Designer"),]
-                            .align_items(Alignment::Center)
+                        let content = container("")
+                            .id(iced::widget::container::Id::new("drop_zone"))
                             .height(Length::Fill)
                             .width(Length::Fill);
                         let title = text("Designer").style(if is_focused {
@@ -189,7 +209,7 @@ impl Application for App {
                     }
                 },
                 Panes::ElementList => {
-                    let items_list = items_list_view(&self.element_list);
+                    let items_list = items_list_view(self.element_list.clone());
                     let content = column![items_list]
                         .align_items(Alignment::Center)
                         .height(Length::Fill)
@@ -216,7 +236,8 @@ impl Application for App {
         .height(Length::Fill)
         .spacing(10)
         .on_resize(10, Message::Resized)
-        .on_click(Message::Clicked);
+        .on_click(Message::Clicked)
+        .on_drag(Message::PaneDragged);
 
         let content = Column::new()
             .push(header)
@@ -244,14 +265,18 @@ const PANE_ID_COLOR_FOCUSED: Color = from_grayscale(1.0);
 // #e8e8e8
 const PANE_ID_COLOR_UNFOCUSED: Color = from_grayscale(0xE8 as f32 / 255.0);
 
-fn items_list_view(items: &Vec<String>) -> Element<'static, Message> {
+fn items_list_view(items: Vec<types::ElementName>) -> Element<'static, Message> {
     let mut column = Column::new()
         .spacing(20)
         .align_items(Alignment::Center)
         .width(Length::Fill);
 
-    for value in items {
-        column = column.push(text(value));
+    for item in items {
+        let value = item.clone();
+        column = column.push(
+            droppable(text(value.to_string()))
+                .on_drop(move |point, rect| Message::Drop(value, point, rect)),
+        );
     }
 
     container(column).height(250.0).width(300).into()

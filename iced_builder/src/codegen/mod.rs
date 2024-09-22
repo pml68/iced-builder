@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use rust_format::{Config, Edition, Formatter, RustFmt};
 
 use crate::types::{rendered_element::RenderedElement, ElementName};
@@ -74,11 +72,11 @@ impl RenderedElement {
             }
             ElementName::Image(path) => {
                 imports = format!("{imports}image,");
-                view = format!("{view}\nimage(\"{}\"){props}", path.display().to_string());
+                view = format!("{view}\nimage(\"{path}\"){props}");
             }
             ElementName::SVG(path) => {
                 imports = format!("{imports}svg,");
-                view = format!("{view}\nsvg(\"{}\"){props}", path.display().to_string());
+                view = format!("{view}\nsvg(\"{path}\"){props}");
             }
         }
 
@@ -149,9 +147,9 @@ impl RenderedElement {
             vec![
                 text1,
                 RenderedElement::new(ElementName::Text("heh")),
-                RenderedElement::new(ElementName::SVG(PathBuf::from(
+                RenderedElement::new(ElementName::SVG(
                     "/mnt/drive_d/git/obs-website/src/lib/assets/bars-solid.svg",
-                ))),
+                )),
             ],
         ));
 

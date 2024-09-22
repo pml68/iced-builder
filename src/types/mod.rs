@@ -1,25 +1,22 @@
-use iced::{Font, Length};
+pub mod rendered_element;
+
+use rendered_element::RenderedElement;
+use std::path::PathBuf;
 
 pub struct DesignerState {
     pub designer_content: Vec<RenderedElement>,
     pub designer_page: DesignerPage,
 }
 
-pub struct RenderedElement {
-    pub id: String,
-    pub children: Vec<RenderedElement>,
-    pub name: ElementName,
-    pub props: Vec<Prop>,
-}
-
-pub enum ElementName {}
-
-pub enum Prop {
-    String(String, String),
-    Decimal(String, i32),
-    Float(String, f32),
-    Font(String, Font),
-    Length(String, Length),
+#[derive(Debug)]
+pub enum ElementName {
+    Text(&'static str),
+    Button(&'static str),
+    SVG(PathBuf),
+    Image(PathBuf),
+    Container,
+    Row,
+    Column,
 }
 
 pub enum DesignerPage {

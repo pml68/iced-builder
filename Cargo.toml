@@ -10,5 +10,7 @@ keywords = ["gui", "iced"]
 
 [dependencies]
 iced = { version = "0.12.1", features = [ "image","svg","canvas","qr_code","advanced","tokio","highlighter"] }
-tokio = {version = "1.39.3",features = ["fs"]}
+iced_aw = { version = "0.9.3", default-features = false, features = ["menu","color_picker"] }
+tokio = { version = "1.40.0", features = ["fs"] }
 rust-format = "0.3.4"
+unique_id = "0.1.5"

@@ -37,6 +37,7 @@ struct App {
 enum Message {
     ToggleTheme,
     CopyCode,
+    EditorAction(text_editor::Action),
     Drop(types::ElementName, iced::Point, iced::Rectangle),
     HandleZones(
         types::ElementName,
@@ -107,6 +108,11 @@ impl Application for App {
         match message {
             Message::ToggleTheme => self.dark_theme = !self.dark_theme,
             Message::CopyCode => return clipboard::write(self.editor_content.text()),
+            Message::EditorAction(action) => {
+                if let text_editor::Action::Scroll { lines: _ } = action {
+                    self.editor_content.perform(action);
+                }
+            }
             Message::Resized(pane_grid::ResizeEvent { split, ratio }) => {
                 self.pane_state.resize(split, ratio);
             }
@@ -190,6 +196,7 @@ impl Application for App {
                             .style(style::title_bar);
                         pane_grid::Content::new(
                             text_editor(&self.editor_content)
+                                .on_action(Message::EditorAction)
                                 .highlight::<Highlighter>(
                                     highlighter::Settings {
                                         theme: highlighter::Theme::Base16Mocha,

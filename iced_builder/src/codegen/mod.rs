@@ -138,7 +138,7 @@ impl RenderedElement {
         Ok(rustfmt.format_str(app_code)?)
     }
 
-    pub fn test() -> String {
+    pub fn test() -> RenderedElement {
         let mut text1 = RenderedElement::new(ElementName::Text("wow"));
         text1.set_property("height", "120.5");
         text1.set_property("width", "230");
@@ -154,6 +154,6 @@ impl RenderedElement {
             ],
         ));
 
-        element.app_code("new app", None).unwrap()
+        element
     }
 }

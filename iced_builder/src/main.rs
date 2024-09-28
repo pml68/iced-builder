@@ -37,6 +37,7 @@ struct App {
 enum Message {
     ToggleTheme,
     CopyCode,
+    SwitchPage(DesignerPage),
     EditorAction(text_editor::Action),
     Drop(types::ElementName, iced::Point, iced::Rectangle),
     HandleZones(
@@ -75,11 +76,11 @@ impl Application for App {
                 pane_state: state,
                 focus: None,
                 designer_state: DesignerState {
-                    designer_content: vec![],
+                    designer_content: Some(RenderedElement::test()),
                     designer_page: DesignerPage::Designer,
                 },
                 element_list: types::ElementName::ALL.to_vec(),
-                editor_content: text_editor::Content::with_text(&RenderedElement::test()),
+                editor_content: text_editor::Content::new(),
             },
             Command::none(),
         )
@@ -89,7 +90,16 @@ impl Application for App {
         let saved_state = if self.is_saved { "" } else { " *" };
 
         let project_name = match &self.current_project {
-            Some(n) => format!(" - {n}"),
+            Some(n) => {
+                format!(
+                    " - {}",
+                    if n.len() > 60 {
+                        format!("...{}", &n[n.len() - 40..])
+                    } else {
+                        n.to_owned()
+                    }
+                )
+            }
             None => "".to_owned(),
         };
 
@@ -108,6 +118,7 @@ impl Application for App {
         match message {
             Message::ToggleTheme => self.dark_theme = !self.dark_theme,
             Message::CopyCode => return clipboard::write(self.editor_content.text()),
+            Message::SwitchPage(page) => self.designer_state.designer_page = page,
             Message::EditorAction(action) => {
                 if let text_editor::Action::Scroll { lines: _ } = action {
                     self.editor_content.perform(action);
@@ -130,6 +141,19 @@ impl Application for App {
             }
             Message::HandleZones(name, zones) => {
                 println!("{:?}\n{name}", zones);
+                println!("{:?}\n{name}\n{:?}", zones, self.title());
+                if let Some(el) = &self.designer_state.designer_content {
+                    self.editor_content = text_editor::Content::with_text(
+                        &el.app_code(
+                            match &self.current_project {
+                                Some(title) => &title,
+                                None => "New App",
+                            },
+                            None,
+                        )
+                        .unwrap(),
+                    );
+                }
             }
             Message::PaneDragged(pane_grid::DragEvent::Dropped { pane, target }) => {
                 self.pane_state.drop(pane, target);
@@ -154,11 +178,16 @@ impl Application for App {
                             .id(iced::widget::container::Id::new("drop_zone"))
                             .height(Length::Fill)
                             .width(Length::Fill);
-                        let title = text("Designer").style(if is_focused {
-                            PANE_ID_COLOR_FOCUSED
-                        } else {
-                            PANE_ID_COLOR_UNFOCUSED
-                        });
+                        let title = row![
+                            text("Designer").style(if is_focused {
+                                PANE_ID_COLOR_FOCUSED
+                            } else {
+                                PANE_ID_COLOR_UNFOCUSED
+                            }),
+                            Space::with_width(Length::Fill),
+                            button("Switch to Code view")
+                                .on_press(Message::SwitchPage(DesignerPage::CodeView)),
+                        ];
                         let title_bar = pane_grid::TitleBar::new(title)
                             .padding(10)
                             .style(style::title_bar);
@@ -189,7 +218,10 @@ impl Application for App {
                                 .on_press(Message::CopyCode),
                                 "Copy code to clipboard",
                                 tooltip::Position::Left
-                            )
+                            ),
+                            Space::with_width(20),
+                            button("Switch to Designer view")
+                                .on_press(Message::SwitchPage(DesignerPage::Designer))
                         ];
                         let title_bar = pane_grid::TitleBar::new(title)
                             .padding(10)

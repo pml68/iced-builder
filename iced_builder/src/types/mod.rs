@@ -3,7 +3,7 @@ pub mod rendered_element;
 use rendered_element::RenderedElement;
 
 pub struct DesignerState {
-    pub designer_content: Vec<RenderedElement>,
+    pub designer_content: Option<RenderedElement>,
     pub designer_page: DesignerPage,
 }
 
@@ -48,6 +48,7 @@ impl std::fmt::Display for ElementName {
     }
 }
 
+#[derive(Debug, Clone)]
 pub enum DesignerPage {
     Designer,
     CodeView,

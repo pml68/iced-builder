@@ -132,7 +132,7 @@ impl Application for App {
             }
             Message::Drop(name, point, _) => {
                 return iced_drop::zones_on_point(
-                    move |zones| Message::HandleZones(name, zones),
+                    move |zones| Message::HandleZones(name.clone(), zones),
                     point,
                     None,
                     None,
@@ -231,7 +231,11 @@ impl Application for App {
                                 .on_action(Message::EditorAction)
                                 .highlight::<Highlighter>(
                                     highlighter::Settings {
-                                        theme: highlighter::Theme::Base16Mocha,
+                                        theme: if self.dark_theme {
+                                            highlighter::Theme::Base16Mocha
+                                        } else {
+                                            highlighter::Theme::InspiredGitHub
+                                        },
                                         extension: "rs".to_string(),
                                     },
                                     |highlight, _theme| highlight.to_format(),
@@ -314,7 +318,7 @@ fn items_list_view(items: Vec<types::ElementName>) -> Element<'static, Message> 
         let value = item.clone();
         column = column.push(
             droppable(text(value.to_string()))
-                .on_drop(move |point, rect| Message::Drop(value, point, rect)),
+                .on_drop(move |point, rect| Message::Drop(value.clone(), point, rect)),
         );
     }
 

@@ -1,18 +1,19 @@
 pub mod rendered_element;
 
 use rendered_element::RenderedElement;
+use serde::{Deserialize, Serialize};
 
 pub struct DesignerState {
     pub designer_content: Option<RenderedElement>,
     pub designer_page: DesignerPage,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ElementName {
-    Text(&'static str),
-    Button(&'static str),
-    SVG(&'static str),
-    Image(&'static str),
+    Text(String),
+    Button(String),
+    SVG(String),
+    Image(String),
     Container,
     Row,
     Column,
@@ -20,10 +21,10 @@ pub enum ElementName {
 
 impl ElementName {
     pub const ALL: [Self; 7] = [
-        Self::Text(""),
-        Self::Button(""),
-        Self::SVG(""),
-        Self::Image(""),
+        Self::Text(String::new()),
+        Self::Button(String::new()),
+        Self::SVG(String::new()),
+        Self::Image(String::new()),
         Self::Container,
         Self::Row,
         Self::Column,

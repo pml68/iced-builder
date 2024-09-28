@@ -1246,6 +1246,8 @@ dependencies = [
  "iced_aw",
  "iced_drop",
  "rust-format",
+ "serde",
+ "serde_json",
  "tokio",
  "unique_id",
 ]

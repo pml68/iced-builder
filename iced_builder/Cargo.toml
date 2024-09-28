@@ -12,6 +12,8 @@ keywords = ["gui", "iced"]
 iced = { version = "0.12.1", features = [ "image","svg","canvas","qr_code","advanced","tokio","highlighter"] }
 iced_aw = { version = "0.9.3", default-features = false, features = ["menu","color_picker"] }
 iced_drop = { path = "../iced_drop" }
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0.128"
 tokio = { version = "1.40.0", features = ["fs"] }
 rust-format = "0.3.4"
 unique_id = "0.1.5"

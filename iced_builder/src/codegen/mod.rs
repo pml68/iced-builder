@@ -1,13 +1,18 @@
 use rust_format::{Config, Edition, Formatter, RustFmt};
 
-use crate::types::{rendered_element::RenderedElement, ElementName};
+use crate::types::{
+    rendered_element::{container, row, svg, text, RenderedElement},
+    ElementName,
+};
 
 impl RenderedElement {
     fn props_codegen(&self) -> String {
         let mut props_string = String::new();
 
         for (k, v) in self.props.clone() {
-            props_string = format!("{props_string}.{k}({v})");
+            if let Some(value) = v {
+                props_string = format!("{props_string}.{k}({value})");
+            }
         }
 
         props_string
@@ -20,25 +25,18 @@ impl RenderedElement {
 
         let mut elements = String::new();
 
-        match self.name {
-            ElementName::Column | ElementName::Row | ElementName::Container => {
-                for element in &self.child_elements {
-                    let (c_imports, children) = element.codegen();
-                    imports = format!("{imports}{c_imports}");
-                    elements = format!("{elements}{},", children);
-                }
+        if let Some(els) = &self.child_elements {
+            for element in els {
+                let (c_imports, children) = element.codegen();
+                imports = format!("{imports}{c_imports}");
+                elements = format!("{elements}{},", children);
             }
-            _ => {}
         }
 
         match &self.name {
             ElementName::Container => {
                 imports = format!("{imports}container,");
-                view = if self.child_elements.len() < 2 {
-                    format!("{view}\ncontainer({elements}){props}")
-                } else {
-                    format!("{view}\ncontainer(){props}")
-                };
+                view = format!("{view}\ncontainer({elements}){props}");
             }
             ElementName::Row => {
                 imports = format!("{imports}row,");
@@ -139,20 +137,13 @@ impl RenderedElement {
     }
 
     pub fn test() -> RenderedElement {
-        let mut text1 = RenderedElement::new(ElementName::Text("wow"));
-        text1.set_property("height", "120.5");
-        text1.set_property("width", "230");
+        let text1 = text("wow").option("height", "120.5").option("width", "230");
 
-        let element = RenderedElement::new(ElementName::Container).push(RenderedElement::from_vec(
-            ElementName::Row,
-            vec![
-                text1,
-                RenderedElement::new(ElementName::Text("heh")),
-                RenderedElement::new(ElementName::SVG(
-                    "/mnt/drive_d/git/obs-website/src/lib/assets/bars-solid.svg",
-                )),
-            ],
-        ));
+        let element = container(row(vec![
+            text1,
+            text("heh"),
+            svg("/mnt/drive_d/git/obs-website/src/lib/assets/bars-solid.svg"),
+        ]));
 
         element
     }

@@ -172,12 +172,18 @@ impl Application for App {
         let pane_grid = PaneGrid::new(&self.pane_state, |id, pane, _is_maximized| {
             let is_focused = Some(id) == self.focus;
             match pane {
-                Panes::Designer => match self.designer_state.designer_page {
+                Panes::Designer => match &self.designer_state.designer_page {
                     DesignerPage::Designer => {
-                        let content = container("")
-                            .id(iced::widget::container::Id::new("drop_zone"))
-                            .height(Length::Fill)
-                            .width(Length::Fill);
+                        let content = container(text(format!(
+                            "{:0.4}",
+                            self.designer_state
+                                .designer_content
+                                .clone()
+                                .expect("Designer content hasn't been set yet."),
+                        )))
+                        .id(iced::widget::container::Id::new("drop_zone"))
+                        .height(Length::Fill)
+                        .width(Length::Fill);
                         let title = row![
                             text("Designer").style(if is_focused {
                                 PANE_ID_COLOR_FOCUSED

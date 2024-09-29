@@ -5,7 +5,7 @@ use unique_id::{string::StringGenerator, Generator};
 
 use super::ElementName;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RenderedElement {
     pub id: String,
     pub child_elements: Option<Vec<RenderedElement>>,
@@ -34,6 +34,13 @@ impl RenderedElement {
         }
     }
 
+    fn preset_options(mut self, options: Vec<&str>) -> Self {
+        for opt in options {
+            self.props.insert(opt.to_owned(), None);
+        }
+        self
+    }
+
     pub fn push(mut self, element: RenderedElement) -> Self {
         if let Some(els) = self.child_elements.as_mut() {
             els.push(element);
@@ -43,18 +50,63 @@ impl RenderedElement {
         self
     }
 
-    pub fn option(mut self, prop: &'static str, value: &'static str) -> Self {
-        let prop_ref = self
-            .props
-            .entry(prop.to_owned())
-            .or_insert(Some(value.to_owned()));
-        *prop_ref = Some(value.to_owned());
+    pub fn option(mut self, option: &'static str, value: &'static str) -> Self {
+        self.props
+            .entry(option.to_owned())
+            .and_modify(|opt| *opt = Some(value.to_owned()));
         self
     }
 }
 
+impl std::fmt::Display for RenderedElement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut has_props = false;
+        f.pad("")?;
+        f.write_fmt(format_args!("{:?}\n", self.name))?;
+        f.pad("")?;
+        f.write_str("Options: (")?;
+        for (k, v) in &self.props {
+            if let Some(value) = v {
+                has_props = true;
+                f.write_fmt(format_args!(
+                    "\n{:width$.precision$}{}: {}",
+                    "",
+                    k,
+                    value,
+                    width = f.width().unwrap_or(0) + f.precision().unwrap_or(0),
+                    precision = f.precision().unwrap_or(0)
+                ))?;
+            }
+        }
+        if has_props {
+            f.write_str("\n")?;
+            f.pad("")?;
+        }
+        f.write_str(")")?;
+        if let Some(els) = &self.child_elements {
+            f.write_str(" {\n")?;
+            for el in els {
+                f.write_fmt(format_args!(
+                    "\n{:width$.precision$}\n",
+                    el,
+                    width = f.width().unwrap_or(0) + f.precision().unwrap_or(0),
+                    precision = f.precision().unwrap_or(0)
+                ))?;
+            }
+            f.pad("")?;
+            f.write_str("}")?;
+        }
+        Ok(())
+    }
+}
+
 pub fn text(text: &str) -> RenderedElement {
-    RenderedElement::new(ElementName::Text(text.to_owned()))
+    RenderedElement::new(ElementName::Text(text.to_owned())).preset_options(vec![
+        "size",
+        "line_height",
+        "width",
+        "height",
+    ])
 }
 
 pub fn button(text: &str) -> RenderedElement {

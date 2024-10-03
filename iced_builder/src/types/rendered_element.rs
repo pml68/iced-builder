@@ -1,11 +1,15 @@
 use std::collections::HashMap;
 
+use iced::advanced::widget::Id;
+use iced::{widget, Element, Length};
 use serde::{Deserialize, Serialize};
 use unique_id::{string::StringGenerator, Generator};
 
+use crate::Message;
+
 use super::ElementName;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderedElement {
     pub id: String,
     pub child_elements: Option<Vec<RenderedElement>>,
@@ -34,6 +38,73 @@ impl RenderedElement {
         }
     }
 
+    pub fn find_by_id(&mut self, id: Id) -> Option<&mut Self> {
+        if Id::new(self.id.clone()) == id.clone() {
+            println!("");
+            return Some(self);
+        } else if let Some(child_elements) = self.child_elements.as_mut() {
+            for element in child_elements {
+                let element = element.find_by_id(id.clone());
+                if element.is_some() {
+                    return element;
+                }
+            }
+            return None;
+        } else {
+            return None;
+        }
+    }
+
+    pub fn find_parent(&mut self, child_element: &RenderedElement) -> Option<&mut Self> {
+        if child_element == self {
+            return Some(self);
+        } else if self.child_elements.is_some() {
+            if self.child_elements.clone()?.contains(child_element) {
+                return Some(self);
+            } else {
+                if let Some(child_elements) = self.child_elements.as_mut() {
+                    for element in child_elements {
+                        let element: Option<&mut Self> = element.find_parent(child_element);
+                        if element.is_some() {
+                            return element;
+                        }
+                    }
+                }
+                return None;
+            }
+        } else {
+            return None;
+        }
+    }
+
+    pub fn remove(&mut self, element: &RenderedElement) {
+        let parent = self.find_parent(element);
+        if let Some(child_elements) = parent.unwrap().child_elements.as_mut() {
+            if let Some(index) = child_elements.iter().position(|x| x == element) {
+                child_elements.remove(index);
+            }
+        }
+    }
+
+    pub fn push(&mut self, element: RenderedElement) {
+        if let Some(child_elements) = self.child_elements.as_mut() {
+            child_elements.push(element);
+        }
+    }
+
+    pub fn insert_after(&mut self, id: Id, element: RenderedElement) {
+        if let Some(child_elements) = self.child_elements.as_mut() {
+            if let Some(index) = child_elements
+                .iter()
+                .position(|x| Id::new(x.id.clone()) == id)
+            {
+                child_elements.insert(index, element);
+            } else {
+                child_elements.push(element);
+            }
+        }
+    }
+
     fn preset_options(mut self, options: Vec<&str>) -> Self {
         for opt in options {
             self.props.insert(opt.to_owned(), None);
@@ -41,20 +112,30 @@ impl RenderedElement {
         self
     }
 
-    pub fn push(mut self, element: RenderedElement) -> Self {
-        if let Some(els) = self.child_elements.as_mut() {
-            els.push(element);
-        } else {
-            self.child_elements = Some(vec![element]);
-        }
-        self
-    }
-
-    pub fn option(mut self, option: &'static str, value: &'static str) -> Self {
+    pub fn option(&mut self, option: &'static str, value: &'static str) {
         self.props
             .entry(option.to_owned())
             .and_modify(|opt| *opt = Some(value.to_owned()));
-        self
+    }
+
+    pub fn as_element(self) -> Element<'static, Message> {
+        let mut children = widget::column![];
+
+        if let Some(els) = self.child_elements.clone() {
+            for el in els {
+                children = children.push(el.clone().as_element());
+            }
+        }
+        iced_drop::droppable(
+            widget::container(
+                widget::column![widget::text(self.name.clone().to_string()), children]
+                    .width(Length::Fill),
+            )
+            .style(widget::container::bordered_box),
+        )
+        .id(Id::new(self.id.clone()))
+        .on_drop(move |point, rect| Message::MoveElement(self.clone(), point, rect))
+        .into()
     }
 }
 
@@ -121,10 +202,23 @@ pub fn image(path: &str) -> RenderedElement {
     RenderedElement::new(ElementName::Image(path.to_owned()))
 }
 
-pub fn container(content: RenderedElement) -> RenderedElement {
-    RenderedElement::from_vec(ElementName::Container, vec![content])
+pub fn container(content: Option<RenderedElement>) -> RenderedElement {
+    match content {
+        Some(el) => RenderedElement::from_vec(ElementName::Container, vec![el]),
+        None => RenderedElement::from_vec(ElementName::Container, vec![]),
+    }
 }
 
-pub fn row(child_elements: Vec<RenderedElement>) -> RenderedElement {
-    RenderedElement::from_vec(ElementName::Row, child_elements)
+pub fn row(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {
+    match child_elements {
+        Some(els) => RenderedElement::from_vec(ElementName::Row, els),
+        None => RenderedElement::from_vec(ElementName::Row, vec![]),
+    }
+}
+
+pub fn column(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {
+    match child_elements {
+        Some(els) => RenderedElement::from_vec(ElementName::Column, els),
+        None => RenderedElement::from_vec(ElementName::Column, vec![]),
+    }
 }

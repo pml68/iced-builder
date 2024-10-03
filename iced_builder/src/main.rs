@@ -1,52 +1,40 @@
-mod codegen;
-mod types;
+use std::path::PathBuf;
 
 use iced::{
-    clipboard, executor,
-    highlighter::{self, Highlighter},
-    theme,
+    clipboard, highlighter, keyboard,
     widget::{
         button, column, container,
         pane_grid::{self, Pane, PaneGrid},
         row, text, text_editor, tooltip, Column, Space,
     },
-    Alignment, Application, Color, Command, Element, Font, Length, Settings,
+    Alignment, Element, Font, Length, Settings, Task, Theme,
 };
+use iced_builder::types::{project::Project, DesignerPage, ElementName};
+use iced_builder::Message;
 use iced_drop::droppable;
-use types::{rendered_element::RenderedElement, DesignerPage, DesignerState};
 
 fn main() -> iced::Result {
-    App::run(Settings {
-        fonts: vec![include_bytes!("../fonts/icons.ttf").as_slice().into()],
-        ..Settings::default()
-    })
+    iced::application(App::title, App::update, App::view)
+        .settings(Settings {
+            fonts: vec![include_bytes!("../fonts/icons.ttf").as_slice().into()],
+            ..Settings::default()
+        })
+        .theme(App::theme)
+        .subscription(App::subscription)
+        .run_with(App::new)
 }
 
 struct App {
-    is_saved: bool,
-    current_project: Option<String>,
+    is_dirty: bool,
+    is_loading: bool,
+    project_path: Option<PathBuf>,
+    project: Project,
     dark_theme: bool,
     pane_state: pane_grid::State<Panes>,
     focus: Option<Pane>,
-    designer_state: DesignerState,
-    element_list: Vec<types::ElementName>,
+    designer_page: DesignerPage,
+    element_list: Vec<ElementName>,
     editor_content: text_editor::Content,
-}
-
-#[derive(Debug, Clone)]
-enum Message {
-    ToggleTheme,
-    CopyCode,
-    SwitchPage(DesignerPage),
-    EditorAction(text_editor::Action),
-    Drop(types::ElementName, iced::Point, iced::Rectangle),
-    HandleZones(
-        types::ElementName,
-        Vec<(iced::advanced::widget::Id, iced::Rectangle)>,
-    ),
-    Resized(pane_grid::ResizeEvent),
-    Clicked(pane_grid::Pane),
-    PaneDragged(pane_grid::DragEvent),
 }
 
 #[derive(Clone, Debug)]
@@ -55,13 +43,8 @@ enum Panes {
     ElementList,
 }
 
-impl Application for App {
-    type Message = Message;
-    type Theme = theme::Theme;
-    type Executor = executor::Default;
-    type Flags = ();
-
-    fn new(_flags: ()) -> (Self, Command<Message>) {
+impl App {
+    fn new() -> (Self, Task<Message>) {
         let state = pane_grid::State::with_configuration(pane_grid::Configuration::Split {
             axis: pane_grid::Axis::Vertical,
             ratio: 0.8,
@@ -70,26 +53,25 @@ impl Application for App {
         });
         (
             Self {
-                is_saved: true,
-                current_project: None,
+                is_dirty: false,
+                is_loading: false,
+                project_path: None,
+                project: Project::new(),
                 dark_theme: true,
                 pane_state: state,
                 focus: None,
-                designer_state: DesignerState {
-                    designer_content: Some(RenderedElement::test()),
-                    designer_page: DesignerPage::Designer,
-                },
-                element_list: types::ElementName::ALL.to_vec(),
+                designer_page: DesignerPage::Designer,
+                element_list: ElementName::ALL.to_vec(),
                 editor_content: text_editor::Content::new(),
             },
-            Command::none(),
+            Task::none(),
         )
     }
 
     fn title(&self) -> String {
-        let saved_state = if self.is_saved { "" } else { " *" };
+        let saved_state = if !self.is_dirty { "" } else { " *" };
 
-        let project_name = match &self.current_project {
+        let project_name = match &self.project.title {
             Some(n) => {
                 format!(
                     " - {}",
@@ -108,17 +90,17 @@ impl Application for App {
 
     fn theme(&self) -> iced::Theme {
         if self.dark_theme {
-            theme::Theme::CatppuccinMocha
+            Theme::SolarizedDark
         } else {
-            theme::Theme::CatppuccinLatte
+            Theme::SolarizedLight
         }
     }
 
-    fn update(&mut self, message: Message) -> Command<Message> {
+    fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::ToggleTheme => self.dark_theme = !self.dark_theme,
             Message::CopyCode => return clipboard::write(self.editor_content.text()),
-            Message::SwitchPage(page) => self.designer_state.designer_page = page,
+            Message::SwitchPage(page) => self.designer_page = page,
             Message::EditorAction(action) => {
                 if let text_editor::Action::Scroll { lines: _ } = action {
                     self.editor_content.perform(action);
@@ -130,38 +112,103 @@ impl Application for App {
             Message::Clicked(pane) => {
                 self.focus = Some(pane);
             }
-            Message::Drop(name, point, _) => {
+            Message::DropNewElement(name, point, _) => {
                 return iced_drop::zones_on_point(
-                    move |zones| Message::HandleZones(name.clone(), zones),
+                    move |zones| Message::HandleNew(name.clone(), zones),
                     point,
                     None,
                     None,
                 )
                 .into()
             }
-            Message::HandleZones(name, zones) => {
-                println!("{:?}\n{name}", zones);
-                println!("{:?}\n{name}\n{:?}", zones, self.title());
-                if let Some(el) = &self.designer_state.designer_content {
-                    self.editor_content = text_editor::Content::with_text(
-                        &el.app_code(
-                            match &self.current_project {
-                                Some(title) => &title,
-                                None => "New App",
-                            },
-                            None,
-                        )
-                        .unwrap(),
-                    );
-                }
+            Message::HandleNew(name, zones) => {
+                println!("\n\n{:?}\n{name}\n{:?}", zones, self.title());
+                let code = self
+                    .project
+                    .clone()
+                    .app_code()
+                    .unwrap_or_else(|err| err.to_string());
+                self.editor_content = text_editor::Content::with_text(&code);
+            }
+            Message::MoveElement(element, point, _) => {
+                return iced_drop::zones_on_point(
+                    move |zones| Message::HandleMove(element.clone(), zones),
+                    point,
+                    None,
+                    None,
+                )
+                .into()
+            }
+            Message::HandleMove(element, zones) => {
+                println!(
+                    "\n\n{:?}\n{element:0.4}",
+                    zones
+                        .into_iter()
+                        .map(|c| c.0)
+                        .collect::<Vec<iced::advanced::widget::Id>>()
+                );
             }
             Message::PaneDragged(pane_grid::DragEvent::Dropped { pane, target }) => {
                 self.pane_state.drop(pane, target);
             }
             Message::PaneDragged(_) => {}
+            Message::NewFile => {
+                if !self.is_loading {
+                    self.project = Project::new();
+                    self.project_path = None;
+                    self.editor_content = text_editor::Content::new();
+                }
+            }
+            Message::OpenFile => {
+                if !self.is_loading {
+                    self.is_loading = true;
+
+                    return Task::perform(Project::from_file(), Message::FileOpened);
+                }
+            }
+            Message::FileOpened(result) => {
+                self.is_loading = false;
+                self.is_dirty = false;
+
+                if let Ok((path, project)) = result {
+                    self.project = project.clone();
+                    self.project_path = Some(path);
+                    self.editor_content = text_editor::Content::with_text(
+                        &project.app_code().unwrap_or_else(|err| err.to_string()),
+                    );
+                }
+            }
+            Message::SaveFile => {
+                if !self.is_loading {
+                    self.is_loading = true;
+
+                    return Task::perform(
+                        self.project
+                            .clone()
+                            .write_to_file(self.project_path.clone()),
+                        Message::FileSaved,
+                    );
+                }
+            }
+            Message::FileSaved(result) => {
+                self.is_loading = false;
+
+                if let Ok(path) = result {
+                    self.project_path = Some(path);
+                    self.is_dirty = false;
+                }
+            }
         }
 
-        Command::none()
+        Task::none()
+    }
+
+    fn subscription(&self) -> iced::Subscription<Message> {
+        keyboard::on_key_press(|key, modifiers| match key.as_ref() {
+            keyboard::Key::Character("o") if modifiers.command() => Some(Message::OpenFile),
+            keyboard::Key::Character("s") if modifiers.command() => Some(Message::SaveFile),
+            _ => None,
+        })
     }
 
     fn view(&self) -> Element<Message> {
@@ -172,28 +219,23 @@ impl Application for App {
         let pane_grid = PaneGrid::new(&self.pane_state, |id, pane, _is_maximized| {
             let is_focused = Some(id) == self.focus;
             match pane {
-                Panes::Designer => match &self.designer_state.designer_page {
+                Panes::Designer => match &self.designer_page {
                     DesignerPage::Designer => {
-                        let content = container(text(format!(
-                            "{:0.4}",
-                            self.designer_state
-                                .designer_content
-                                .clone()
-                                .expect("Designer content hasn't been set yet."),
-                        )))
-                        .id(iced::widget::container::Id::new("drop_zone"))
-                        .height(Length::Fill)
-                        .width(Length::Fill);
+                        let el_tree = match self.project.content.clone() {
+                            Some(tree) => tree.as_element(),
+                            None => text("Open a project or begin creating one").into(),
+                        };
+                        let content = container(el_tree)
+                            .id(iced::widget::container::Id::new("drop_zone"))
+                            .height(Length::Fill)
+                            .width(Length::Fill);
                         let title = row![
-                            text("Designer").style(if is_focused {
-                                PANE_ID_COLOR_FOCUSED
-                            } else {
-                                PANE_ID_COLOR_UNFOCUSED
-                            }),
+                            text("Designer"),
                             Space::with_width(Length::Fill),
                             button("Switch to Code view")
                                 .on_press(Message::SwitchPage(DesignerPage::CodeView)),
-                        ];
+                        ]
+                        .align_y(Alignment::Center);
                         let title_bar = pane_grid::TitleBar::new(title)
                             .padding(10)
                             .style(style::title_bar);
@@ -207,44 +249,37 @@ impl Application for App {
                     }
                     DesignerPage::CodeView => {
                         let title = row![
-                            text("Generated Code").style(if is_focused {
-                                PANE_ID_COLOR_FOCUSED
-                            } else {
-                                PANE_ID_COLOR_UNFOCUSED
-                            }),
+                            text("Generated Code"),
                             Space::with_width(Length::Fill),
                             tooltip(
                                 button(
                                     container(
                                         text('\u{0e801}').font(Font::with_name("editor-icons"))
                                     )
-                                    .width(30)
-                                    .center_x()
+                                    .center_x(30)
                                 )
                                 .on_press(Message::CopyCode),
                                 "Copy code to clipboard",
-                                tooltip::Position::Left
+                                tooltip::Position::FollowCursor
                             ),
                             Space::with_width(20),
                             button("Switch to Designer view")
                                 .on_press(Message::SwitchPage(DesignerPage::Designer))
-                        ];
+                        ]
+                        .align_y(Alignment::Center);
                         let title_bar = pane_grid::TitleBar::new(title)
                             .padding(10)
                             .style(style::title_bar);
                         pane_grid::Content::new(
                             text_editor(&self.editor_content)
                                 .on_action(Message::EditorAction)
-                                .highlight::<Highlighter>(
-                                    highlighter::Settings {
-                                        theme: if self.dark_theme {
-                                            highlighter::Theme::Base16Mocha
-                                        } else {
-                                            highlighter::Theme::InspiredGitHub
-                                        },
-                                        extension: "rs".to_string(),
+                                .highlight(
+                                    "rs",
+                                    if self.dark_theme {
+                                        highlighter::Theme::SolarizedDark
+                                    } else {
+                                        highlighter::Theme::InspiredGitHub
                                     },
-                                    |highlight, _theme| highlight.to_format(),
                                 )
                                 .height(Length::Fill)
                                 .padding(20),
@@ -260,14 +295,10 @@ impl Application for App {
                 Panes::ElementList => {
                     let items_list = items_list_view(self.element_list.clone());
                     let content = column![items_list]
-                        .align_items(Alignment::Center)
+                        .align_x(Alignment::Center)
                         .height(Length::Fill)
                         .width(Length::Fill);
-                    let title = text("Element List").style(if is_focused {
-                        PANE_ID_COLOR_FOCUSED
-                    } else {
-                        PANE_ID_COLOR_UNFOCUSED
-                    });
+                    let title = text("Element List");
                     let title_bar = pane_grid::TitleBar::new(title)
                         .padding(10)
                         .style(style::title_bar);
@@ -292,39 +323,24 @@ impl Application for App {
             .push(header)
             .push(pane_grid)
             .spacing(5)
-            .align_items(Alignment::Center)
+            .align_x(Alignment::Center)
             .width(Length::Fill);
 
         container(content).height(Length::Fill).into()
     }
 }
 
-const fn from_grayscale(grayscale: f32) -> Color {
-    Color {
-        r: grayscale,
-        g: grayscale,
-        b: grayscale,
-        a: 1.0,
-    }
-}
-
-// #ffffff
-const PANE_ID_COLOR_FOCUSED: Color = from_grayscale(1.0);
-
-// #e8e8e8
-const PANE_ID_COLOR_UNFOCUSED: Color = from_grayscale(0xE8 as f32 / 255.0);
-
-fn items_list_view(items: Vec<types::ElementName>) -> Element<'static, Message> {
+fn items_list_view<'a>(items: Vec<ElementName>) -> Element<'a, Message> {
     let mut column = Column::new()
         .spacing(20)
-        .align_items(Alignment::Center)
+        .align_x(Alignment::Center)
         .width(Length::Fill);
 
     for item in items {
         let value = item.clone();
         column = column.push(
             droppable(text(value.to_string()))
-                .on_drop(move |point, rect| Message::Drop(value.clone(), point, rect)),
+                .on_drop(move |point, rect| Message::DropNewElement(value.clone(), point, rect)),
         );
     }
 
@@ -332,23 +348,23 @@ fn items_list_view(items: Vec<types::ElementName>) -> Element<'static, Message> 
 }
 
 mod style {
-    use iced::widget::container;
-    use iced::{Border, Theme};
+    use iced::widget::{container::Style as CStyle, text::Style as TStyle};
+    use iced::{color, Border, Theme};
 
-    pub fn title_bar(theme: &Theme) -> container::Appearance {
+    pub fn title_bar(theme: &Theme) -> CStyle {
         let palette = theme.extended_palette();
 
-        container::Appearance {
+        CStyle {
             text_color: Some(palette.background.strong.text),
             background: Some(palette.background.strong.color.into()),
             ..Default::default()
         }
     }
 
-    pub fn pane_active(theme: &Theme) -> container::Appearance {
+    pub fn pane_active(theme: &Theme) -> CStyle {
         let palette = theme.extended_palette();
 
-        container::Appearance {
+        CStyle {
             background: Some(palette.background.weak.color.into()),
             border: Border {
                 width: 1.0,
@@ -359,10 +375,10 @@ mod style {
         }
     }
 
-    pub fn pane_focused(theme: &Theme) -> container::Appearance {
+    pub fn pane_focused(theme: &Theme) -> CStyle {
         let palette = theme.extended_palette();
 
-        container::Appearance {
+        CStyle {
             background: Some(palette.background.weak.color.into()),
             border: Border {
                 width: 4.0,

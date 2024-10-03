@@ -1,15 +1,9 @@
+pub mod project;
 pub mod rendered_element;
 
-use rendered_element::RenderedElement;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone)]
-pub struct DesignerState {
-    pub designer_content: Option<RenderedElement>,
-    pub designer_page: DesignerPage,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ElementName {
     Text(String),
     Button(String),

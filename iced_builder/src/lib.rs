@@ -1,16 +1,18 @@
-pub mod codegen;
 pub mod types;
 
 use std::path::PathBuf;
 
 use iced::widget::{pane_grid, text_editor};
-use types::{project::Project, rendered_element::RenderedElement, DesignerPage};
+use types::{
+    element_name::ElementName, project::Project, rendered_element::RenderedElement, DesignerPage,
+};
 
 #[derive(Debug, Clone)]
 pub enum Error {
     IOError(std::io::ErrorKind),
     SerdeError(String),
     FormatError(String),
+    NonExistentElement,
     DialogClosed,
     String(String),
 }
@@ -23,6 +25,9 @@ impl std::fmt::Display for Error {
             }
             Self::IOError(kind) => {
                 write!(f, "{}", kind)
+            }
+            Self::NonExistentElement => {
+                write!(f, "The element tree contains no matching element.")
             }
             Self::DialogClosed => {
                 write!(
@@ -64,9 +69,9 @@ pub enum Message {
     CopyCode,
     SwitchPage(DesignerPage),
     EditorAction(text_editor::Action),
-    DropNewElement(types::ElementName, iced::Point, iced::Rectangle),
+    DropNewElement(ElementName, iced::Point, iced::Rectangle),
     HandleNew(
-        types::ElementName,
+        ElementName,
         Vec<(iced::advanced::widget::Id, iced::Rectangle)>,
     ),
     MoveElement(RenderedElement, iced::Point, iced::Rectangle),
@@ -74,8 +79,8 @@ pub enum Message {
         RenderedElement,
         Vec<(iced::advanced::widget::Id, iced::Rectangle)>,
     ),
-    Resized(pane_grid::ResizeEvent),
-    Clicked(pane_grid::Pane),
+    PaneResized(pane_grid::ResizeEvent),
+    PaneClicked(pane_grid::Pane),
     PaneDragged(pane_grid::DragEvent),
     NewFile,
     OpenFile,

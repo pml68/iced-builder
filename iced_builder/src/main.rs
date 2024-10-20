@@ -1,15 +1,18 @@
 use std::path::PathBuf;
 
 use iced::{
+    advanced::widget::Id,
     clipboard, highlighter, keyboard,
     widget::{
         button, column, container,
         pane_grid::{self, Pane, PaneGrid},
-        row, text, text_editor, tooltip, Column, Space,
+        row, text, text_editor, themer, tooltip, Column, Space,
     },
     Alignment, Element, Font, Length, Settings, Task, Theme,
 };
-use iced_builder::types::{project::Project, DesignerPage, ElementName};
+use iced_builder::types::{
+    element_name::ElementName, project::Project, rendered_element::ActionKind, DesignerPage,
+};
 use iced_builder::Message;
 use iced_drop::droppable;
 
@@ -37,7 +40,7 @@ struct App {
     editor_content: text_editor::Content,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 enum Panes {
     Designer,
     ElementList,
@@ -106,12 +109,6 @@ impl App {
                     self.editor_content.perform(action);
                 }
             }
-            Message::Resized(pane_grid::ResizeEvent { split, ratio }) => {
-                self.pane_state.resize(split, ratio);
-            }
-            Message::Clicked(pane) => {
-                self.focus = Some(pane);
-            }
             Message::DropNewElement(name, point, _) => {
                 return iced_drop::zones_on_point(
                     move |zones| Message::HandleNew(name.clone(), zones),
@@ -122,7 +119,16 @@ impl App {
                 .into()
             }
             Message::HandleNew(name, zones) => {
-                println!("\n\n{:?}\n{name}\n{:?}", zones, self.title());
+                //println!("\n\n{:?}\n{name}\n{:?}", zones, self.title());
+                let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
+                if ids.len() > 0 {
+                    let action = ActionKind::new(ids, &mut self.project.content.clone(), None);
+                    let result = name.handle_action(self.project.content.as_mut(), action);
+                    if let Ok(Some(ref element)) = result {
+                        self.project.content = Some(element.clone());
+                    }
+                    println!("{:?}", result);
+                }
                 let code = self
                     .project
                     .clone()
@@ -140,13 +146,30 @@ impl App {
                 .into()
             }
             Message::HandleMove(element, zones) => {
-                println!(
-                    "\n\n{:?}\n{element:0.4}",
-                    zones
-                        .into_iter()
-                        .map(|c| c.0)
-                        .collect::<Vec<iced::advanced::widget::Id>>()
-                );
+                let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
+                if ids.len() > 0 {
+                    println!(
+                        "{:?}",
+                        ActionKind::new(
+                            ids,
+                            &mut self.project.content.clone(),
+                            Some(element.get_id())
+                        )
+                    );
+                }
+                //println!(
+                //    "\n\n{:?}\n{element:0.4}",
+                //    zones
+                //        .into_iter()
+                //        .map(|c| c.0)
+                //        .collect::<Vec<iced::advanced::widget::Id>>()
+                //);
+            }
+            Message::PaneResized(pane_grid::ResizeEvent { split, ratio }) => {
+                self.pane_state.resize(split, ratio);
+            }
+            Message::PaneClicked(pane) => {
+                self.focus = Some(pane);
             }
             Message::PaneDragged(pane_grid::DragEvent::Dropped { pane, target }) => {
                 self.pane_state.drop(pane, target);
@@ -207,6 +230,7 @@ impl App {
         keyboard::on_key_press(|key, modifiers| match key.as_ref() {
             keyboard::Key::Character("o") if modifiers.command() => Some(Message::OpenFile),
             keyboard::Key::Character("s") if modifiers.command() => Some(Message::SaveFile),
+            keyboard::Key::Character("n") if modifiers.command() => Some(Message::NewFile),
             _ => None,
         })
     }
@@ -225,7 +249,7 @@ impl App {
                             Some(tree) => tree.as_element(),
                             None => text("Open a project or begin creating one").into(),
                         };
-                        let content = container(el_tree)
+                        let content = container(themer(self.project.get_theme(), el_tree))
                             .id(iced::widget::container::Id::new("drop_zone"))
                             .height(Length::Fill)
                             .width(Length::Fill);
@@ -315,8 +339,8 @@ impl App {
         .width(Length::Fill)
         .height(Length::Fill)
         .spacing(10)
-        .on_resize(10, Message::Resized)
-        .on_click(Message::Clicked)
+        .on_resize(10, Message::PaneResized)
+        .on_click(Message::PaneClicked)
         .on_drag(Message::PaneDragged);
 
         let content = Column::new()
@@ -348,8 +372,8 @@ fn items_list_view<'a>(items: Vec<ElementName>) -> Element<'a, Message> {
 }
 
 mod style {
-    use iced::widget::{container::Style as CStyle, text::Style as TStyle};
-    use iced::{color, Border, Theme};
+    use iced::widget::container::Style as CStyle;
+    use iced::{Border, Theme};
 
     pub fn title_bar(theme: &Theme) -> CStyle {
         let palette = theme.extended_palette();

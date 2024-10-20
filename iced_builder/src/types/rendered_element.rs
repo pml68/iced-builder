@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 use iced::advanced::widget::Id;
 use iced::{widget, Element, Length};
@@ -7,14 +7,14 @@ use unique_id::{string::StringGenerator, Generator};
 
 use crate::Message;
 
-use super::ElementName;
+use super::element_name::ElementName;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderedElement {
-    pub id: String,
+    id: String,
     pub child_elements: Option<Vec<RenderedElement>>,
     pub name: ElementName,
-    pub props: HashMap<String, Option<String>>,
+    pub options: IndexMap<String, Option<String>>,
 }
 
 impl RenderedElement {
@@ -24,22 +24,26 @@ impl RenderedElement {
             id: gen.next_id(),
             child_elements: None,
             name,
-            props: HashMap::new(),
+            options: IndexMap::new(),
         }
     }
 
-    fn from_vec(name: ElementName, child_elements: Vec<RenderedElement>) -> Self {
+    fn with(name: ElementName, child_elements: Vec<RenderedElement>) -> Self {
         let gen = StringGenerator::default();
         Self {
             id: gen.next_id(),
             child_elements: Some(child_elements),
             name,
-            props: HashMap::new(),
+            options: IndexMap::new(),
         }
     }
 
+    pub fn get_id(&self) -> Id {
+        Id::new(self.id.clone())
+    }
+
     pub fn find_by_id(&mut self, id: Id) -> Option<&mut Self> {
-        if Id::new(self.id.clone()) == id.clone() {
+        if self.get_id() == id.clone() {
             println!("");
             return Some(self);
         } else if let Some(child_elements) = self.child_elements.as_mut() {
@@ -59,12 +63,17 @@ impl RenderedElement {
         if child_element == self {
             return Some(self);
         } else if self.child_elements.is_some() {
-            if self.child_elements.clone()?.contains(child_element) {
+            if self
+                .child_elements
+                .clone()
+                .unwrap_or(vec![])
+                .contains(child_element)
+            {
                 return Some(self);
             } else {
                 if let Some(child_elements) = self.child_elements.as_mut() {
                     for element in child_elements {
-                        let element: Option<&mut Self> = element.find_parent(child_element);
+                        let element = element.find_parent(child_element);
                         if element.is_some() {
                             return element;
                         }
@@ -77,6 +86,10 @@ impl RenderedElement {
         }
     }
 
+    pub fn is_parent(&self) -> bool {
+        self.child_elements.is_some()
+    }
+
     pub fn remove(&mut self, element: &RenderedElement) {
         let parent = self.find_parent(element);
         if let Some(child_elements) = parent.unwrap().child_elements.as_mut() {
@@ -86,39 +99,39 @@ impl RenderedElement {
         }
     }
 
-    pub fn push(&mut self, element: RenderedElement) {
+    pub fn push_front(&mut self, element: &RenderedElement) {
         if let Some(child_elements) = self.child_elements.as_mut() {
-            child_elements.push(element);
+            child_elements.insert(0, element.clone());
         }
     }
 
-    pub fn insert_after(&mut self, id: Id, element: RenderedElement) {
+    pub fn insert_after(&mut self, id: Id, element: &RenderedElement) {
         if let Some(child_elements) = self.child_elements.as_mut() {
             if let Some(index) = child_elements
                 .iter()
                 .position(|x| Id::new(x.id.clone()) == id)
             {
-                child_elements.insert(index, element);
+                child_elements.insert(index + 1, element.clone());
             } else {
-                child_elements.push(element);
+                child_elements.push(element.clone());
             }
         }
     }
 
     fn preset_options(mut self, options: Vec<&str>) -> Self {
         for opt in options {
-            self.props.insert(opt.to_owned(), None);
+            self.options.insert(opt.to_owned(), None);
         }
         self
     }
 
-    pub fn option(&mut self, option: &'static str, value: &'static str) {
-        self.props
+    pub fn option<'a>(&mut self, option: &'a str, value: &'a str) {
+        self.options
             .entry(option.to_owned())
             .and_modify(|opt| *opt = Some(value.to_owned()));
     }
 
-    pub fn as_element(self) -> Element<'static, Message> {
+    pub fn as_element<'a>(self) -> Element<'a, Message> {
         let mut children = widget::column![];
 
         if let Some(els) = self.child_elements.clone() {
@@ -131,11 +144,102 @@ impl RenderedElement {
                 widget::column![widget::text(self.name.clone().to_string()), children]
                     .width(Length::Fill),
             )
+            .padding(10)
             .style(widget::container::bordered_box),
         )
-        .id(Id::new(self.id.clone()))
+        .id(self.get_id())
+        .drag_hide(true)
         .on_drop(move |point, rect| Message::MoveElement(self.clone(), point, rect))
         .into()
+    }
+
+    fn props_codegen(&self) -> String {
+        let mut props_string = String::new();
+
+        for (k, v) in self.options.clone() {
+            if let Some(v) = v {
+                props_string = format!("{props_string}.{k}({v})");
+            }
+        }
+
+        props_string
+    }
+
+    pub fn codegen(&self) -> (String, String) {
+        let mut imports = String::new();
+        let mut view = String::new();
+        let props = self.props_codegen();
+
+        let mut elements = String::new();
+
+        if let Some(els) = &self.child_elements {
+            for element in els {
+                let (c_imports, children) = element.codegen();
+                imports = format!("{imports}{c_imports}");
+                elements = format!("{elements}{},", children);
+            }
+        }
+
+        match &self.name {
+            ElementName::Container => {
+                imports = format!("{imports}container,");
+                view = format!("{view}\ncontainer({elements}){props}");
+            }
+            ElementName::Row => {
+                imports = format!("{imports}row,");
+                view = format!("{view}\nrow![{elements}]{props}");
+            }
+            ElementName::Column => {
+                imports = format!("{imports}column,");
+                view = format!("{view}\ncolumn![{elements}]{props}");
+            }
+            ElementName::Text(string) => {
+                imports = format!("{imports}text,");
+                view = format!(
+                    "{view}\ntext(\"{}\"){props}",
+                    if *string == String::new() {
+                        "New Text"
+                    } else {
+                        string
+                    }
+                );
+            }
+            ElementName::Button(string) => {
+                imports = format!("{imports}button,");
+                view = format!(
+                    "{view}\nbutton(\"{}\"){props}",
+                    if *string == String::new() {
+                        "New Button"
+                    } else {
+                        string
+                    }
+                );
+            }
+            ElementName::Image(path) => {
+                imports = format!("{imports}image,");
+                view = format!("{view}\nimage(\"{path}\"){props}");
+            }
+            ElementName::SVG(path) => {
+                imports = format!("{imports}svg,");
+                view = format!("{view}\nsvg(\"{path}\"){props}");
+            }
+        }
+
+        (imports, view)
+    }
+
+    pub fn test() -> RenderedElement {
+        let mut text1 = text("wow");
+        text1.option("height", "120.5");
+        text1.option("width", "230");
+
+        let element = container(Some(row(Some(vec![
+            text1,
+            text("heh"),
+            svg("/mnt/drive_d/git/obs-website/src/lib/assets/bars-solid.svg"),
+        ]))));
+
+        element
     }
 }
 
@@ -146,7 +250,7 @@ impl std::fmt::Display for RenderedElement {
         f.write_fmt(format_args!("{:?}\n", self.name))?;
         f.pad("")?;
         f.write_str("Options: (")?;
-        for (k, v) in &self.props {
+        for (k, v) in &self.options {
             if let Some(value) = v {
                 has_props = true;
                 f.write_fmt(format_args!(
@@ -181,6 +285,54 @@ impl std::fmt::Display for RenderedElement {
     }
 }
 
+#[derive(Debug, Clone)]
+pub enum ActionKind {
+    AddNew,
+    PushFront(Id),
+    InsertAfter(Id, Id),
+    Stop,
+}
+
+impl ActionKind {
+    pub fn new(
+        ids: Vec<Id>,
+        element_tree: &mut Option<RenderedElement>,
+        source_id: Option<Id>,
+    ) -> Self {
+        let mut action = Self::Stop;
+        if ids.len() == 1 {
+            if element_tree.is_none() {
+                action = Self::AddNew;
+            }
+        } else {
+            let id: Id = match source_id {
+                Some(id) if ids.contains(&id) => {
+                    let element_id = ids[ids.iter().position(|x| *x == id).unwrap()].clone();
+                    if ids.len() > 2 && ids[ids.clone().len() - 1] == element_id {
+                        return Self::Stop;
+                    }
+                    element_id
+                }
+                _ => ids.last().cloned().unwrap(),
+            };
+            let element = element_tree.as_mut().unwrap().find_by_id(id.clone());
+
+            match element.unwrap().is_parent() {
+                true => action = Self::PushFront(id),
+                false => {
+                    if ids.len() > 2 {
+                        action = Self::InsertAfter(
+                            ids[ids.clone().len() - 2].clone(),
+                            ids[ids.clone().len() - 1].clone(),
+                        );
+                    }
+                }
+            }
+        }
+        action
+    }
+}
+
 pub fn text(text: &str) -> RenderedElement {
     RenderedElement::new(ElementName::Text(text.to_owned())).preset_options(vec![
         "size",
@@ -204,21 +356,21 @@ pub fn image(path: &str) -> RenderedElement {
 
 pub fn container(content: Option<RenderedElement>) -> RenderedElement {
     match content {
-        Some(el) => RenderedElement::from_vec(ElementName::Container, vec![el]),
-        None => RenderedElement::from_vec(ElementName::Container, vec![]),
+        Some(el) => RenderedElement::with(ElementName::Container, vec![el]),
+        None => RenderedElement::with(ElementName::Container, vec![]),
     }
 }
 
 pub fn row(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {
     match child_elements {
-        Some(els) => RenderedElement::from_vec(ElementName::Row, els),
-        None => RenderedElement::from_vec(ElementName::Row, vec![]),
+        Some(els) => RenderedElement::with(ElementName::Row, els),
+        None => RenderedElement::with(ElementName::Row, vec![]),
     }
 }
 
 pub fn column(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {
     match child_elements {
-        Some(els) => RenderedElement::from_vec(ElementName::Column, els),
-        None => RenderedElement::from_vec(ElementName::Column, vec![]),
+        Some(els) => RenderedElement::with(ElementName::Column, els),
+        None => RenderedElement::with(ElementName::Column, vec![]),
     }
 }

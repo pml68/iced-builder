@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::Error;
 
 use super::rendered_element::{
-    self, button, column, container, image, row, svg, text, ActionKind, RenderedElement,
+    button, column, container, image, row, svg, text, ActionKind, RenderedElement,
 };
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

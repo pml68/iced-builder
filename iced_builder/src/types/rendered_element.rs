@@ -317,8 +317,17 @@ impl ActionKind {
             };
             let element = element_tree.as_mut().unwrap().find_by_id(id.clone());
 
-            match element.unwrap().is_parent() {
-                true => action = Self::PushFront(id),
+            match element.as_ref().unwrap().is_parent() {
+                true => {
+                    let element = &element.unwrap();
+                    if element.name == ElementName::Container
+                        && element.child_elements != Some(vec![])
+                    {
+                        action = Self::Stop;
+                    } else {
+                        action = Self::PushFront(id);
+                    }
+                }
                 false => {
                     if ids.len() > 2 {
                         action = Self::InsertAfter(

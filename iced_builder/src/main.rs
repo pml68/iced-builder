@@ -361,34 +361,36 @@ fn items_list_view<'a>(items: Vec<ElementName>) -> Element<'a, Message> {
         .width(Length::Fill);
 
     for item in items {
-        let value = item.clone();
         column = column.push(
-            droppable(text(value.to_string()))
-                .on_drop(move |point, rect| Message::DropNewElement(value.clone(), point, rect)),
+            droppable(text(item.clone().to_string()))
+                .on_drop(move |point, rect| Message::DropNewElement(item.clone(), point, rect)),
         );
     }
 
-    container(column).height(250.0).width(300).into()
+    container(column)
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .into()
 }
 
 mod style {
-    use iced::widget::container::Style as CStyle;
+    use iced::widget::container::Style;
     use iced::{Border, Theme};
 
-    pub fn title_bar(theme: &Theme) -> CStyle {
+    pub fn title_bar(theme: &Theme) -> Style {
         let palette = theme.extended_palette();
 
-        CStyle {
+        Style {
             text_color: Some(palette.background.strong.text),
             background: Some(palette.background.strong.color.into()),
             ..Default::default()
         }
     }
 
-    pub fn pane_active(theme: &Theme) -> CStyle {
+    pub fn pane_active(theme: &Theme) -> Style {
         let palette = theme.extended_palette();
 
-        CStyle {
+        Style {
             background: Some(palette.background.weak.color.into()),
             border: Border {
                 width: 1.0,
@@ -399,10 +401,10 @@ mod style {
         }
     }
 
-    pub fn pane_focused(theme: &Theme) -> CStyle {
+    pub fn pane_focused(theme: &Theme) -> Style {
         let palette = theme.extended_palette();
 
-        CStyle {
+        Style {
             background: Some(palette.background.weak.color.into()),
             border: Border {
                 width: 4.0,

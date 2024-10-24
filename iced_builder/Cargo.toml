@@ -1,0 +1,25 @@
+[package]
+name = "iced_builder"
+description = "GUI builder for iced, built with iced."
+version = "0.1.0"
+edition = "2021"
+authors = ["pml68 <contact@pml68.me>"]
+repository = "https://github.com/pml68/iced-builder"
+license = "GPL-3.0-or-later"
+keywords = ["gui", "iced"]
+
+[dependencies]
+iced = { version = "0.13.1", features = [ "image","svg","canvas","qr_code","advanced","tokio","highlighter"] }
+iced_aw = { version = "0.11.0", default-features = false, features = ["menu","color_picker"] }
+iced_drop = { path = "../iced_drop" }
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0.128"
+tokio = { version = "1.40.0", features = ["fs"] }
+rfd = "0.15.0"
+rust-format = "0.3.4"
+unique_id = "0.1.5"
+indexmap = { version = "2.6.0", features = ["serde"] }
+
+[[bin]]
+name = "iced-builder"
+path = "src/main.rs"

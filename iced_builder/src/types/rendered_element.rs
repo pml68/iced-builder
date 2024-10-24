@@ -89,9 +89,12 @@ impl RenderedElement {
         self.child_elements.is_some()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.child_elements == Some(vec![])
+    }
+
     pub fn remove(&mut self, element: &RenderedElement) {
-        let parent = self.find_parent(element);
-        if let Some(child_elements) = parent.unwrap().child_elements.as_mut() {
+        if let Some(child_elements) = self.child_elements.as_mut() {
             if let Some(index) = child_elements.iter().position(|x| x == element) {
                 child_elements.remove(index);
             }
@@ -314,27 +317,38 @@ impl ActionKind {
                 }
                 _ => ids.last().cloned().unwrap(),
             };
-            let element = element_tree.as_mut().unwrap().find_by_id(id.clone());
+            let element = element_tree
+                .as_mut()
+                .unwrap()
+                .find_by_id(id.clone())
+                .unwrap();
 
-            match element.as_ref().unwrap().is_parent() {
-                true => {
-                    let element = &element.unwrap();
-                    if element.name == ElementName::Container
-                        && element.child_elements != Some(vec![])
+            match (
+                element.is_parent(),
+                element.name == ElementName::Container && !element.is_empty(),
+            ) {
+                (true, false) => {
+                    action = Self::PushFront(id);
+                }
+                _ if ids.len() > 2 => {
+                    let parent = element_tree
+                        .as_mut()
+                        .unwrap()
+                        .find_by_id(ids[&ids.len() - 2].clone())
+                        .unwrap();
+
+                    if parent.name == ElementName::Container
+                        && parent.child_elements != Some(vec![])
                     {
                         action = Self::Stop;
                     } else {
-                        action = Self::PushFront(id);
-                    }
-                }
-                false => {
-                    if ids.len() > 2 {
                         action = Self::InsertAfter(
-                            ids[ids.clone().len() - 2].clone(),
-                            ids[ids.clone().len() - 1].clone(),
+                            ids[&ids.len() - 2].clone(),
+                            ids[&ids.len() - 1].clone(),
                         );
                     }
                 }
+                _ => {}
             }
         }
         action

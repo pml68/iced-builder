@@ -47,10 +47,7 @@ impl ElementName {
             ActionKind::AddNew => Ok(Some(element)),
             ActionKind::PushFront(id) => {
                 element_tree
-                    .ok_or(Error::String(
-                        "The action was of kind `PushFront`, but no element tree was provided."
-                            .to_owned(),
-                    ))?
+                    .ok_or("The action was of kind `PushFront`, but no element tree was provided.")?
                     .find_by_id(id)
                     .ok_or(Error::NonExistentElement)?
                     .push_front(&element);
@@ -58,10 +55,9 @@ impl ElementName {
             }
             ActionKind::InsertAfter(parent_id, child_id) => {
                 element_tree
-                    .ok_or(Error::String(
-                        "The action was of kind `InsertAfter`, but no element tree was provided."
-                            .to_owned(),
-                    ))?
+                    .ok_or(
+                        "The action was of kind `InsertAfter`, but no element tree was provided.",
+                    )?
                     .find_by_id(parent_id)
                     .ok_or(Error::NonExistentElement)?
                     .insert_after(child_id, &element);

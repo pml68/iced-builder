@@ -109,6 +109,14 @@ impl App {
                     self.editor_content.perform(action);
                 }
             }
+            Message::RefreshEditorContent => {
+                let code = self
+                    .project
+                    .clone()
+                    .app_code()
+                    .unwrap_or_else(|err| err.to_string());
+                self.editor_content = text_editor::Content::with_text(&code);
+            }
             Message::DropNewElement(name, point, _) => {
                 return iced_drop::zones_on_point(
                     move |zones| Message::HandleNew(name.clone(), zones),
@@ -128,12 +136,8 @@ impl App {
                     }
                     println!("{:?}", result);
                 }
-                let code = self
-                    .project
-                    .clone()
-                    .app_code()
-                    .unwrap_or_else(|err| err.to_string());
-                self.editor_content = text_editor::Content::with_text(&code);
+
+                return Task::done(Message::RefreshEditorContent);
             }
             Message::MoveElement(element, point, _) => {
                 return iced_drop::zones_on_point(
@@ -147,15 +151,17 @@ impl App {
             Message::HandleMove(element, zones) => {
                 let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
                 if ids.len() > 0 {
-                    println!(
-                        "{:?}",
-                        ActionKind::new(
-                            ids,
-                            &mut self.project.content.clone(),
-                            Some(element.get_id())
-                        )
+                    let action = ActionKind::new(
+                        ids,
+                        &mut self.project.content.clone(),
+                        Some(element.get_id()),
                     );
+                    let result = element.handle_action(self.project.content.as_mut(), action);
+
+                    println!("{result:?}");
                 }
+
+                return Task::done(Message::RefreshEditorContent);
             }
             Message::PaneResized(pane_grid::ResizeEvent { split, ratio }) => {
                 self.pane_state.resize(split, ratio);

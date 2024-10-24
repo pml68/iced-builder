@@ -5,7 +5,7 @@ use iced::{widget, Element, Length};
 use serde::{Deserialize, Serialize};
 use unique_id::{string::StringGenerator, Generator};
 
-use crate::Message;
+use crate::{Error, Message};
 
 use super::element_name::ElementName;
 
@@ -120,6 +120,39 @@ impl RenderedElement {
         }
     }
 
+    pub fn handle_action(
+        &self,
+        element_tree: Option<&mut RenderedElement>,
+        action: ActionKind,
+    ) -> Result<(), Error> {
+        let element_tree = element_tree.unwrap();
+
+        match action {
+            ActionKind::Stop => Ok(()),
+            ActionKind::AddNew => Err(
+                "The action was of kind `AddNew`, but invoking it on an existing element tree is not possible.".into(),
+            ),
+            ActionKind::PushFront(id) => {
+                let old_parent = element_tree.find_parent(self).unwrap();
+                old_parent.remove(self);
+
+                let new_parent = element_tree.find_by_id(id).unwrap();
+                new_parent.push_front(self);
+
+                Ok(())
+            }
+            ActionKind::InsertAfter(parent_id, target_id) => {
+                let old_parent = element_tree.find_parent(self).unwrap();
+                old_parent.remove(self);
+
+                let new_parent = element_tree.find_by_id(parent_id).unwrap();
+                new_parent.insert_after(target_id, self);
+
+                Ok(())
+            }
+        }
+    }
+
     fn preset_options(mut self, options: Vec<&str>) -> Self {
         for opt in options {
             self.options.insert(opt.to_owned(), None);
@@ -127,10 +160,11 @@ impl RenderedElement {
         self
     }
 
-    pub fn option<'a>(&mut self, option: &'a str, value: &'a str) {
+    pub fn option<'a>(&mut self, option: &'a str, value: &'a str) -> Self {
         self.options
             .entry(option.to_owned())
             .and_modify(|opt| *opt = Some(value.to_owned()));
+        self.clone()
     }
 
     pub fn as_element<'a>(self) -> Element<'a, Message> {
@@ -231,9 +265,7 @@ impl RenderedElement {
     }
 
     pub fn test() -> RenderedElement {
-        let mut text1 = text("wow");
-        text1.option("height", "120.5");
-        text1.option("width", "230");
+        let text1 = text("wow").option("height", "120.5").option("width", "230");
 
         let element = container(Some(row(Some(vec![
             text1,

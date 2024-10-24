@@ -69,6 +69,7 @@ pub enum Message {
     CopyCode,
     SwitchPage(DesignerPage),
     EditorAction(text_editor::Action),
+    RefreshEditorContent,
     DropNewElement(ElementName, iced::Point, iced::Rectangle),
     HandleNew(
         ElementName,

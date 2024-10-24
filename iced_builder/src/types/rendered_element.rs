@@ -44,7 +44,6 @@ impl RenderedElement {
 
     pub fn find_by_id(&mut self, id: Id) -> Option<&mut Self> {
         if self.get_id() == id.clone() {
-            println!("");
             return Some(self);
         } else if let Some(child_elements) = self.child_elements.as_mut() {
             for element in child_elements {

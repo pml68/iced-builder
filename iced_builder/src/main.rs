@@ -119,7 +119,6 @@ impl App {
                 .into()
             }
             Message::HandleNew(name, zones) => {
-                //println!("\n\n{:?}\n{name}\n{:?}", zones, self.title());
                 let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
                 if ids.len() > 0 {
                     let action = ActionKind::new(ids, &mut self.project.content.clone(), None);
@@ -157,13 +156,6 @@ impl App {
                         )
                     );
                 }
-                //println!(
-                //    "\n\n{:?}\n{element:0.4}",
-                //    zones
-                //        .into_iter()
-                //        .map(|c| c.0)
-                //        .collect::<Vec<iced::advanced::widget::Id>>()
-                //);
             }
             Message::PaneResized(pane_grid::ResizeEvent { split, ratio }) => {
                 self.pane_state.resize(split, ratio);

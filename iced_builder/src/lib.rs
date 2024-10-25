@@ -1,4 +1,5 @@
 pub mod types;
+pub mod views;
 
 use std::path::PathBuf;
 

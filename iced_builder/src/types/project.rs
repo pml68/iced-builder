@@ -103,7 +103,7 @@ impl Project {
                     {app_code}
 
                     fn main() -> iced::Result {{
-                        iced::run("{}", State::update, State::view)
+                        iced::application("{}", State::update, State::view).theme(iced::Theme::{}).run()
                     }}
 
                     #[derive(Default)]
@@ -122,7 +122,8 @@ impl Project {
                     match &self.title {
                         Some(t) => t,
                         None => "New app",
-                    }
+                    },
+                    self.get_theme().to_string().replace(" ", "")
                 );
                 let config = Config::new_str()
                     .edition(Edition::Rust2021)

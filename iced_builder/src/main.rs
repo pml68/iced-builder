@@ -2,19 +2,21 @@ use std::path::PathBuf;
 
 use iced::{
     advanced::widget::Id,
-    clipboard, highlighter, keyboard,
+    clipboard, keyboard,
     widget::{
-        button, column, container,
+        button, container,
         pane_grid::{self, Pane, PaneGrid},
-        row, text, text_editor, themer, tooltip, Column, Space,
+        row, text_editor, Column,
     },
-    Alignment, Element, Font, Length, Settings, Task, Theme,
+    Alignment, Element, Length, Settings, Task, Theme,
 };
-use iced_builder::types::{
-    element_name::ElementName, project::Project, rendered_element::ActionKind, DesignerPage,
+use iced_builder::{
+    types::{
+        element_name::ElementName, project::Project, rendered_element::ActionKind, DesignerPage,
+    },
+    views::{designer_view, element_list},
 };
-use iced_builder::Message;
-use iced_drop::droppable;
+use iced_builder::{views::code_view, Message};
 
 fn main() -> iced::Result {
     iced::application(App::title, App::update, App::view)
@@ -242,96 +244,16 @@ impl App {
             let is_focused = Some(id) == self.focus;
             match pane {
                 Panes::Designer => match &self.designer_page {
-                    DesignerPage::Designer => {
-                        let el_tree = match self.project.content.clone() {
-                            Some(tree) => tree.as_element(),
-                            None => text("Open a project or begin creating one").into(),
-                        };
-                        let content = container(themer(self.project.get_theme(), el_tree))
-                            .id(iced::widget::container::Id::new("drop_zone"))
-                            .height(Length::Fill)
-                            .width(Length::Fill);
-                        let title = row![
-                            text("Designer"),
-                            Space::with_width(Length::Fill),
-                            button("Switch to Code view")
-                                .on_press(Message::SwitchPage(DesignerPage::CodeView)),
-                        ]
-                        .align_y(Alignment::Center);
-                        let title_bar = pane_grid::TitleBar::new(title)
-                            .padding(10)
-                            .style(style::title_bar);
-                        pane_grid::Content::new(content)
-                            .title_bar(title_bar)
-                            .style(if is_focused {
-                                style::pane_focused
-                            } else {
-                                style::pane_active
-                            })
-                    }
+                    DesignerPage::Designer => designer_view::view(
+                        &self.project.content,
+                        self.project.get_theme(),
+                        is_focused,
+                    ),
                     DesignerPage::CodeView => {
-                        let title = row![
-                            text("Generated Code"),
-                            Space::with_width(Length::Fill),
-                            tooltip(
-                                button(
-                                    container(
-                                        text('\u{0e801}').font(Font::with_name("editor-icons"))
-                                    )
-                                    .center_x(30)
-                                )
-                                .on_press(Message::CopyCode),
-                                "Copy code to clipboard",
-                                tooltip::Position::FollowCursor
-                            ),
-                            Space::with_width(20),
-                            button("Switch to Designer view")
-                                .on_press(Message::SwitchPage(DesignerPage::Designer))
-                        ]
-                        .align_y(Alignment::Center);
-                        let title_bar = pane_grid::TitleBar::new(title)
-                            .padding(10)
-                            .style(style::title_bar);
-                        pane_grid::Content::new(
-                            text_editor(&self.editor_content)
-                                .on_action(Message::EditorAction)
-                                .highlight(
-                                    "rs",
-                                    if self.dark_theme {
-                                        highlighter::Theme::SolarizedDark
-                                    } else {
-                                        highlighter::Theme::InspiredGitHub
-                                    },
-                                )
-                                .height(Length::Fill)
-                                .padding(20),
-                        )
-                        .title_bar(title_bar)
-                        .style(if is_focused {
-                            style::pane_focused
-                        } else {
-                            style::pane_active
-                        })
+                        code_view::view(&self.editor_content, self.dark_theme, is_focused)
                     }
                 },
-                Panes::ElementList => {
-                    let items_list = items_list_view(self.element_list.clone());
-                    let content = column![items_list]
-                        .align_x(Alignment::Center)
-                        .height(Length::Fill)
-                        .width(Length::Fill);
-                    let title = text("Element List");
-                    let title_bar = pane_grid::TitleBar::new(title)
-                        .padding(10)
-                        .style(style::title_bar);
-                    pane_grid::Content::new(content)
-                        .title_bar(title_bar)
-                        .style(if is_focused {
-                            style::pane_focused
-                        } else {
-                            style::pane_active
-                        })
-                }
+                Panes::ElementList => element_list::view(&self.element_list, is_focused),
             }
         })
         .width(Length::Fill)
@@ -349,67 +271,5 @@ impl App {
             .width(Length::Fill);
 
         container(content).height(Length::Fill).into()
-    }
-}
-
-fn items_list_view<'a>(items: Vec<ElementName>) -> Element<'a, Message> {
-    let mut column = Column::new()
-        .spacing(20)
-        .align_x(Alignment::Center)
-        .width(Length::Fill);
-
-    for item in items {
-        column = column.push(
-            droppable(text(item.clone().to_string()))
-                .on_drop(move |point, rect| Message::DropNewElement(item.clone(), point, rect)),
-        );
-    }
-
-    container(column)
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .into()
-}
-
-mod style {
-    use iced::widget::container::Style;
-    use iced::{Border, Theme};
-
-    pub fn title_bar(theme: &Theme) -> Style {
-        let palette = theme.extended_palette();
-
-        Style {
-            text_color: Some(palette.background.strong.text),
-            background: Some(palette.background.strong.color.into()),
-            ..Default::default()
-        }
-    }
-
-    pub fn pane_active(theme: &Theme) -> Style {
-        let palette = theme.extended_palette();
-
-        Style {
-            background: Some(palette.background.weak.color.into()),
-            border: Border {
-                width: 1.0,
-                color: palette.background.strong.color,
-                ..Border::default()
-            },
-            ..Default::default()
-        }
-    }
-
-    pub fn pane_focused(theme: &Theme) -> Style {
-        let palette = theme.extended_palette();
-
-        Style {
-            background: Some(palette.background.weak.color.into()),
-            border: Border {
-                width: 4.0,
-                color: palette.background.strong.color,
-                ..Border::default()
-            },
-            ..Default::default()
-        }
     }
 }

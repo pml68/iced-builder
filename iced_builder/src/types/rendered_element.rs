@@ -109,10 +109,7 @@ impl RenderedElement {
 
     pub fn insert_after(&mut self, id: Id, element: &RenderedElement) {
         if let Some(child_elements) = self.child_elements.as_mut() {
-            if let Some(index) = child_elements
-                .iter()
-                .position(|x| Id::new(x.id.clone()) == id)
-            {
+            if let Some(index) = child_elements.iter().position(|x| x.get_id() == id) {
                 child_elements.insert(index + 1, element.clone());
             } else {
                 child_elements.push(element.clone());
@@ -178,7 +175,8 @@ impl RenderedElement {
         iced_drop::droppable(
             widget::container(
                 widget::column![widget::text(self.name.clone().to_string()), children]
-                    .width(Length::Fill),
+                    .width(Length::Fill)
+                    .spacing(10),
             )
             .padding(10)
             .style(widget::container::bordered_box),

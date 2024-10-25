@@ -187,22 +187,16 @@ impl RenderedElement {
         .into()
     }
 
-    fn props_codegen(&self) -> String {
-        let mut props_string = String::new();
-
-        for (k, v) in self.options.clone() {
-            if let Some(v) = v {
-                props_string = format!("{props_string}.{k}({v})");
-            }
-        }
-
-        props_string
-    }
-
     pub fn codegen(&self) -> (String, String) {
         let mut imports = String::new();
         let mut view = String::new();
-        let props = self.props_codegen();
+        let mut options = String::new();
+
+        for (k, v) in self.options.clone() {
+            if let Some(v) = v {
+                options = format!("{options}.{k}({v})");
+            }
+        }
 
         let mut elements = String::new();
 
@@ -217,20 +211,20 @@ impl RenderedElement {
         match &self.name {
             ElementName::Container => {
                 imports = format!("{imports}container,");
-                view = format!("{view}\ncontainer({elements}){props}");
+                view = format!("{view}\ncontainer({elements}){options}");
             }
             ElementName::Row => {
                 imports = format!("{imports}row,");
-                view = format!("{view}\nrow![{elements}]{props}");
+                view = format!("{view}\nrow![{elements}]{options}");
             }
             ElementName::Column => {
                 imports = format!("{imports}column,");
-                view = format!("{view}\ncolumn![{elements}]{props}");
+                view = format!("{view}\ncolumn![{elements}]{options}");
             }
             ElementName::Text(string) => {
                 imports = format!("{imports}text,");
                 view = format!(
-                    "{view}\ntext(\"{}\"){props}",
+                    "{view}\ntext(\"{}\"){options}",
                     if *string == String::new() {
                         "New Text"
                     } else {
@@ -241,7 +235,7 @@ impl RenderedElement {
             ElementName::Button(string) => {
                 imports = format!("{imports}button,");
                 view = format!(
-                    "{view}\nbutton(\"{}\"){props}",
+                    "{view}\nbutton(\"{}\"){options}",
                     if *string == String::new() {
                         "New Button"
                     } else {
@@ -251,11 +245,11 @@ impl RenderedElement {
             }
             ElementName::Image(path) => {
                 imports = format!("{imports}image,");
-                view = format!("{view}\nimage(\"{path}\"){props}");
+                view = format!("{view}\nimage(\"{path}\"){options}");
             }
             ElementName::SVG(path) => {
                 imports = format!("{imports}svg,");
-                view = format!("{view}\nsvg(\"{path}\"){props}");
+                view = format!("{view}\nsvg(\"{path}\"){options}");
             }
         }
 
@@ -277,14 +271,14 @@ impl RenderedElement {
 
 impl std::fmt::Display for RenderedElement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut has_props = false;
+        let mut has_options = false;
         f.pad("")?;
         f.write_fmt(format_args!("{:?}\n", self.name))?;
         f.pad("")?;
         f.write_str("Options: (")?;
         for (k, v) in &self.options {
             if let Some(value) = v {
-                has_props = true;
+                has_options = true;
                 f.write_fmt(format_args!(
                     "\n{:width$.precision$}{}: {}",
                     "",
@@ -295,7 +289,7 @@ impl std::fmt::Display for RenderedElement {
                 ))?;
             }
         }
-        if has_props {
+        if has_options {
             f.write_str("\n")?;
             f.pad("")?;
         }

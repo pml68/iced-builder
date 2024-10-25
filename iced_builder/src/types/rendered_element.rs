@@ -255,18 +255,6 @@ impl RenderedElement {
 
         (imports, view)
     }
-
-    pub fn test() -> RenderedElement {
-        let text1 = text("wow").option("height", "120.5").option("width", "230");
-
-        let element = container(Some(row(Some(vec![
-            text1,
-            text("heh"),
-            svg("/mnt/drive_d/git/obs-website/src/lib/assets/bars-solid.svg"),
-        ]))));
-
-        element
-    }
 }
 
 impl std::fmt::Display for RenderedElement {

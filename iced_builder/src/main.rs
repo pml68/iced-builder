@@ -14,9 +14,9 @@ use iced_builder::{
     types::{
         element_name::ElementName, project::Project, rendered_element::ActionKind, DesignerPage,
     },
-    views::{designer_view, element_list},
+    views::{code_view, designer_view, element_list},
+    Message,
 };
-use iced_builder::{views::code_view, Message};
 
 fn main() -> iced::Result {
     iced::application(App::title, App::update, App::view)
@@ -131,10 +131,10 @@ impl App {
             Message::HandleNew(name, zones) => {
                 let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
                 if ids.len() > 0 {
-                    let action = ActionKind::new(ids, &mut self.project.content.clone(), None);
-                    let result = name.handle_action(self.project.content.as_mut(), action);
+                    let action = ActionKind::new(ids, &mut self.project.element_tree.clone(), None);
+                    let result = name.handle_action(self.project.element_tree.as_mut(), action);
                     if let Ok(Some(ref element)) = result {
-                        self.project.content = Some(element.clone());
+                        self.project.element_tree = Some(element.clone());
                     }
                     println!("{:?}", result);
                 }
@@ -155,10 +155,10 @@ impl App {
                 if ids.len() > 0 {
                     let action = ActionKind::new(
                         ids,
-                        &mut self.project.content.clone(),
+                        &mut self.project.element_tree.clone(),
                         Some(element.get_id()),
                     );
-                    let result = element.handle_action(self.project.content.as_mut(), action);
+                    let result = element.handle_action(self.project.element_tree.as_mut(), action);
 
                     println!("{result:?}");
                 }
@@ -213,6 +213,16 @@ impl App {
                     );
                 }
             }
+            Message::SaveFileAs => {
+                if !self.is_loading {
+                    self.is_loading = true;
+
+                    return Task::perform(
+                        self.project.clone().write_to_file(None),
+                        Message::FileSaved,
+                    );
+                }
+            }
             Message::FileSaved(result) => {
                 self.is_loading = false;
 
@@ -229,7 +239,13 @@ impl App {
     fn subscription(&self) -> iced::Subscription<Message> {
         keyboard::on_key_press(|key, modifiers| match key.as_ref() {
             keyboard::Key::Character("o") if modifiers.command() => Some(Message::OpenFile),
-            keyboard::Key::Character("s") if modifiers.command() => Some(Message::SaveFile),
+            keyboard::Key::Character("s") if modifiers.command() => {
+                if modifiers.shift() {
+                    Some(Message::SaveFileAs)
+                } else {
+                    Some(Message::SaveFile)
+                }
+            }
             keyboard::Key::Character("n") if modifiers.command() => Some(Message::NewFile),
             _ => None,
         })
@@ -245,7 +261,7 @@ impl App {
             match pane {
                 Panes::Designer => match &self.designer_page {
                     DesignerPage::Designer => designer_view::view(
-                        &self.project.content,
+                        &self.project.element_tree,
                         self.project.get_theme(),
                         is_focused,
                     ),

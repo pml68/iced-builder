@@ -127,7 +127,7 @@ impl RenderedElement {
         match action {
             ActionKind::Stop => Ok(()),
             ActionKind::AddNew => Err(
-                "The action was of kind `AddNew`, but invoking it on an existing element tree is not possible.".into(),
+                "the action was of kind `AddNew`, but invoking it on an existing element tree is not possible".into(),
             ),
             ActionKind::PushFront(id) => {
                 let old_parent = element_tree.find_parent(self).unwrap();
@@ -335,14 +335,14 @@ impl ActionKind {
                 .find_by_id(id.clone())
                 .unwrap();
 
-            match (
-                element.is_parent(),
-                element.name == ElementName::Container && !element.is_empty(),
-            ) {
-                (true, false) => {
+            // Element IS a parent but ISN'T a non-empty container
+            match element.is_parent()
+                && !(element.name == ElementName::Container && !element.is_empty())
+            {
+                true => {
                     action = Self::PushFront(id);
                 }
-                _ if ids.len() > 2 => {
+                false if ids.len() > 2 => {
                     let parent = element_tree
                         .as_mut()
                         .unwrap()
@@ -396,15 +396,9 @@ pub fn container(content: Option<RenderedElement>) -> RenderedElement {
 }
 
 pub fn row(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {
-    match child_elements {
-        Some(els) => RenderedElement::with(ElementName::Row, els),
-        None => RenderedElement::with(ElementName::Row, vec![]),
-    }
+    RenderedElement::with(ElementName::Row, child_elements.unwrap_or_default())
 }
 
 pub fn column(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {
-    match child_elements {
-        Some(els) => RenderedElement::with(ElementName::Column, els),
-        None => RenderedElement::with(ElementName::Column, vec![]),
-    }
+    RenderedElement::with(ElementName::Column, child_elements.unwrap_or_default())
 }

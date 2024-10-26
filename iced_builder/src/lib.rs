@@ -88,5 +88,6 @@ pub enum Message {
     OpenFile,
     FileOpened(Result<(PathBuf, Project), Error>),
     SaveFile,
+    SaveFileAs,
     FileSaved(Result<PathBuf, Error>),
 }

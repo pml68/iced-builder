@@ -109,10 +109,7 @@ impl RenderedElement {
 
     pub fn insert_after(&mut self, id: Id, element: &RenderedElement) {
         if let Some(child_elements) = self.child_elements.as_mut() {
-            if let Some(index) = child_elements
-                .iter()
-                .position(|x| Id::new(x.id.clone()) == id)
-            {
+            if let Some(index) = child_elements.iter().position(|x| x.get_id() == id) {
                 child_elements.insert(index + 1, element.clone());
             } else {
                 child_elements.push(element.clone());
@@ -123,16 +120,16 @@ impl RenderedElement {
     pub fn handle_action(
         &self,
         element_tree: Option<&mut RenderedElement>,
-        action: ActionKind,
+        action: Action,
     ) -> Result<(), Error> {
         let element_tree = element_tree.unwrap();
 
         match action {
-            ActionKind::Stop => Ok(()),
-            ActionKind::AddNew => Err(
-                "The action was of kind `AddNew`, but invoking it on an existing element tree is not possible.".into(),
+            Action::Stop => Ok(()),
+            Action::AddNew => Err(
+                "the action was of kind `AddNew`, but invoking it on an existing element tree is not possible".into(),
             ),
-            ActionKind::PushFront(id) => {
+            Action::PushFront(id) => {
                 let old_parent = element_tree.find_parent(self).unwrap();
                 old_parent.remove(self);
 
@@ -141,7 +138,7 @@ impl RenderedElement {
 
                 Ok(())
             }
-            ActionKind::InsertAfter(parent_id, target_id) => {
+            Action::InsertAfter(parent_id, target_id) => {
                 let old_parent = element_tree.find_parent(self).unwrap();
                 old_parent.remove(self);
 
@@ -178,7 +175,8 @@ impl RenderedElement {
         iced_drop::droppable(
             widget::container(
                 widget::column![widget::text(self.name.clone().to_string()), children]
-                    .width(Length::Fill),
+                    .width(Length::Fill)
+                    .spacing(10),
             )
             .padding(10)
             .style(widget::container::bordered_box),
@@ -189,22 +187,16 @@ impl RenderedElement {
         .into()
     }
 
-    fn props_codegen(&self) -> String {
-        let mut props_string = String::new();
-
-        for (k, v) in self.options.clone() {
-            if let Some(v) = v {
-                props_string = format!("{props_string}.{k}({v})");
-            }
-        }
-
-        props_string
-    }
-
     pub fn codegen(&self) -> (String, String) {
         let mut imports = String::new();
         let mut view = String::new();
-        let props = self.props_codegen();
+        let mut options = String::new();
+
+        for (k, v) in self.options.clone() {
+            if let Some(v) = v {
+                options = format!("{options}.{k}({v})");
+            }
+        }
 
         let mut elements = String::new();
 
@@ -219,20 +211,20 @@ impl RenderedElement {
         match &self.name {
             ElementName::Container => {
                 imports = format!("{imports}container,");
-                view = format!("{view}\ncontainer({elements}){props}");
+                view = format!("{view}\ncontainer({elements}){options}");
             }
             ElementName::Row => {
                 imports = format!("{imports}row,");
-                view = format!("{view}\nrow![{elements}]{props}");
+                view = format!("{view}\nrow![{elements}]{options}");
             }
             ElementName::Column => {
                 imports = format!("{imports}column,");
-                view = format!("{view}\ncolumn![{elements}]{props}");
+                view = format!("{view}\ncolumn![{elements}]{options}");
             }
             ElementName::Text(string) => {
                 imports = format!("{imports}text,");
                 view = format!(
-                    "{view}\ntext(\"{}\"){props}",
+                    "{view}\ntext(\"{}\"){options}",
                     if *string == String::new() {
                         "New Text"
                     } else {
@@ -243,7 +235,7 @@ impl RenderedElement {
             ElementName::Button(string) => {
                 imports = format!("{imports}button,");
                 view = format!(
-                    "{view}\nbutton(\"{}\"){props}",
+                    "{view}\nbutton(\"{}\"){options}",
                     if *string == String::new() {
                         "New Button"
                     } else {
@@ -253,40 +245,28 @@ impl RenderedElement {
             }
             ElementName::Image(path) => {
                 imports = format!("{imports}image,");
-                view = format!("{view}\nimage(\"{path}\"){props}");
+                view = format!("{view}\nimage(\"{path}\"){options}");
             }
             ElementName::SVG(path) => {
                 imports = format!("{imports}svg,");
-                view = format!("{view}\nsvg(\"{path}\"){props}");
+                view = format!("{view}\nsvg(\"{path}\"){options}");
             }
         }
 
         (imports, view)
     }
-
-    pub fn test() -> RenderedElement {
-        let text1 = text("wow").option("height", "120.5").option("width", "230");
-
-        let element = container(Some(row(Some(vec![
-            text1,
-            text("heh"),
-            svg("/mnt/drive_d/git/obs-website/src/lib/assets/bars-solid.svg"),
-        ]))));
-
-        element
-    }
 }
 
 impl std::fmt::Display for RenderedElement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut has_props = false;
+        let mut has_options = false;
         f.pad("")?;
         f.write_fmt(format_args!("{:?}\n", self.name))?;
         f.pad("")?;
         f.write_str("Options: (")?;
         for (k, v) in &self.options {
             if let Some(value) = v {
-                has_props = true;
+                has_options = true;
                 f.write_fmt(format_args!(
                     "\n{:width$.precision$}{}: {}",
                     "",
@@ -297,7 +277,7 @@ impl std::fmt::Display for RenderedElement {
                 ))?;
             }
         }
-        if has_props {
+        if has_options {
             f.write_str("\n")?;
             f.pad("")?;
         }
@@ -320,14 +300,14 @@ impl std::fmt::Display for RenderedElement {
 }
 
 #[derive(Debug, Clone)]
-pub enum ActionKind {
+pub enum Action {
     AddNew,
     PushFront(Id),
     InsertAfter(Id, Id),
     Stop,
 }
 
-impl ActionKind {
+impl Action {
     pub fn new(
         ids: Vec<Id>,
         element_tree: &mut Option<RenderedElement>,
@@ -355,14 +335,14 @@ impl ActionKind {
                 .find_by_id(id.clone())
                 .unwrap();
 
-            match (
-                element.is_parent(),
-                element.name == ElementName::Container && !element.is_empty(),
-            ) {
-                (true, false) => {
+            // Element IS a parent but ISN'T a non-empty container
+            match element.is_parent()
+                && !(element.name == ElementName::Container && !element.is_empty())
+            {
+                true => {
                     action = Self::PushFront(id);
                 }
-                _ if ids.len() > 2 => {
+                false if ids.len() > 2 => {
                     let parent = element_tree
                         .as_mut()
                         .unwrap()
@@ -416,15 +396,9 @@ pub fn container(content: Option<RenderedElement>) -> RenderedElement {
 }
 
 pub fn row(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {
-    match child_elements {
-        Some(els) => RenderedElement::with(ElementName::Row, els),
-        None => RenderedElement::with(ElementName::Row, vec![]),
-    }
+    RenderedElement::with(ElementName::Row, child_elements.unwrap_or_default())
 }
 
 pub fn column(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {
-    match child_elements {
-        Some(els) => RenderedElement::with(ElementName::Column, els),
-        None => RenderedElement::with(ElementName::Column, vec![]),
-    }
+    RenderedElement::with(ElementName::Column, child_elements.unwrap_or_default())
 }

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::Error;
 
 use super::rendered_element::{
-    button, column, container, image, row, svg, text, ActionKind, RenderedElement,
+    button, column, container, image, row, svg, text, Action, RenderedElement,
 };
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -31,7 +31,7 @@ impl ElementName {
     pub fn handle_action(
         &self,
         element_tree: Option<&mut RenderedElement>,
-        action: ActionKind,
+        action: Action,
     ) -> Result<Option<RenderedElement>, Error> {
         let element = match self {
             Self::Text(_) => text(""),
@@ -43,9 +43,9 @@ impl ElementName {
             Self::Column => column(None),
         };
         match action {
-            ActionKind::Stop => Ok(None),
-            ActionKind::AddNew => Ok(Some(element)),
-            ActionKind::PushFront(id) => {
+            Action::Stop => Ok(None),
+            Action::AddNew => Ok(Some(element)),
+            Action::PushFront(id) => {
                 element_tree
                     .ok_or("The action was of kind `PushFront`, but no element tree was provided.")?
                     .find_by_id(id)
@@ -53,7 +53,7 @@ impl ElementName {
                     .push_front(&element);
                 Ok(None)
             }
-            ActionKind::InsertAfter(parent_id, child_id) => {
+            Action::InsertAfter(parent_id, child_id) => {
                 element_tree
                     .ok_or(
                         "The action was of kind `InsertAfter`, but no element tree was provided.",

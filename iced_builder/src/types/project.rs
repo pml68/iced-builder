@@ -12,7 +12,7 @@ use super::rendered_element::RenderedElement;
 pub struct Project {
     pub title: Option<String>,
     pub theme: Option<String>,
-    pub content: Option<RenderedElement>,
+    pub element_tree: Option<RenderedElement>,
 }
 
 impl Project {
@@ -20,7 +20,7 @@ impl Project {
         Self {
             title: None,
             theme: None,
-            content: None,
+            element_tree: None,
         }
     }
 
@@ -92,10 +92,10 @@ impl Project {
         Ok(path)
     }
 
-    pub fn app_code(self) -> Result<String, Error> {
-        match &self.content {
-            Some(el) => {
-                let (imports, view) = el.codegen();
+    pub fn app_code(&self) -> Result<String, Error> {
+        match self.element_tree {
+            Some(ref element_tree) => {
+                let (imports, view) = element_tree.codegen();
                 let mut app_code = format!("use iced::{{widget::{{{imports}}},Element}};");
 
                 app_code = format!(
@@ -103,7 +103,7 @@ impl Project {
                     {app_code}
 
                     fn main() -> iced::Result {{
-                        iced::run("{}", State::update, State::view)
+                        iced::application("{}", State::update, State::view).theme(iced::Theme::{}).run()
                     }}
 
                     #[derive(Default)]
@@ -119,10 +119,11 @@ impl Project {
                             {view}.into()
                         }}
                     }}"#,
-                    match &self.title {
-                        Some(t) => t,
+                    match self.title {
+                        Some(ref t) => t,
                         None => "New app",
-                    }
+                    },
+                    self.get_theme().to_string().replace(" ", "")
                 );
                 let config = Config::new_str()
                     .edition(Edition::Rust2021)

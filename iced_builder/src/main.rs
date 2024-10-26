@@ -134,7 +134,6 @@ impl App {
                     if let Ok(Some(ref element)) = result {
                         self.project.element_tree = Some(element.clone());
                     }
-                    println!("{:?}", result);
                 }
 
                 return Task::done(Message::RefreshEditorContent);
@@ -156,9 +155,7 @@ impl App {
                         &mut self.project.element_tree.clone(),
                         Some(element.get_id()),
                     );
-                    let result = element.handle_action(self.project.element_tree.as_mut(), action);
-
-                    println!("{result:?}");
+                    let _ = element.handle_action(self.project.element_tree.as_mut(), action);
                 }
 
                 return Task::done(Message::RefreshEditorContent);

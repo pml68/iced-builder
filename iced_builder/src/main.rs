@@ -11,9 +11,7 @@ use iced::{
     Alignment, Element, Length, Settings, Task, Theme,
 };
 use iced_builder::{
-    types::{
-        element_name::ElementName, project::Project, rendered_element::ActionKind, DesignerPage,
-    },
+    types::{element_name::ElementName, project::Project, rendered_element::Action, DesignerPage},
     views::{code_view, designer_view, element_list},
     Message,
 };
@@ -131,7 +129,7 @@ impl App {
             Message::HandleNew(name, zones) => {
                 let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
                 if ids.len() > 0 {
-                    let action = ActionKind::new(ids, &mut self.project.element_tree.clone(), None);
+                    let action = Action::new(ids, &mut self.project.element_tree.clone(), None);
                     let result = name.handle_action(self.project.element_tree.as_mut(), action);
                     if let Ok(Some(ref element)) = result {
                         self.project.element_tree = Some(element.clone());
@@ -153,7 +151,7 @@ impl App {
             Message::HandleMove(element, zones) => {
                 let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
                 if ids.len() > 0 {
-                    let action = ActionKind::new(
+                    let action = Action::new(
                         ids,
                         &mut self.project.element_tree.clone(),
                         Some(element.get_id()),

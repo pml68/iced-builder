@@ -120,16 +120,16 @@ impl RenderedElement {
     pub fn handle_action(
         &self,
         element_tree: Option<&mut RenderedElement>,
-        action: ActionKind,
+        action: Action,
     ) -> Result<(), Error> {
         let element_tree = element_tree.unwrap();
 
         match action {
-            ActionKind::Stop => Ok(()),
-            ActionKind::AddNew => Err(
+            Action::Stop => Ok(()),
+            Action::AddNew => Err(
                 "the action was of kind `AddNew`, but invoking it on an existing element tree is not possible".into(),
             ),
-            ActionKind::PushFront(id) => {
+            Action::PushFront(id) => {
                 let old_parent = element_tree.find_parent(self).unwrap();
                 old_parent.remove(self);
 
@@ -138,7 +138,7 @@ impl RenderedElement {
 
                 Ok(())
             }
-            ActionKind::InsertAfter(parent_id, target_id) => {
+            Action::InsertAfter(parent_id, target_id) => {
                 let old_parent = element_tree.find_parent(self).unwrap();
                 old_parent.remove(self);
 
@@ -300,14 +300,14 @@ impl std::fmt::Display for RenderedElement {
 }
 
 #[derive(Debug, Clone)]
-pub enum ActionKind {
+pub enum Action {
     AddNew,
     PushFront(Id),
     InsertAfter(Id, Id),
     Stop,
 }
 
-impl ActionKind {
+impl Action {
     pub fn new(
         ids: Vec<Id>,
         element_tree: &mut Option<RenderedElement>,

@@ -1,7 +1,7 @@
 pub mod types;
 pub mod views;
 
-use std::path::PathBuf;
+use std::{io, path::PathBuf};
 
 use iced::widget::{pane_grid, text_editor};
 use types::{
@@ -12,7 +12,7 @@ use thiserror::Error;
 
 #[derive(Debug, Clone, Error)]
 pub enum Error {
-    #[error("an IO error accured: {0}")]
+    #[error("an I/O error accured: {0}")]
     IOError(String),
     #[error("a Serde error accured: {0}")]
     SerdeError(String),
@@ -23,11 +23,11 @@ pub enum Error {
     #[error("the file dialog has been closed without selecting a valid option")]
     DialogClosed,
     #[error("{0}")]
-    String(String),
+    Other(String),
 }
 
-impl From<std::io::Error> for Error {
-    fn from(value: std::io::Error) -> Self {
+impl From<io::Error> for Error {
+    fn from(value: io::Error) -> Self {
         Self::IOError(value.to_string())
     }
 }
@@ -46,13 +46,13 @@ impl From<rust_format::Error> for Error {
 
 impl From<&'static str> for Error {
     fn from(value: &'static str) -> Self {
-        Self::String(value.to_owned())
+        Self::Other(value.to_owned())
     }
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    ToggleTheme,
+    ToggleDarkMode,
     CopyCode,
     SwitchPage(DesignerPage),
     EditorAction(text_editor::Action),

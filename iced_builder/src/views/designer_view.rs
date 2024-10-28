@@ -1,11 +1,11 @@
 use super::style;
 use crate::{
-    types::{rendered_element::RenderedElement, DesignerPage},
+    types::{DesignerPage, RenderedElement},
     Message,
 };
 use iced::{
     widget::{button, container, pane_grid, row, text, themer, Space},
-    Alignment, Length,
+    Alignment, Element, Length,
 };
 
 pub fn view<'a>(
@@ -13,8 +13,8 @@ pub fn view<'a>(
     designer_theme: iced::Theme,
     is_focused: bool,
 ) -> pane_grid::Content<'a, Message> {
-    let el_tree = match element_tree {
-        Some(tree) => tree.clone().as_element(),
+    let el_tree: Element<'a, Message> = match element_tree {
+        Some(tree) => tree.clone().into(),
         None => text("Open a project or begin creating one").into(),
     };
     let content = container(themer(designer_theme, el_tree))

@@ -11,7 +11,7 @@ use iced::{
     Alignment, Element, Length, Settings, Task, Theme,
 };
 use iced_builder::{
-    types::{element_name::ElementName, project::Project, rendered_element::Action, DesignerPage},
+    types::{Action, DesignerPage, ElementName, Project},
     views::{code_view, designer_view, element_list},
     Message,
 };
@@ -101,7 +101,7 @@ impl App {
 
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
-            Message::ToggleTheme => self.dark_theme = !self.dark_theme,
+            Message::ToggleDarkMode => self.dark_theme = !self.dark_theme,
             Message::CopyCode => return clipboard::write(self.editor_content.text()),
             Message::SwitchPage(page) => self.designer_page = page,
             Message::EditorAction(action) => {
@@ -134,6 +134,8 @@ impl App {
                     if let Ok(Some(ref element)) = result {
                         self.project.element_tree = Some(element.clone());
                     }
+
+                    self.is_dirty = true;
                 }
 
                 return Task::done(Message::RefreshEditorContent);
@@ -156,6 +158,8 @@ impl App {
                         Some(element.get_id()),
                     );
                     let _ = element.handle_action(self.project.element_tree.as_mut(), action);
+
+                    self.is_dirty = true;
                 }
 
                 return Task::done(Message::RefreshEditorContent);
@@ -178,7 +182,7 @@ impl App {
                 }
             }
             Message::OpenFile => {
-                if !self.is_loading {
+                if !self.is_loading && !self.is_dirty {
                     self.is_loading = true;
 
                     return Task::perform(Project::from_file(), Message::FileOpened);
@@ -247,8 +251,8 @@ impl App {
     }
 
     fn view(&self) -> Element<Message> {
-        let header = row![button("Toggle Theme")
-            .on_press(Message::ToggleTheme)
+        let header = row![button("Toggle Dark Mode")
+            .on_press(Message::ToggleDarkMode)
             .padding(5)]
         .width(200);
         let pane_grid = PaneGrid::new(&self.pane_state, |id, pane, _is_maximized| {

@@ -7,14 +7,14 @@ use unique_id::{string::StringGenerator, Generator};
 
 use crate::{Error, Message};
 
-use super::element_name::ElementName;
+use super::ElementName;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderedElement {
     id: String,
-    pub child_elements: Option<Vec<RenderedElement>>,
-    pub name: ElementName,
-    pub options: IndexMap<String, Option<String>>,
+    child_elements: Option<Vec<RenderedElement>>,
+    name: ElementName,
+    options: IndexMap<String, Option<String>>,
 }
 
 impl RenderedElement {
@@ -126,6 +126,12 @@ impl RenderedElement {
 
         match action {
             Action::Stop => Ok(()),
+            Action::Drop => {
+                let parent = element_tree.find_parent(self).unwrap();
+                parent.remove(self);
+
+                Ok(())
+            }
             Action::AddNew => Err(
                 "the action was of kind `AddNew`, but invoking it on an existing element tree is not possible".into(),
             ),
@@ -299,11 +305,62 @@ impl std::fmt::Display for RenderedElement {
     }
 }
 
+impl<'a> From<RenderedElement> for Element<'a, Message> {
+    fn from(value: RenderedElement) -> Self {
+        let child_elements = match value.child_elements {
+            Some(ref elements) => elements.clone(),
+            None => vec![],
+        };
+
+        let content: Element<'a, Message> = match value.name.clone() {
+            ElementName::Text(s) => {
+                if s == String::new() {
+                    widget::text("New Text").into()
+                } else {
+                    widget::text(s).into()
+                }
+            }
+            ElementName::Button(s) => {
+                if s == String::new() {
+                    widget::button(widget::text("New Button")).into()
+                } else {
+                    widget::button(widget::text(s)).into()
+                }
+            }
+            ElementName::SVG(p) => widget::svg(p).into(),
+            ElementName::Image(p) => widget::image(p).into(),
+            ElementName::Container => widget::container(if child_elements.len() == 1 {
+                child_elements[0].clone().into()
+            } else {
+                Element::from("")
+            })
+            .padding(20)
+            .into(),
+            ElementName::Row => {
+                widget::Row::from_iter(child_elements.into_iter().map(|el| el.into()))
+                    .padding(20)
+                    .into()
+            }
+            ElementName::Column => {
+                widget::Column::from_iter(child_elements.into_iter().map(|el| el.into()))
+                    .padding(20)
+                    .into()
+            }
+        };
+        iced_drop::droppable(content)
+            .id(value.get_id())
+            .drag_hide(true)
+            .on_drop(move |point, rect| Message::MoveElement(value.clone(), point, rect))
+            .into()
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum Action {
     AddNew,
     PushFront(Id),
     InsertAfter(Id, Id),
+    Drop,
     Stop,
 }
 
@@ -317,6 +374,8 @@ impl Action {
         if ids.len() == 1 {
             if element_tree.is_none() {
                 action = Self::AddNew;
+            } else {
+                action = Self::Drop;
             }
         } else {
             let id: Id = match source_id {

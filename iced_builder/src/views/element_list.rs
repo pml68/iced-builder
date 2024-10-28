@@ -1,5 +1,5 @@
 use super::style;
-use crate::{types::element_name::ElementName, Message};
+use crate::{types::ElementName, Message};
 use iced::{
     widget::{column, container, pane_grid, text, Column},
     Alignment, Element, Length,

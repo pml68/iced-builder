@@ -44,6 +44,7 @@ impl ElementName {
         };
         match action {
             Action::Stop => Ok(None),
+            Action::Drop => Ok(None),
             Action::AddNew => Ok(Some(element)),
             Action::PushFront(id) => {
                 element_tree

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::Error;
+use crate::error::Error;
 
 use super::rendered_element::{
     button, column, container, image, row, svg, text, Action, RenderedElement,

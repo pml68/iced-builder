@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use iced::Theme;
 use serde::{Deserialize, Serialize};
 
-use crate::Error;
+use crate::error::Error;
 
 use super::rendered_element::RenderedElement;
 
@@ -55,10 +55,10 @@ impl Project {
         }
     }
 
-    pub async fn from_file() -> Result<(PathBuf, Self), Error> {
+    pub async fn from_path() -> Result<(PathBuf, Self), Error> {
         let picked_file = rfd::AsyncFileDialog::new()
             .set_title("Open a JSON file...")
-            .add_filter("*.JSON, *.json", &["JSON", "json"])
+            .add_filter("*.json, *.JSON", &["json", "JSON"])
             .pick_file()
             .await
             .ok_or(Error::DialogClosed)?;
@@ -77,7 +77,7 @@ impl Project {
         } else {
             rfd::AsyncFileDialog::new()
                 .set_title("Save to JSON file...")
-                .add_filter("*.JSON, *.json", &["JSON", "json"])
+                .add_filter("*.json, *.JSON", &["json", "JSON"])
                 .save_file()
                 .await
                 .as_ref()
@@ -103,7 +103,7 @@ impl Project {
                     {app_code}
 
                     fn main() -> iced::Result {{
-                        iced::application("{}", State::update, State::view).theme(iced::Theme::{}).run()
+                        iced::application("{}", State::update, State::view).theme(State::theme).run()
                     }}
 
                     #[derive(Default)]
@@ -114,6 +114,10 @@ impl Project {
 
                     impl State {{
                         fn update(&mut self, _message: Message) {{}}
+
+                        fn theme(&self) -> iced::Theme {{
+                            iced::Theme::{}
+                        }}
 
                         fn view(&self) -> Element<Message> {{
                             {view}.into()

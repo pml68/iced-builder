@@ -1,5 +1,5 @@
 use super::style;
-use crate::{types::DesignerPage, Message};
+use crate::types::{DesignerPage, Message};
 use iced::{
     highlighter,
     widget::{button, container, pane_grid, row, text, text_editor, tooltip, Space},

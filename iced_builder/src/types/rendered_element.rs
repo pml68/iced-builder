@@ -5,7 +5,7 @@ use iced::{widget, Element, Length};
 use serde::{Deserialize, Serialize};
 use unique_id::{string::StringGenerator, Generator};
 
-use crate::{Error, Message};
+use crate::{error::Error, types::Message};
 
 use super::ElementName;
 

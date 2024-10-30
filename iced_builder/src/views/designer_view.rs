@@ -1,8 +1,5 @@
 use super::style;
-use crate::{
-    types::{DesignerPage, RenderedElement},
-    Message,
-};
+use crate::types::{DesignerPage, Message, RenderedElement};
 use iced::{
     widget::{button, container, pane_grid, row, text, themer, Space},
     Alignment, Element, Length,

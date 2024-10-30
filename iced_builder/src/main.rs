@@ -11,9 +11,9 @@ use iced::{
     Alignment, Element, Length, Settings, Task, Theme,
 };
 use iced_builder::{
-    types::{Action, DesignerPage, ElementName, Project},
+    error::error_dialog,
+    types::{Action, DesignerPage, ElementName, Message, Project},
     views::{code_view, designer_view, element_list},
-    Message,
 };
 
 fn main() -> iced::Result {
@@ -109,14 +109,12 @@ impl App {
                     self.editor_content.perform(action);
                 }
             }
-            Message::RefreshEditorContent => {
-                let code = self
-                    .project
-                    .clone()
-                    .app_code()
-                    .unwrap_or_else(|err| err.to_string());
-                self.editor_content = text_editor::Content::with_text(&code);
-            }
+            Message::RefreshEditorContent => match self.project.clone().app_code() {
+                Ok(code) => {
+                    self.editor_content = text_editor::Content::with_text(&code);
+                }
+                Err(error) => error_dialog(error.to_string()),
+            },
             Message::DropNewElement(name, point, _) => {
                 return iced_drop::zones_on_point(
                     move |zones| Message::HandleNew(name.clone(), zones),
@@ -131,8 +129,10 @@ impl App {
                 if ids.len() > 0 {
                     let action = Action::new(ids, &mut self.project.element_tree.clone(), None);
                     let result = name.handle_action(self.project.element_tree.as_mut(), action);
-                    if let Ok(Some(ref element)) = result {
-                        self.project.element_tree = Some(element.clone());
+                    match result {
+                        Ok(Some(ref element)) => self.project.element_tree = Some(element.clone()),
+                        Err(error) => error_dialog(error.to_string()),
+                        _ => {}
                     }
 
                     self.is_dirty = true;
@@ -157,7 +157,10 @@ impl App {
                         &mut self.project.element_tree.clone(),
                         Some(element.get_id()),
                     );
-                    let _ = element.handle_action(self.project.element_tree.as_mut(), action);
+                    let result = element.handle_action(self.project.element_tree.as_mut(), action);
+                    if let Err(error) = result {
+                        error_dialog(error.to_string());
+                    }
 
                     self.is_dirty = true;
                 }
@@ -185,19 +188,22 @@ impl App {
                 if !self.is_loading && !self.is_dirty {
                     self.is_loading = true;
 
-                    return Task::perform(Project::from_file(), Message::FileOpened);
+                    return Task::perform(Project::from_path(), Message::FileOpened);
                 }
             }
             Message::FileOpened(result) => {
                 self.is_loading = false;
                 self.is_dirty = false;
 
-                if let Ok((path, project)) = result {
-                    self.project = project.clone();
-                    self.project_path = Some(path);
-                    self.editor_content = text_editor::Content::with_text(
-                        &project.app_code().unwrap_or_else(|err| err.to_string()),
-                    );
+                match result {
+                    Ok((path, project)) => {
+                        self.project = project.clone();
+                        self.project_path = Some(path);
+                        self.editor_content = text_editor::Content::with_text(
+                            &project.app_code().unwrap_or_else(|err| err.to_string()),
+                        );
+                    }
+                    Err(error) => error_dialog(error.to_string()),
                 }
             }
             Message::SaveFile => {
@@ -225,9 +231,12 @@ impl App {
             Message::FileSaved(result) => {
                 self.is_loading = false;
 
-                if let Ok(path) = result {
-                    self.project_path = Some(path);
-                    self.is_dirty = false;
+                match result {
+                    Ok(path) => {
+                        self.project_path = Some(path);
+                        self.is_dirty = false;
+                    }
+                    Err(error) => error_dialog(error.to_string()),
                 }
             }
         }

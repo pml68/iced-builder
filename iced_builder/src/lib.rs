@@ -1,3 +1,4 @@
+pub mod dialogs;
 pub mod error;
 pub mod types;
 pub mod views;

@@ -11,10 +11,11 @@ use iced::{
     Alignment, Element, Length, Settings, Task, Theme,
 };
 use iced_builder::{
-    error::error_dialog,
+    dialogs::{error_dialog, unsaved_changes_dialog},
     types::{Action, DesignerPage, ElementName, Message, Project},
     views::{code_view, designer_view, element_list},
 };
+use rfd::MessageDialogResult;
 
 fn main() -> iced::Result {
     iced::application(App::title, App::update, App::view)
@@ -179,16 +180,33 @@ impl App {
             Message::PaneDragged(_) => {}
             Message::NewFile => {
                 if !self.is_loading {
-                    self.project = Project::new();
-                    self.project_path = None;
-                    self.editor_content = text_editor::Content::new();
+                    if !self.is_dirty {
+                        self.project = Project::new();
+                        self.project_path = None;
+                        self.editor_content = text_editor::Content::new();
+                    } else {
+                        if let MessageDialogResult::Ok = unsaved_changes_dialog("You have unsaved changes. Do you wish to discard these and create a new project?") {
+                            self.is_dirty = false;
+                            self.project = Project::new();
+                            self.project_path = None;
+                            self.editor_content = text_editor::Content::new();
+                        }
+                    }
                 }
             }
             Message::OpenFile => {
-                if !self.is_loading && !self.is_dirty {
-                    self.is_loading = true;
+                if !self.is_loading {
+                    if !self.is_dirty {
+                        self.is_loading = true;
 
-                    return Task::perform(Project::from_path(), Message::FileOpened);
+                        return Task::perform(Project::from_path(), Message::FileOpened);
+                    } else {
+                        if let MessageDialogResult::Ok = unsaved_changes_dialog("You have unsaved changes. Do you wish to discard these and open another project?") {
+                            self.is_dirty = false;
+                            self.is_loading = true;
+                            return Task::perform(Project::from_path(), Message::FileOpened);
+                        }
+                    }
                 }
             }
             Message::FileOpened(result) => {

@@ -1,4 +1,3 @@
-use rfd::{MessageButtons, MessageDialog, MessageLevel};
 use std::io;
 use std::sync::Arc;
 use thiserror::Error;
@@ -41,22 +40,4 @@ impl From<&'static str> for Error {
     fn from(value: &'static str) -> Self {
         Self::Other(value.to_owned())
     }
-}
-
-pub fn error_dialog(description: impl Into<String>) {
-    MessageDialog::new()
-        .set_level(MessageLevel::Error)
-        .set_buttons(MessageButtons::Ok)
-        .set_title("Oops! Something went wrong.")
-        .set_description(description)
-        .show();
-}
-
-pub fn warning_dialog(title: impl Into<String>, description: impl Into<String>) {
-    MessageDialog::new()
-        .set_level(MessageLevel::Warning)
-        .set_buttons(MessageButtons::Ok)
-        .set_title(title)
-        .set_description(description)
-        .show();
 }

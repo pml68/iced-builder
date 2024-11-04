@@ -1,15 +1,16 @@
 use rfd::{MessageButtons, MessageDialog, MessageLevel};
 use std::io;
+use std::sync::Arc;
 use thiserror::Error;
 
 #[derive(Debug, Clone, Error)]
 pub enum Error {
-    #[error("An I/O error accured: {0}")]
-    IOError(String),
-    #[error("A Serde error accured: {0}")]
-    SerdeError(String),
-    #[error("A RustFmt error accured: {0}")]
-    FormatError(String),
+    #[error(transparent)]
+    IOError(Arc<io::Error>),
+    #[error(transparent)]
+    SerdeError(Arc<serde_json::Error>),
+    #[error(transparent)]
+    FormatError(Arc<rust_format::Error>),
     #[error("The element tree contains no matching element")]
     NonExistentElement,
     #[error("The file dialog has been closed without selecting a valid option")]
@@ -20,19 +21,19 @@ pub enum Error {
 
 impl From<io::Error> for Error {
     fn from(value: io::Error) -> Self {
-        Self::IOError(value.to_string())
+        Self::IOError(Arc::new(value))
     }
 }
 
 impl From<serde_json::Error> for Error {
     fn from(value: serde_json::Error) -> Self {
-        Self::SerdeError(value.to_string())
+        Self::SerdeError(Arc::new(value))
     }
 }
 
 impl From<rust_format::Error> for Error {
     fn from(value: rust_format::Error) -> Self {
-        Self::FormatError(value.to_string())
+        Self::FormatError(Arc::new(value))
     }
 }
 

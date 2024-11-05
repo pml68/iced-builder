@@ -137,9 +137,8 @@ impl App {
                     }
 
                     self.is_dirty = true;
+                    return Task::done(Message::RefreshEditorContent);
                 }
-
-                return Task::done(Message::RefreshEditorContent);
             }
             Message::MoveElement(element, point, _) => {
                 return iced_drop::zones_on_point(
@@ -164,9 +163,8 @@ impl App {
                     }
 
                     self.is_dirty = true;
+                    return Task::done(Message::RefreshEditorContent);
                 }
-
-                return Task::done(Message::RefreshEditorContent);
             }
             Message::PaneResized(pane_grid::ResizeEvent { split, ratio }) => {
                 self.pane_state.resize(split, ratio);

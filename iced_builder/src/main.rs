@@ -4,12 +4,13 @@ use iced::{
     advanced::widget::Id,
     clipboard, keyboard,
     widget::{
-        button, container,
+        container,
         pane_grid::{self, Pane, PaneGrid},
-        row, text_editor, Column,
+        pick_list, row, text_editor, Column,
     },
     Alignment, Element, Length, Settings, Task, Theme,
 };
+use iced_anim::{Animation, Spring};
 use iced_builder::{
     dialogs::{error_dialog, unsaved_changes_dialog},
     types::{Action, DesignerPage, ElementName, Message, Project},
@@ -17,13 +18,15 @@ use iced_builder::{
 };
 use rfd::MessageDialogResult;
 
+const THEMES: &'static [Theme] = &[Theme::SolarizedDark, Theme::SolarizedLight];
+
 fn main() -> iced::Result {
     iced::application(App::title, App::update, App::view)
         .settings(Settings {
             fonts: vec![include_bytes!("../fonts/icons.ttf").as_slice().into()],
             ..Settings::default()
         })
-        .theme(App::theme)
+        .theme(|state| state.theme.value().clone())
         .subscription(App::subscription)
         .run_with(App::new)
 }
@@ -33,7 +36,7 @@ struct App {
     is_loading: bool,
     project_path: Option<PathBuf>,
     project: Project,
-    dark_theme: bool,
+    theme: Spring<Theme>,
     pane_state: pane_grid::State<Panes>,
     focus: Option<Pane>,
     designer_page: DesignerPage,
@@ -61,10 +64,10 @@ impl App {
                 is_loading: false,
                 project_path: None,
                 project: Project::new(),
-                dark_theme: true,
+                theme: Spring::new(Theme::SolarizedDark),
                 pane_state: state,
                 focus: None,
-                designer_page: DesignerPage::Designer,
+                designer_page: DesignerPage::DesignerView,
                 element_list: ElementName::ALL.to_vec(),
                 editor_content: text_editor::Content::new(),
             },
@@ -92,17 +95,11 @@ impl App {
         format!("iced Builder{project_name}{saved_state}")
     }
 
-    fn theme(&self) -> iced::Theme {
-        if self.dark_theme {
-            Theme::SolarizedDark
-        } else {
-            Theme::SolarizedLight
-        }
-    }
-
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
-            Message::ToggleDarkMode => self.dark_theme = !self.dark_theme,
+            Message::ToggleTheme(event) => {
+                self.theme.update(event);
+            }
             Message::CopyCode => return clipboard::write(self.editor_content.text()),
             Message::SwitchPage(page) => self.designer_page = page,
             Message::EditorAction(action) => {
@@ -276,22 +273,26 @@ impl App {
     }
 
     fn view(&self) -> Element<Message> {
-        let header = row![button("Toggle Dark Mode")
-            .on_press(Message::ToggleDarkMode)
-            .padding(5)]
+        let header = row![pick_list(
+            THEMES,
+            Some(self.theme.target()).clone(),
+            |theme| { Message::ToggleTheme(theme.into()) }
+        )]
         .width(200);
         let pane_grid = PaneGrid::new(&self.pane_state, |id, pane, _is_maximized| {
             let is_focused = Some(id) == self.focus;
             match pane {
                 Panes::Designer => match &self.designer_page {
-                    DesignerPage::Designer => designer_view::view(
+                    DesignerPage::DesignerView => designer_view::view(
                         &self.project.element_tree,
                         self.project.get_theme(),
                         is_focused,
                     ),
-                    DesignerPage::CodeView => {
-                        code_view::view(&self.editor_content, self.dark_theme, is_focused)
-                    }
+                    DesignerPage::CodeView => code_view::view(
+                        &self.editor_content,
+                        self.theme.value().clone(),
+                        is_focused,
+                    ),
                 },
                 Panes::ElementList => element_list::view(&self.element_list, is_focused),
             }
@@ -310,6 +311,8 @@ impl App {
             .align_x(Alignment::Center)
             .width(Length::Fill);
 
-        container(content).height(Length::Fill).into()
+        Animation::new(&self.theme, container(content).height(Length::Fill))
+            .on_update(Message::ToggleTheme)
+            .into()
     }
 }

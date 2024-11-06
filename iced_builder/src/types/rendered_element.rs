@@ -5,7 +5,7 @@ use iced::{widget, Element, Length};
 use serde::{Deserialize, Serialize};
 use unique_id::{string::StringGenerator, Generator};
 
-use crate::{error::Error, types::Message};
+use crate::{types::Message, Result};
 
 use super::ElementName;
 
@@ -121,7 +121,7 @@ impl RenderedElement {
         &self,
         element_tree: Option<&mut RenderedElement>,
         action: Action,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let element_tree = element_tree.unwrap();
 
         match action {

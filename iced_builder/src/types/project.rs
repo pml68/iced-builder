@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use iced::Theme;
 use serde::{Deserialize, Serialize};
 
-use crate::error::Error;
+use crate::{Error, Result};
 
 use super::rendered_element::RenderedElement;
 
@@ -55,7 +55,7 @@ impl Project {
         }
     }
 
-    pub async fn from_path() -> Result<(PathBuf, Self), Error> {
+    pub async fn from_path() -> Result<(PathBuf, Self)> {
         let picked_file = rfd::AsyncFileDialog::new()
             .set_title("Open a JSON file...")
             .add_filter("*.json, *.JSON", &["json", "JSON"])
@@ -71,7 +71,7 @@ impl Project {
         Ok((path, element))
     }
 
-    pub async fn write_to_file(self, path: Option<PathBuf>) -> Result<PathBuf, Error> {
+    pub async fn write_to_file(self, path: Option<PathBuf>) -> Result<PathBuf> {
         let path = if let Some(p) = path {
             p
         } else {
@@ -92,7 +92,7 @@ impl Project {
         Ok(path)
     }
 
-    pub fn app_code(&self) -> Result<String, Error> {
+    pub fn app_code(&self) -> Result<String> {
         match self.element_tree {
             Some(ref element_tree) => {
                 let (imports, view) = element_tree.codegen();

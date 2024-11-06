@@ -3,4 +3,5 @@ pub mod error;
 pub mod types;
 pub mod views;
 
-pub type Result<T> = std::result::Result<T, error::Error>;
+pub use error::Error;
+pub type Result<T> = core::result::Result<T, Error>;

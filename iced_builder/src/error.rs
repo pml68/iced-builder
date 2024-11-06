@@ -36,8 +36,8 @@ impl From<rust_format::Error> for Error {
     }
 }
 
-impl From<&'static str> for Error {
-    fn from(value: &'static str) -> Self {
+impl From<&str> for Error {
+    fn from(value: &str) -> Self {
         Self::Other(value.to_owned())
     }
 }

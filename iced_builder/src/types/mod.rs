@@ -8,12 +8,16 @@ pub use rendered_element::*;
 
 use std::path::PathBuf;
 
-use crate::error::Error;
-use iced::widget::{pane_grid, text_editor};
+use crate::Result;
+use iced::{
+    widget::{pane_grid, text_editor},
+    Theme,
+};
+use iced_anim::SpringEvent;
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    ToggleDarkMode,
+    ToggleTheme(SpringEvent<Theme>),
     CopyCode,
     SwitchPage(DesignerPage),
     EditorAction(text_editor::Action),
@@ -33,14 +37,14 @@ pub enum Message {
     PaneDragged(pane_grid::DragEvent),
     NewFile,
     OpenFile,
-    FileOpened(Result<(PathBuf, Project), Error>),
+    FileOpened(Result<(PathBuf, Project)>),
     SaveFile,
     SaveFileAs,
-    FileSaved(Result<PathBuf, Error>),
+    FileSaved(Result<PathBuf>),
 }
 
 #[derive(Debug, Clone)]
 pub enum DesignerPage {
-    Designer,
+    DesignerView,
     CodeView,
 }

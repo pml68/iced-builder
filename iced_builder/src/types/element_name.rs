@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::error::Error;
+use crate::{Error, Result};
 
 use super::rendered_element::{
     button, column, container, image, row, svg, text, Action, RenderedElement,
@@ -32,7 +32,7 @@ impl ElementName {
         &self,
         element_tree: Option<&mut RenderedElement>,
         action: Action,
-    ) -> Result<Option<RenderedElement>, Error> {
+    ) -> Result<Option<RenderedElement>> {
         let element = match self {
             Self::Text(_) => text(""),
             Self::Button(_) => button(""),

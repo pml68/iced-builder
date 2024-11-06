@@ -3,12 +3,12 @@ use crate::types::{DesignerPage, Message};
 use iced::{
     highlighter,
     widget::{button, container, pane_grid, row, text, text_editor, tooltip, Space},
-    Alignment, Font, Length,
+    Alignment, Font, Length, Theme,
 };
 
 pub fn view<'a>(
     editor_content: &'a text_editor::Content,
-    dark_theme: bool,
+    theme: Theme,
     is_focused: bool,
 ) -> pane_grid::Content<'a, Message> {
     let title = row![
@@ -21,7 +21,7 @@ pub fn view<'a>(
             tooltip::Position::FollowCursor
         ),
         Space::with_width(20),
-        button("Switch to Designer view").on_press(Message::SwitchPage(DesignerPage::Designer))
+        button("Switch to Designer view").on_press(Message::SwitchPage(DesignerPage::DesignerView))
     ]
     .align_y(Alignment::Center);
     let title_bar = pane_grid::TitleBar::new(title)
@@ -32,7 +32,7 @@ pub fn view<'a>(
             .on_action(Message::EditorAction)
             .highlight(
                 "rs",
-                if dark_theme {
+                if theme.to_string().contains("Dark") {
                     highlighter::Theme::SolarizedDark
                 } else {
                     highlighter::Theme::InspiredGitHub

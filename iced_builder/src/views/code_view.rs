@@ -1,9 +1,10 @@
 use super::style;
+use crate::icon::copy;
 use crate::types::{DesignerPage, Message};
 use iced::{
     highlighter,
     widget::{button, container, pane_grid, row, text, text_editor, tooltip, Space},
-    Alignment, Font, Length, Theme,
+    Alignment, Length,
 };
 
 pub fn view<'a>(
@@ -15,8 +16,7 @@ pub fn view<'a>(
         text("Generated Code"),
         Space::with_width(Length::Fill),
         tooltip(
-            button(container(text('\u{0e801}').font(Font::with_name("editor-icons"))).center_x(30))
-                .on_press(Message::CopyCode),
+            button(container(copy()).center_x(30)).on_press(Message::CopyCode),
             "Copy code to clipboard",
             tooltip::Position::FollowCursor
         ),

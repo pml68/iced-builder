@@ -3,12 +3,10 @@ use std::sync::Arc;
 use thiserror::Error;
 
 #[derive(Debug, Clone, Error)]
+#[error(transparent)]
 pub enum Error {
-    #[error(transparent)]
     IOError(Arc<io::Error>),
-    #[error(transparent)]
     SerdeError(Arc<serde_json::Error>),
-    #[error(transparent)]
     FormatError(Arc<rust_format::Error>),
     #[error("The element tree contains no matching element")]
     NonExistentElement,

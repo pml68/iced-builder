@@ -1,5 +1,6 @@
 pub mod dialogs;
 pub mod error;
+pub mod icon;
 pub mod types;
 pub mod views;
 

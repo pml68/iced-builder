@@ -8,11 +8,12 @@ use iced::{
         pane_grid::{self, Pane, PaneGrid},
         pick_list, row, text_editor, Column,
     },
-    Alignment, Element, Length, Settings, Task, Theme,
+    Alignment, Element, Length, Task, Theme,
 };
 use iced_anim::{Animation, Spring};
 use iced_builder::{
     dialogs::{error_dialog, unsaved_changes_dialog},
+    icon,
     types::{Action, DesignerPage, ElementName, Message, Project},
     views::{code_view, designer_view, element_list},
 };
@@ -22,10 +23,7 @@ const THEMES: &'static [Theme] = &[Theme::SolarizedDark, Theme::SolarizedLight];
 
 fn main() -> iced::Result {
     iced::application(App::title, App::update, App::view)
-        .settings(Settings {
-            fonts: vec![include_bytes!("../fonts/icons.ttf").as_slice().into()],
-            ..Settings::default()
-        })
+        .font(icon::FONT)
         .theme(|state| state.theme.value().clone())
         .subscription(App::subscription)
         .run_with(App::new)

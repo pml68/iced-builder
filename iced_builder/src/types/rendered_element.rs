@@ -1,11 +1,10 @@
-use indexmap::IndexMap;
-
 use iced::advanced::widget::Id;
 use iced::{widget, Element, Length};
 use serde::{Deserialize, Serialize};
 use unique_id::{string::StringGenerator, Generator};
 
 use crate::{types::Message, Result};
+use std::collections::BTreeMap;
 
 use super::ElementName;
 
@@ -14,7 +13,7 @@ pub struct RenderedElement {
     id: String,
     child_elements: Option<Vec<RenderedElement>>,
     name: ElementName,
-    options: IndexMap<String, Option<String>>,
+    options: BTreeMap<String, Option<String>>,
 }
 
 impl RenderedElement {
@@ -24,7 +23,7 @@ impl RenderedElement {
             id: gen.next_id(),
             child_elements: None,
             name,
-            options: IndexMap::new(),
+            options: BTreeMap::new(),
         }
     }
 
@@ -34,7 +33,7 @@ impl RenderedElement {
             id: gen.next_id(),
             child_elements: Some(child_elements),
             name,
-            options: IndexMap::new(),
+            options: BTreeMap::new(),
         }
     }
 

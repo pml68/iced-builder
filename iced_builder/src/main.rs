@@ -256,24 +256,28 @@ impl App {
     }
 
     fn subscription(&self) -> iced::Subscription<Message> {
-        keyboard::on_key_press(|key, modifiers| match key.as_ref() {
-            keyboard::Key::Character("o") if modifiers.command() => Some(Message::OpenFile),
-            keyboard::Key::Character("s") if modifiers.command() => {
-                if modifiers.shift() {
-                    Some(Message::SaveFileAs)
-                } else {
-                    Some(Message::SaveFile)
+        keyboard::on_key_press(|key, modifiers| {
+            if modifiers.command() {
+                match key.as_ref() {
+                    keyboard::Key::Character("o") => Some(Message::OpenFile),
+                    keyboard::Key::Character("s") => Some(if modifiers.shift() {
+                        Message::SaveFileAs
+                    } else {
+                        Message::SaveFile
+                    }),
+                    keyboard::Key::Character("n") => Some(Message::NewFile),
+                    _ => None,
                 }
+            } else {
+                None
             }
-            keyboard::Key::Character("n") if modifiers.command() => Some(Message::NewFile),
-            _ => None,
         })
     }
 
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<'_, Message> {
         let header = row![pick_list(
             THEMES,
-            Some(self.theme.target()).clone(),
+            Some(self.theme.target().clone()),
             |theme| { Message::ToggleTheme(theme.into()) }
         )]
         .width(200);

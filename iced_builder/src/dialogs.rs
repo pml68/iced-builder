@@ -1,7 +1,7 @@
 use rfd::{MessageButtons, MessageDialog, MessageDialogResult, MessageLevel};
 
 pub fn error_dialog(description: impl Into<String>) {
-    MessageDialog::new()
+    let _ = MessageDialog::new()
         .set_level(MessageLevel::Error)
         .set_buttons(MessageButtons::Ok)
         .set_title("Oops! Something went wrong.")

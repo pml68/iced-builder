@@ -86,7 +86,7 @@ impl Project {
                 .ok_or(Error::DialogClosed)?
         };
 
-        let contents = serde_json::to_string(&self.clone())?;
+        let contents = serde_json::to_string(&self)?;
         tokio::fs::write(&path, contents).await?;
 
         Ok(path)

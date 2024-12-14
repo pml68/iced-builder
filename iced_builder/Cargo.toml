@@ -18,7 +18,7 @@ serde_json = "1.0.133"
 tokio = { version = "1.42.0", features = ["fs"] }
 rfd = { version = "0.15.1", default-features = false, features = ["async-std", "gtk3"]  }
 rust-format = "0.3.4"
-unique_id = "0.1.5"
+blob-uuid = "0.5.0"
 thiserror = "2.0.6"
 
 [build-dependencies]
@@ -31,3 +31,27 @@ windows_exe_info = "0.4"
 [[bin]]
 name = "iced-builder"
 path = "src/main.rs"
+
+[lints.rust]
+missing_debug_implementations = "deny"
+# missing_docs = "deny"
+unsafe_code = "deny"
+unused_results = "deny"
+
+[lints.clippy]
+type-complexity = "allow"
+semicolon_if_nothing_returned = "deny"
+trivially-copy-pass-by-ref = "deny"
+default_trait_access = "deny"
+match-wildcard-for-single-variants = "deny"
+redundant-closure-for-method-calls = "deny"
+filter_map_next = "deny"
+manual_let_else = "deny"
+unused_async = "deny"
+from_over_into = "deny"
+needless_borrow = "deny"
+new_without_default = "deny"
+useless_conversion = "deny"
+
+[lints.rustdoc]
+broken_intra_doc_links = "forbid"

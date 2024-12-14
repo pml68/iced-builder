@@ -1,7 +1,7 @@
+use blob_uuid::random_blob;
 use iced::advanced::widget::Id;
 use iced::{widget, Element, Length};
 use serde::{Deserialize, Serialize};
-use unique_id::{string::StringGenerator, Generator};
 
 use crate::{types::Message, Result};
 use std::collections::BTreeMap;
@@ -18,9 +18,8 @@ pub struct RenderedElement {
 
 impl RenderedElement {
     fn new(name: ElementName) -> Self {
-        let gen = StringGenerator::default();
         Self {
-            id: gen.next_id(),
+            id: random_blob(),
             child_elements: None,
             name,
             options: BTreeMap::new(),
@@ -28,9 +27,8 @@ impl RenderedElement {
     }
 
     fn with(name: ElementName, child_elements: Vec<RenderedElement>) -> Self {
-        let gen = StringGenerator::default();
         Self {
-            id: gen.next_id(),
+            id: random_blob(),
             child_elements: Some(child_elements),
             name,
             options: BTreeMap::new(),
@@ -95,7 +93,7 @@ impl RenderedElement {
     pub fn remove(&mut self, element: &RenderedElement) {
         if let Some(child_elements) = self.child_elements.as_mut() {
             if let Some(index) = child_elements.iter().position(|x| x == element) {
-                child_elements.remove(index);
+                let _ = child_elements.remove(index);
             }
         }
     }
@@ -157,16 +155,17 @@ impl RenderedElement {
 
     fn preset_options(mut self, options: Vec<&str>) -> Self {
         for opt in options {
-            self.options.insert(opt.to_owned(), None);
+            let _ = self.options.insert(opt.to_owned(), None);
         }
         self
     }
 
-    pub fn option<'a>(&mut self, option: &'a str, value: &'a str) -> Self {
-        self.options
+    pub fn option<'a>(mut self, option: &'a str, value: &'a str) -> Self {
+        let _ = self
+            .options
             .entry(option.to_owned())
             .and_modify(|opt| *opt = Some(value.to_owned()));
-        self.clone()
+        self
     }
 
     pub fn as_element<'a>(self) -> Element<'a, Message> {

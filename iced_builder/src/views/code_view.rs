@@ -1,11 +1,10 @@
+use iced::widget::{
+    button, container, pane_grid, row, text, text_editor, tooltip, Space,
+};
+use iced::{Alignment, Length, Theme};
 use super::style;
 use crate::icon::copy;
 use crate::types::{DesignerPage, Message};
-use iced::{
-    highlighter,
-    widget::{button, container, pane_grid, row, text, text_editor, tooltip, Space},
-    Alignment, Length,
-};
 
 pub fn view<'a>(
     editor_content: &'a text_editor::Content,
@@ -21,7 +20,8 @@ pub fn view<'a>(
             tooltip::Position::FollowCursor
         ),
         Space::with_width(20),
-        button("Switch to Designer view").on_press(Message::SwitchPage(DesignerPage::DesignerView))
+        button("Switch to Designer view")
+            .on_press(Message::SwitchPage(DesignerPage::DesignerView))
     ]
     .align_y(Alignment::Center);
     let title_bar = pane_grid::TitleBar::new(title)

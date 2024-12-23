@@ -1,10 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{Error, Result};
-
 use super::rendered_element::{
     button, column, container, image, row, svg, text, Action, RenderedElement,
 };
+use crate::{Error, Result};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ElementName {

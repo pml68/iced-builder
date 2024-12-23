@@ -9,7 +9,9 @@ pub fn error_dialog(description: impl Into<String>) {
         .show();
 }
 
-pub fn unsaved_changes_dialog(description: impl Into<String>) -> MessageDialogResult {
+pub fn unsaved_changes_dialog(
+    description: impl Into<String>,
+) -> MessageDialogResult {
     MessageDialog::new()
         .set_level(MessageLevel::Warning)
         .set_buttons(MessageButtons::OkCancel)

@@ -2,18 +2,16 @@ pub mod element_name;
 pub mod project;
 pub mod rendered_element;
 
+use std::path::PathBuf;
+
 pub use element_name::ElementName;
+use iced::widget::{pane_grid, text_editor};
+use iced::Theme;
+use iced_anim::SpringEvent;
 pub use project::Project;
 pub use rendered_element::*;
 
-use std::path::PathBuf;
-
 use crate::Result;
-use iced::{
-    widget::{pane_grid, text_editor},
-    Theme,
-};
-use iced_anim::SpringEvent;
 
 #[derive(Debug, Clone)]
 pub enum Message {

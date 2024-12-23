@@ -1,10 +1,9 @@
+use iced::widget::{column, container, pane_grid, text, Column};
+use iced::{Alignment, Element, Length};
+use iced_drop::droppable;
+
 use super::style;
 use crate::types::{ElementName, Message};
-use iced::{
-    widget::{column, container, pane_grid, text, Column},
-    Alignment, Element, Length,
-};
-use iced_drop::droppable;
 
 fn items_list_view<'a>(items: &'a Vec<ElementName>) -> Element<'a, Message> {
     let mut column = Column::new()
@@ -13,10 +12,12 @@ fn items_list_view<'a>(items: &'a Vec<ElementName>) -> Element<'a, Message> {
         .width(Length::Fill);
 
     for item in items {
-        column = column.push(
-            droppable(text(item.clone().to_string()))
-                .on_drop(move |point, rect| Message::DropNewElement(item.clone(), point, rect)),
-        );
+        column =
+            column.push(droppable(text(item.clone().to_string())).on_drop(
+                move |point, rect| {
+                    Message::DropNewElement(item.clone(), point, rect)
+                },
+            ));
     }
 
     container(column)

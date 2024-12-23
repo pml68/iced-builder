@@ -1,5 +1,6 @@
 use std::io;
 use std::sync::Arc;
+
 use thiserror::Error;
 
 #[derive(Debug, Clone, Error)]
@@ -10,7 +11,9 @@ pub enum Error {
     FormatError(Arc<rust_format::Error>),
     #[error("The element tree contains no matching element")]
     NonExistentElement,
-    #[error("The file dialog has been closed without selecting a valid option")]
+    #[error(
+        "The file dialog has been closed without selecting a valid option"
+    )]
     DialogClosed,
     #[error("{0}")]
     Other(String),

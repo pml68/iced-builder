@@ -1,22 +1,16 @@
 use std::path::PathBuf;
 
-use iced::{
-    advanced::widget::Id,
-    clipboard, keyboard,
-    widget::{
-        container,
-        pane_grid::{self, Pane, PaneGrid},
-        pick_list, row, text_editor, Column,
-    },
-    Alignment, Element, Length, Task, Theme,
-};
+use iced::advanced::widget::Id;
+use iced::widget::pane_grid::{self, Pane, PaneGrid};
+use iced::widget::{container, pick_list, row, text_editor, Column};
+use iced::{clipboard, keyboard, Alignment, Element, Length, Task, Theme};
 use iced_anim::{Animation, Spring};
-use iced_builder::{
-    dialogs::{error_dialog, unsaved_changes_dialog},
-    icon,
-    types::{Action, DesignerPage, ElementName, Message, Project},
-    views::{code_view, designer_view, element_list},
+use iced_builder::dialogs::{error_dialog, unsaved_changes_dialog};
+use iced_builder::icon;
+use iced_builder::types::{
+    Action, DesignerPage, ElementName, Message, Project,
 };
+use iced_builder::views::{code_view, designer_view, element_list};
 use rfd::MessageDialogResult;
 
 const THEMES: &'static [Theme] = &[Theme::SolarizedDark, Theme::SolarizedLight];
@@ -50,12 +44,14 @@ enum Panes {
 
 impl App {
     fn new() -> (Self, Task<Message>) {
-        let state = pane_grid::State::with_configuration(pane_grid::Configuration::Split {
-            axis: pane_grid::Axis::Vertical,
-            ratio: 0.8,
-            a: Box::new(pane_grid::Configuration::Pane(Panes::Designer)),
-            b: Box::new(pane_grid::Configuration::Pane(Panes::ElementList)),
-        });
+        let state = pane_grid::State::with_configuration(
+            pane_grid::Configuration::Split {
+                axis: pane_grid::Axis::Vertical,
+                ratio: 0.8,
+                a: Box::new(pane_grid::Configuration::Pane(Panes::Designer)),
+                b: Box::new(pane_grid::Configuration::Pane(Panes::ElementList)),
+            },
+        );
         (
             Self {
                 is_dirty: false,
@@ -98,19 +94,24 @@ impl App {
             Message::ToggleTheme(event) => {
                 self.theme.update(event);
             }
-            Message::CopyCode => return clipboard::write(self.editor_content.text()),
+            Message::CopyCode => {
+                return clipboard::write(self.editor_content.text())
+            }
             Message::SwitchPage(page) => self.designer_page = page,
             Message::EditorAction(action) => {
                 if let text_editor::Action::Scroll { lines: _ } = action {
                     self.editor_content.perform(action);
                 }
             }
-            Message::RefreshEditorContent => match self.project.clone().app_code() {
-                Ok(code) => {
-                    self.editor_content = text_editor::Content::with_text(&code);
+            Message::RefreshEditorContent => {
+                match self.project.clone().app_code() {
+                    Ok(code) => {
+                        self.editor_content =
+                            text_editor::Content::with_text(&code);
+                    }
+                    Err(error) => error_dialog(error.to_string()),
                 }
-                Err(error) => error_dialog(error.to_string()),
-            },
+            }
             Message::DropNewElement(name, point, _) => {
                 return iced_drop::zones_on_point(
                     move |zones| Message::HandleNew(name.clone(), zones),
@@ -123,10 +124,19 @@ impl App {
             Message::HandleNew(name, zones) => {
                 let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
                 if ids.len() > 0 {
-                    let action = Action::new(ids, &mut self.project.element_tree.clone(), None);
-                    let result = name.handle_action(self.project.element_tree.as_mut(), action);
+                    let action = Action::new(
+                        ids,
+                        &mut self.project.element_tree.clone(),
+                        None,
+                    );
+                    let result = name.handle_action(
+                        self.project.element_tree.as_mut(),
+                        action,
+                    );
                     match result {
-                        Ok(Some(ref element)) => self.project.element_tree = Some(element.clone()),
+                        Ok(Some(ref element)) => {
+                            self.project.element_tree = Some(element.clone())
+                        }
                         Err(error) => error_dialog(error.to_string()),
                         _ => {}
                     }
@@ -152,7 +162,10 @@ impl App {
                         &mut self.project.element_tree.clone(),
                         Some(element.get_id()),
                     );
-                    let result = element.handle_action(self.project.element_tree.as_mut(), action);
+                    let result = element.handle_action(
+                        self.project.element_tree.as_mut(),
+                        action,
+                    );
                     if let Err(error) = result {
                         error_dialog(error.to_string());
                     }
@@ -167,7 +180,10 @@ impl App {
             Message::PaneClicked(pane) => {
                 self.focus = Some(pane);
             }
-            Message::PaneDragged(pane_grid::DragEvent::Dropped { pane, target }) => {
+            Message::PaneDragged(pane_grid::DragEvent::Dropped {
+                pane,
+                target,
+            }) => {
                 self.pane_state.drop(pane, target);
             }
             Message::PaneDragged(_) => {}
@@ -192,7 +208,10 @@ impl App {
                     if !self.is_dirty {
                         self.is_loading = true;
 
-                        return Task::perform(Project::from_path(), Message::FileOpened);
+                        return Task::perform(
+                            Project::from_path(),
+                            Message::FileOpened,
+                        );
                     } else {
                         if let MessageDialogResult::Ok = unsaved_changes_dialog("You have unsaved changes. Do you wish to discard these and open another project?") {
                             self.is_dirty = false;
@@ -211,7 +230,9 @@ impl App {
                         self.project = project.clone();
                         self.project_path = Some(path);
                         self.editor_content = text_editor::Content::with_text(
-                            &project.app_code().unwrap_or_else(|err| err.to_string()),
+                            &project
+                                .app_code()
+                                .unwrap_or_else(|err| err.to_string()),
                         );
                     }
                     Err(error) => error_dialog(error.to_string()),
@@ -260,11 +281,13 @@ impl App {
             if modifiers.command() {
                 match key.as_ref() {
                     keyboard::Key::Character("o") => Some(Message::OpenFile),
-                    keyboard::Key::Character("s") => Some(if modifiers.shift() {
-                        Message::SaveFileAs
-                    } else {
-                        Message::SaveFile
-                    }),
+                    keyboard::Key::Character("s") => {
+                        Some(if modifiers.shift() {
+                            Message::SaveFileAs
+                        } else {
+                            Message::SaveFile
+                        })
+                    }
                     keyboard::Key::Character("n") => Some(Message::NewFile),
                     _ => None,
                 }
@@ -281,30 +304,33 @@ impl App {
             |theme| { Message::ToggleTheme(theme.into()) }
         )]
         .width(200);
-        let pane_grid = PaneGrid::new(&self.pane_state, |id, pane, _is_maximized| {
-            let is_focused = Some(id) == self.focus;
-            match pane {
-                Panes::Designer => match &self.designer_page {
-                    DesignerPage::DesignerView => designer_view::view(
-                        &self.project.element_tree,
-                        self.project.get_theme(),
-                        is_focused,
-                    ),
-                    DesignerPage::CodeView => code_view::view(
-                        &self.editor_content,
-                        self.theme.value().clone(),
-                        is_focused,
-                    ),
-                },
-                Panes::ElementList => element_list::view(&self.element_list, is_focused),
-            }
-        })
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .spacing(10)
-        .on_resize(10, Message::PaneResized)
-        .on_click(Message::PaneClicked)
-        .on_drag(Message::PaneDragged);
+        let pane_grid =
+            PaneGrid::new(&self.pane_state, |id, pane, _is_maximized| {
+                let is_focused = Some(id) == self.focus;
+                match pane {
+                    Panes::Designer => match &self.designer_page {
+                        DesignerPage::DesignerView => designer_view::view(
+                            &self.project.element_tree,
+                            self.project.get_theme(),
+                            is_focused,
+                        ),
+                        DesignerPage::CodeView => code_view::view(
+                            &self.editor_content,
+                            self.theme.value().clone(),
+                            is_focused,
+                        ),
+                    },
+                    Panes::ElementList => {
+                        element_list::view(&self.element_list, is_focused)
+                    }
+                }
+            })
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .spacing(10)
+            .on_resize(10, Message::PaneResized)
+            .on_click(Message::PaneClicked)
+            .on_drag(Message::PaneDragged);
 
         let content = Column::new()
             .push(header)

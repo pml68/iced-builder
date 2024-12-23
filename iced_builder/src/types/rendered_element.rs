@@ -1,12 +1,13 @@
+use std::collections::BTreeMap;
+
 use blob_uuid::random_blob;
 use iced::advanced::widget::Id;
 use iced::{widget, Element, Length};
 use serde::{Deserialize, Serialize};
 
-use crate::{types::Message, Result};
-use std::collections::BTreeMap;
-
 use super::ElementName;
+use crate::types::Message;
+use crate::Result;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderedElement {
@@ -55,7 +56,10 @@ impl RenderedElement {
         }
     }
 
-    pub fn find_parent(&mut self, child_element: &RenderedElement) -> Option<&mut Self> {
+    pub fn find_parent(
+        &mut self,
+        child_element: &RenderedElement,
+    ) -> Option<&mut Self> {
         if child_element == self {
             return Some(self);
         } else if self.child_elements.is_some() {
@@ -92,7 +96,9 @@ impl RenderedElement {
 
     pub fn remove(&mut self, element: &RenderedElement) {
         if let Some(child_elements) = self.child_elements.as_mut() {
-            if let Some(index) = child_elements.iter().position(|x| x == element) {
+            if let Some(index) =
+                child_elements.iter().position(|x| x == element)
+            {
                 let _ = child_elements.remove(index);
             }
         }
@@ -106,7 +112,9 @@ impl RenderedElement {
 
     pub fn insert_after(&mut self, id: Id, element: &RenderedElement) {
         if let Some(child_elements) = self.child_elements.as_mut() {
-            if let Some(index) = child_elements.iter().position(|x| x.get_id() == id) {
+            if let Some(index) =
+                child_elements.iter().position(|x| x.get_id() == id)
+            {
                 child_elements.insert(index + 1, element.clone());
             } else {
                 child_elements.push(element.clone());
@@ -178,16 +186,21 @@ impl RenderedElement {
         }
         iced_drop::droppable(
             widget::container(
-                widget::column![widget::text(self.name.clone().to_string()), children]
-                    .width(Length::Fill)
-                    .spacing(10),
+                widget::column![
+                    widget::text(self.name.clone().to_string()),
+                    children
+                ]
+                .width(Length::Fill)
+                .spacing(10),
             )
             .padding(10)
             .style(widget::container::bordered_box),
         )
         .id(self.get_id())
         .drag_hide(true)
-        .on_drop(move |point, rect| Message::MoveElement(self.clone(), point, rect))
+        .on_drop(move |point, rect| {
+            Message::MoveElement(self.clone(), point, rect)
+        })
         .into()
     }
 
@@ -327,28 +340,32 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
             }
             ElementName::SVG(p) => widget::svg(p).into(),
             ElementName::Image(p) => widget::image(p).into(),
-            ElementName::Container => widget::container(if child_elements.len() == 1 {
-                child_elements[0].clone().into()
-            } else {
-                Element::from("")
-            })
+            ElementName::Container => {
+                widget::container(if child_elements.len() == 1 {
+                    child_elements[0].clone().into()
+                } else {
+                    Element::from("")
+                })
+                .padding(20)
+                .into()
+            }
+            ElementName::Row => widget::Row::from_iter(
+                child_elements.into_iter().map(|el| el.into()),
+            )
             .padding(20)
             .into(),
-            ElementName::Row => {
-                widget::Row::from_iter(child_elements.into_iter().map(|el| el.into()))
-                    .padding(20)
-                    .into()
-            }
-            ElementName::Column => {
-                widget::Column::from_iter(child_elements.into_iter().map(|el| el.into()))
-                    .padding(20)
-                    .into()
-            }
+            ElementName::Column => widget::Column::from_iter(
+                child_elements.into_iter().map(|el| el.into()),
+            )
+            .padding(20)
+            .into(),
         };
         iced_drop::droppable(content)
             .id(value.get_id())
             .drag_hide(true)
-            .on_drop(move |point, rect| Message::MoveElement(value.clone(), point, rect))
+            .on_drop(move |point, rect| {
+                Message::MoveElement(value.clone(), point, rect)
+            })
             .into()
     }
 }
@@ -378,8 +395,10 @@ impl Action {
         } else {
             let id: Id = match source_id {
                 Some(id) if ids.contains(&id) => {
-                    let element_id = ids[ids.iter().position(|x| *x == id).unwrap()].clone();
-                    if ids.len() > 2 && ids[ids.clone().len() - 1] == element_id {
+                    let element_id =
+                        ids[ids.iter().position(|x| *x == id).unwrap()].clone();
+                    if ids.len() > 2 && ids[ids.clone().len() - 1] == element_id
+                    {
                         return Self::Stop;
                     }
                     element_id
@@ -394,7 +413,8 @@ impl Action {
 
             // Element IS a parent but ISN'T a non-empty container
             match element.is_parent()
-                && !(element.name == ElementName::Container && !element.is_empty())
+                && !(element.name == ElementName::Container
+                    && !element.is_empty())
             {
                 true => {
                     action = Self::PushFront(id);
@@ -425,12 +445,8 @@ impl Action {
 }
 
 pub fn text(text: &str) -> RenderedElement {
-    RenderedElement::new(ElementName::Text(text.to_owned())).preset_options(vec![
-        "size",
-        "line_height",
-        "width",
-        "height",
-    ])
+    RenderedElement::new(ElementName::Text(text.to_owned()))
+        .preset_options(vec!["size", "line_height", "width", "height"])
 }
 
 pub fn button(text: &str) -> RenderedElement {
@@ -457,5 +473,8 @@ pub fn row(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {
 }
 
 pub fn column(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {
-    RenderedElement::with(ElementName::Column, child_elements.unwrap_or_default())
+    RenderedElement::with(
+        ElementName::Column,
+        child_elements.unwrap_or_default(),
+    )
 }

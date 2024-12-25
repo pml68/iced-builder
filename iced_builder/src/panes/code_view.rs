@@ -1,10 +1,9 @@
-use iced::widget::{
-    button, container, pane_grid, row, text, text_editor, tooltip, Space,
-};
+use iced::widget::{button, pane_grid, row, text, text_editor, Space};
 use iced::{Alignment, Length, Theme};
 use super::style;
 use crate::icon::copy;
 use crate::types::{DesignerPage, Message};
+use crate::widget::tip;
 
 pub fn view<'a>(
     editor_content: &'a text_editor::Content,
@@ -14,10 +13,10 @@ pub fn view<'a>(
     let title = row![
         text("Generated Code"),
         Space::with_width(Length::Fill),
-        tooltip(
-            button(container(copy()).center_x(30)).on_press(Message::CopyCode),
+        tip(
+            button(copy()).on_press(Message::CopyCode),
             "Copy code to clipboard",
-            tooltip::Position::FollowCursor
+            tip::Position::FollowCursor
         ),
         Space::with_width(20),
         button("Switch to Designer view")

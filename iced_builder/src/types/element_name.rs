@@ -1,10 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::Error;
-
 use super::rendered_element::{
     button, column, container, image, row, svg, text, Action, RenderedElement,
 };
+use crate::{Error, Result};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ElementName {
@@ -18,7 +17,7 @@ pub enum ElementName {
 }
 
 impl ElementName {
-    pub const ALL: [Self; 7] = [
+    pub const ALL: &'static [Self; 7] = &[
         Self::Text(String::new()),
         Self::Button(String::new()),
         Self::SVG(String::new()),
@@ -32,7 +31,7 @@ impl ElementName {
         &self,
         element_tree: Option<&mut RenderedElement>,
         action: Action,
-    ) -> Result<Option<RenderedElement>, Error> {
+    ) -> Result<Option<RenderedElement>> {
         let element = match self {
             Self::Text(_) => text(""),
             Self::Button(_) => button(""),
@@ -44,6 +43,7 @@ impl ElementName {
         };
         match action {
             Action::Stop => Ok(None),
+            Action::Drop => Ok(None),
             Action::AddNew => Ok(Some(element)),
             Action::PushFront(id) => {
                 element_tree

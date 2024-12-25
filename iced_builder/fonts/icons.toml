@@ -1,0 +1,6 @@
+module = "icon"
+
+[glyphs]
+save = "entypo-floppy"
+open = "fontawesome-folder-open-empty"
+copy = "fontawesome-file-code"

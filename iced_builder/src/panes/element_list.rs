@@ -1,22 +1,23 @@
-use super::style;
-use crate::{types::element_name::ElementName, Message};
-use iced::{
-    widget::{column, container, pane_grid, text, Column},
-    Alignment, Element, Length,
-};
+use iced::widget::{column, container, pane_grid, text, Column};
+use iced::{Alignment, Element, Length};
 use iced_drop::droppable;
 
-fn items_list_view<'a>(items: &'a Vec<ElementName>) -> Element<'a, Message> {
+use super::style;
+use crate::types::{ElementName, Message};
+
+fn items_list_view<'a>(items: &'a [ElementName]) -> Element<'a, Message> {
     let mut column = Column::new()
         .spacing(20)
         .align_x(Alignment::Center)
         .width(Length::Fill);
 
     for item in items {
-        column = column.push(
-            droppable(text(item.clone().to_string()))
-                .on_drop(move |point, rect| Message::DropNewElement(item.clone(), point, rect)),
-        );
+        column =
+            column.push(droppable(text(item.clone().to_string())).on_drop(
+                move |point, rect| {
+                    Message::DropNewElement(item.clone(), point, rect)
+                },
+            ));
     }
 
     container(column)
@@ -26,7 +27,7 @@ fn items_list_view<'a>(items: &'a Vec<ElementName>) -> Element<'a, Message> {
 }
 
 pub fn view<'a>(
-    element_list: &'a Vec<ElementName>,
+    element_list: &'a [ElementName],
     is_focused: bool,
 ) -> pane_grid::Content<'a, Message> {
     let items_list = items_list_view(element_list);

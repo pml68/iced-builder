@@ -1,20 +1,16 @@
+use iced::widget::{button, container, pane_grid, row, text, themer, Space};
+use iced::{Alignment, Element, Length};
+
 use super::style;
-use crate::{
-    types::{rendered_element::RenderedElement, DesignerPage},
-    Message,
-};
-use iced::{
-    widget::{button, container, pane_grid, row, text, themer, Space},
-    Alignment, Length,
-};
+use crate::types::{DesignerPage, Message, RenderedElement};
 
 pub fn view<'a>(
     element_tree: &Option<RenderedElement>,
     designer_theme: iced::Theme,
     is_focused: bool,
 ) -> pane_grid::Content<'a, Message> {
-    let el_tree = match element_tree {
-        Some(tree) => tree.clone().as_element(),
+    let el_tree: Element<'a, Message> = match element_tree {
+        Some(tree) => tree.clone().into(),
         None => text("Open a project or begin creating one").into(),
     };
     let content = container(themer(designer_theme, el_tree))
@@ -24,7 +20,8 @@ pub fn view<'a>(
     let title = row![
         text("Designer"),
         Space::with_width(Length::Fill),
-        button("Switch to Code view").on_press(Message::SwitchPage(DesignerPage::CodeView)),
+        button("Switch to Code view")
+            .on_press(Message::SwitchPage(DesignerPage::CodeView)),
     ]
     .align_y(Alignment::Center);
     let title_bar = pane_grid::TitleBar::new(title)

@@ -1,27 +1,26 @@
+use iced::widget::{button, pane_grid, row, text, text_editor, Space};
+use iced::{Alignment, Length, Theme};
 use super::style;
-use crate::{types::DesignerPage, Message};
-use iced::{
-    highlighter,
-    widget::{button, container, pane_grid, row, text, text_editor, tooltip, Space},
-    Alignment, Font, Length,
-};
+use crate::icon::copy;
+use crate::types::{DesignerPage, Message};
+use crate::widget::tip;
 
 pub fn view<'a>(
     editor_content: &'a text_editor::Content,
-    dark_theme: bool,
+    theme: Theme,
     is_focused: bool,
 ) -> pane_grid::Content<'a, Message> {
     let title = row![
         text("Generated Code"),
         Space::with_width(Length::Fill),
-        tooltip(
-            button(container(text('\u{0e801}').font(Font::with_name("editor-icons"))).center_x(30))
-                .on_press(Message::CopyCode),
+        tip(
+            button(copy()).on_press(Message::CopyCode),
             "Copy code to clipboard",
-            tooltip::Position::FollowCursor
+            tip::Position::FollowCursor
         ),
         Space::with_width(20),
-        button("Switch to Designer view").on_press(Message::SwitchPage(DesignerPage::Designer))
+        button("Switch to Designer view")
+            .on_press(Message::SwitchPage(DesignerPage::DesignerView))
     ]
     .align_y(Alignment::Center);
     let title_bar = pane_grid::TitleBar::new(title)
@@ -32,7 +31,7 @@ pub fn view<'a>(
             .on_action(Message::EditorAction)
             .highlight(
                 "rs",
-                if dark_theme {
+                if theme.to_string().contains("Dark") {
                     highlighter::Theme::SolarizedDark
                 } else {
                     highlighter::Theme::InspiredGitHub

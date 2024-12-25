@@ -7,10 +7,10 @@ use iced::{clipboard, keyboard, Alignment, Element, Length, Task, Theme};
 use iced_anim::{Animation, Spring};
 use iced_builder::dialogs::{error_dialog, unsaved_changes_dialog};
 use iced_builder::icon;
+use iced_builder::panes::{code_view, designer_view, element_list};
 use iced_builder::types::{
     Action, DesignerPage, ElementName, Message, Project,
 };
-use iced_builder::views::{code_view, designer_view, element_list};
 use rfd::MessageDialogResult;
 
 const THEMES: &'static [Theme] = &[Theme::SolarizedDark, Theme::SolarizedLight];

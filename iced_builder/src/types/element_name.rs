@@ -17,7 +17,7 @@ pub enum ElementName {
 }
 
 impl ElementName {
-    pub const ALL: [Self; 7] = [
+    pub const ALL: &'static [Self; 7] = &[
         Self::Text(String::new()),
         Self::Button(String::new()),
         Self::SVG(String::new()),

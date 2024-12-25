@@ -95,7 +95,8 @@ impl RenderedElement {
     }
 
     pub fn remove(&mut self, element: &RenderedElement) {
-        if let Some(child_elements) = self.child_elements.as_mut() {
+        let parent = self.find_parent(element).unwrap();
+        if let Some(child_elements) = parent.child_elements.as_mut() {
             if let Some(index) =
                 child_elements.iter().position(|x| x == element)
             {
@@ -132,8 +133,7 @@ impl RenderedElement {
         match action {
             Action::Stop => Ok(()),
             Action::Drop => {
-                let parent = element_tree.find_parent(self).unwrap();
-                parent.remove(self);
+                element_tree.remove(self);
 
                 Ok(())
             }
@@ -141,8 +141,7 @@ impl RenderedElement {
                 "the action was of kind `AddNew`, but invoking it on an existing element tree is not possible".into(),
             ),
             Action::PushFront(id) => {
-                let old_parent = element_tree.find_parent(self).unwrap();
-                old_parent.remove(self);
+                element_tree.remove(self);
 
                 let new_parent = element_tree.find_by_id(id).unwrap();
                 new_parent.push_front(self);
@@ -150,8 +149,7 @@ impl RenderedElement {
                 Ok(())
             }
             Action::InsertAfter(parent_id, target_id) => {
-                let old_parent = element_tree.find_parent(self).unwrap();
-                old_parent.remove(self);
+                element_tree.remove(self);
 
                 let new_parent = element_tree.find_by_id(parent_id).unwrap();
                 new_parent.insert_after(target_id, self);
@@ -161,9 +159,9 @@ impl RenderedElement {
         }
     }
 
-    fn preset_options(mut self, options: Vec<&str>) -> Self {
+    fn preset_options<'a>(mut self, options: &[&'a str]) -> Self {
         for opt in options {
-            let _ = self.options.insert(opt.to_owned(), None);
+            let _ = self.options.insert(opt.to_string(), None);
         }
         self
     }
@@ -445,8 +443,12 @@ impl Action {
 }
 
 pub fn text(text: &str) -> RenderedElement {
-    RenderedElement::new(ElementName::Text(text.to_owned()))
-        .preset_options(vec!["size", "line_height", "width", "height"])
+    RenderedElement::new(ElementName::Text(text.to_owned())).preset_options(&[
+        "size",
+        "line_height",
+        "width",
+        "height",
+    ])
 }
 
 pub fn button(text: &str) -> RenderedElement {

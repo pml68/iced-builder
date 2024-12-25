@@ -32,7 +32,7 @@ struct App {
     pane_state: pane_grid::State<Panes>,
     focus: Option<Pane>,
     designer_page: DesignerPage,
-    element_list: Vec<ElementName>,
+    element_list: &'static [ElementName],
     editor_content: text_editor::Content,
 }
 
@@ -62,7 +62,7 @@ impl App {
                 pane_state: state,
                 focus: None,
                 designer_page: DesignerPage::DesignerView,
-                element_list: ElementName::ALL.to_vec(),
+                element_list: ElementName::ALL,
                 editor_content: text_editor::Content::new(),
             },
             Task::none(),
@@ -321,7 +321,7 @@ impl App {
                         ),
                     },
                     Panes::ElementList => {
-                        element_list::view(&self.element_list, is_focused)
+                        element_list::view(self.element_list, is_focused)
                     }
                 }
             })

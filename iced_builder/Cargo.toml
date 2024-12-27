@@ -18,7 +18,7 @@ serde_json = "1.0.133"
 tokio = { version = "1.42.0", features = ["fs"] }
 rfd = { version = "0.15.1", default-features = false, features = ["async-std", "gtk3"]  }
 rust-format = "0.3.4"
-blob-uuid = "0.5.0"
+uuid = { version = "1.11.0", features = ["v4", "serde"] }
 thiserror = "2.0.6"
 
 [build-dependencies]

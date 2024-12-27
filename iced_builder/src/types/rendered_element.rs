@@ -1,9 +1,9 @@
 use std::collections::BTreeMap;
 
-use blob_uuid::random_blob;
 use iced::advanced::widget::Id;
 use iced::{widget, Element, Length};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use super::ElementName;
 use crate::types::Message;
@@ -11,7 +11,8 @@ use crate::Result;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderedElement {
-    id: String,
+    #[serde(skip)]
+    id: Uuid,
     child_elements: Option<Vec<RenderedElement>>,
     name: ElementName,
     options: BTreeMap<String, Option<String>>,
@@ -20,7 +21,7 @@ pub struct RenderedElement {
 impl RenderedElement {
     fn new(name: ElementName) -> Self {
         Self {
-            id: random_blob(),
+            id: Uuid::new_v4(),
             child_elements: None,
             name,
             options: BTreeMap::new(),
@@ -29,7 +30,7 @@ impl RenderedElement {
 
     fn with(name: ElementName, child_elements: Vec<RenderedElement>) -> Self {
         Self {
-            id: random_blob(),
+            id: Uuid::new_v4(),
             child_elements: Some(child_elements),
             name,
             options: BTreeMap::new(),
@@ -37,7 +38,7 @@ impl RenderedElement {
     }
 
     pub fn get_id(&self) -> Id {
-        Id::new(self.id.clone())
+        Id::new(self.id.to_string())
     }
 
     pub fn find_by_id(&mut self, id: Id) -> Option<&mut Self> {

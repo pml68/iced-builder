@@ -14,7 +14,6 @@ use iced_builder::types::{
     Action, DesignerPage, ElementName, Message, Project,
 };
 use iced_builder::{icon, Error};
-use rfd::MessageDialogResult;
 use tokio::runtime;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -235,7 +234,7 @@ impl App {
                         self.project_path = None;
                         self.editor_content = text_editor::Content::new();
                     } else {
-                        if let MessageDialogResult::Ok = unsaved_changes_dialog("You have unsaved changes. Do you wish to discard these and create a new project?") {
+                        if unsaved_changes_dialog("You have unsaved changes. Do you wish to discard these and create a new project?") {
                             self.is_dirty = false;
                             self.project = Project::new();
                             self.project_path = None;
@@ -254,7 +253,7 @@ impl App {
                             Message::FileOpened,
                         );
                     } else {
-                        if let MessageDialogResult::Ok = unsaved_changes_dialog("You have unsaved changes. Do you wish to discard these and open another project?") {
+                        if unsaved_changes_dialog("You have unsaved changes. Do you wish to discard these and open another project?") {
                             self.is_dirty = false;
                             self.is_loading = true;
                             return Task::perform(Project::from_file(), Message::FileOpened);

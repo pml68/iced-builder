@@ -1,0 +1,5 @@
+background = "#26233a"
+text = "#e0def4"
+primary = "#9ccfd8"
+success = "#f6c177"
+danger = "#eb6f92"

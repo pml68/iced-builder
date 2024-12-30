@@ -43,7 +43,7 @@ impl RenderedElement {
 
     pub fn find_by_id(&mut self, id: Id) -> Option<&mut Self> {
         if self.get_id() == id.clone() {
-            return Some(self);
+            Some(self)
         } else if let Some(child_elements) = self.child_elements.as_mut() {
             for element in child_elements {
                 let element = element.find_by_id(id.clone());
@@ -51,9 +51,9 @@ impl RenderedElement {
                     return element;
                 }
             }
-            return None;
+            None
         } else {
-            return None;
+            None
         }
     }
 
@@ -62,12 +62,12 @@ impl RenderedElement {
         child_element: &RenderedElement,
     ) -> Option<&mut Self> {
         if child_element == self {
-            return Some(self);
+            Some(self)
         } else if self.child_elements.is_some() {
             if self
                 .child_elements
                 .clone()
-                .unwrap_or(vec![])
+                .unwrap_or_default()
                 .contains(child_element)
             {
                 return Some(self);
@@ -160,7 +160,7 @@ impl RenderedElement {
         }
     }
 
-    fn preset_options<'a>(mut self, options: &[&'a str]) -> Self {
+    fn preset_options(mut self, options: &[&str]) -> Self {
         for opt in options {
             let _ = self.options.insert(opt.to_string(), None);
         }
@@ -410,10 +410,10 @@ impl Action {
                 .find_by_id(id.clone())
                 .unwrap();
 
-            // Element IS a parent but ISN'T a non-empty container
-            match element.is_parent()
-                && !(element.name == ElementName::Container
-                    && !element.is_empty())
+            // Element is a parent and isn't a non-empty container
+            match (element.is_empty()
+                || !(element.name == ElementName::Container))
+                && element.is_parent()
             {
                 true => {
                     action = Self::PushFront(id);

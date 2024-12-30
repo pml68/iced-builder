@@ -5,6 +5,7 @@ use rust_format::{Config, Edition, Formatter, RustFmt};
 use serde::{Deserialize, Serialize};
 
 use super::rendered_element::RenderedElement;
+use crate::theme::theme_from_str;
 use crate::{Error, Result};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12,6 +13,12 @@ pub struct Project {
     pub title: Option<String>,
     pub theme: Option<String>,
     pub element_tree: Option<RenderedElement>,
+}
+
+impl Default for Project {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Project {
@@ -23,38 +30,21 @@ impl Project {
         }
     }
 
-    pub fn get_theme(&self) -> Theme {
+    pub fn get_theme(&self, config: &crate::config::Config) -> Theme {
         match &self.theme {
-            Some(theme) => match theme.as_str() {
-                "Light" => Theme::Light,
-                "Dark" => Theme::Dark,
-                "Dracula" => Theme::Dracula,
-                "Nord" => Theme::Nord,
-                "Solarized Light" => Theme::SolarizedLight,
-                "Solarized Dark" => Theme::SolarizedDark,
-                "Gruvbox Light" => Theme::GruvboxLight,
-                "Gruvbox Dark" => Theme::GruvboxDark,
-                "Catppuccin Latte" => Theme::CatppuccinLatte,
-                "Catppuccin Frappé" => Theme::CatppuccinFrappe,
-                "Catppuccin Macchiato" => Theme::CatppuccinMacchiato,
-                "Catppuccin Mocha" => Theme::CatppuccinMocha,
-                "Tokyo Night" => Theme::TokyoNight,
-                "Tokyo Night Storm" => Theme::TokyoNightStorm,
-                "Tokyo Night Light" => Theme::TokyoNightLight,
-                "Kanagawa Wave" => Theme::KanagawaWave,
-                "Kanagawa Dragon" => Theme::KanagawaDragon,
-                "Kanagawa Lotus" => Theme::KanagawaLotus,
-                "Moonfly" => Theme::Moonfly,
-                "Nightfly" => Theme::Nightfly,
-                "Oxocarbon" => Theme::Oxocarbon,
-                "Ferra" => Theme::Ferra,
-                _ => Theme::Dark,
-            },
+            Some(theme) => theme_from_str(Some(config), theme),
             None => Theme::Dark,
         }
     }
 
-    pub async fn from_path() -> Result<(PathBuf, Self)> {
+    pub async fn from_path(path: PathBuf) -> Result<(PathBuf, Self)> {
+        let contents = tokio::fs::read_to_string(&path).await?;
+        let element: Self = serde_json::from_str(&contents)?;
+
+        Ok((path, element))
+    }
+
+    pub async fn from_file() -> Result<(PathBuf, Self)> {
         let picked_file = rfd::AsyncFileDialog::new()
             .set_title("Open a JSON file...")
             .add_filter("*.json, *.JSON", &["json", "JSON"])
@@ -64,10 +54,7 @@ impl Project {
 
         let path = picked_file.path().to_owned();
 
-        let contents = tokio::fs::read_to_string(&path).await?;
-        let element: Self = serde_json::from_str(&contents)?;
-
-        Ok((path, element))
+        Self::from_path(path).await
     }
 
     pub async fn write_to_file(self, path: Option<PathBuf>) -> Result<PathBuf> {
@@ -91,7 +78,7 @@ impl Project {
         Ok(path)
     }
 
-    pub fn app_code(&self) -> Result<String> {
+    pub fn app_code(&self, config: &crate::config::Config) -> Result<String> {
         match self.element_tree {
             Some(ref element_tree) => {
                 let (imports, view) = element_tree.codegen();
@@ -127,7 +114,7 @@ impl Project {
                         Some(ref t) => t,
                         None => "New app",
                     },
-                    self.get_theme().to_string().replace(" ", "")
+                    self.get_theme(config).to_string().replace(" ", "")
                 );
                 let config = Config::new_str()
                     .edition(Edition::Rust2021)

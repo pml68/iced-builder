@@ -1,7 +1,10 @@
+pub mod config;
 pub mod dialogs;
+pub mod environment;
 pub mod error;
 pub mod icon;
 pub mod panes;
+pub mod theme;
 pub mod types;
 pub mod widget;
 

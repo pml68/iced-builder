@@ -5,7 +5,7 @@ use iced_drop::droppable;
 use super::style;
 use crate::types::{ElementName, Message};
 
-fn items_list_view<'a>(items: &'a [ElementName]) -> Element<'a, Message> {
+fn items_list_view(items: &[ElementName]) -> Element<'_, Message> {
     let mut column = Column::new()
         .spacing(20)
         .align_x(Alignment::Center)
@@ -26,10 +26,10 @@ fn items_list_view<'a>(items: &'a [ElementName]) -> Element<'a, Message> {
         .into()
 }
 
-pub fn view<'a>(
-    element_list: &'a [ElementName],
+pub fn view(
+    element_list: &[ElementName],
     is_focused: bool,
-) -> pane_grid::Content<'a, Message> {
+) -> pane_grid::Content<'_, Message> {
     let items_list = items_list_view(element_list);
     let content = column![items_list]
         .align_x(Alignment::Center)

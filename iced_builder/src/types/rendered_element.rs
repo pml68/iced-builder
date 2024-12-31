@@ -11,7 +11,7 @@ use crate::Result;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderedElement {
-    #[serde(skip)]
+    #[serde(skip, default = "Uuid::new_v4")]
     id: Uuid,
     child_elements: Option<Vec<RenderedElement>>,
     name: ElementName,

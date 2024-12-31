@@ -66,10 +66,7 @@ impl App {
         );
 
         let config = match config_load {
-            Ok(config) => {
-                println!("{config:?}");
-                config
-            }
+            Ok(config) => config,
             Err(_) => Config::default(),
         };
 

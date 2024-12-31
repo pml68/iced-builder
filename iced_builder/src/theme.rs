@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use iced::theme::palette::Extended;
 use iced::Color;
 
 use crate::config::Config;
@@ -56,12 +57,12 @@ pub fn theme_from_str(
 }
 
 #[derive(Debug)]
-pub struct Theme {
+pub struct Appearance {
     pub selected: iced::Theme,
     pub all: Arc<[iced::Theme]>,
 }
 
-impl Default for Theme {
+impl Default for Appearance {
     fn default() -> Self {
         Self {
             selected: iced::Theme::default(),
@@ -70,7 +71,15 @@ impl Default for Theme {
     }
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, Default, serde::Deserialize)]
+pub struct Theme {
+    palette: ThemePalette,
+    is_dark: Option<bool>,
+    #[serde(flatten)]
+    extended: Option<ExtendedThemePalette>,
+}
+
+#[derive(Debug, Clone, serde::Deserialize)]
 pub struct ThemePalette {
     #[serde(with = "color_serde")]
     background: Color,
@@ -82,6 +91,14 @@ pub struct ThemePalette {
     success: Color,
     #[serde(with = "color_serde")]
     danger: Color,
+}
+
+impl Theme {
+    pub fn into_iced_theme(self, name: String) -> iced::Theme {
+        iced::Theme::custom_with_fn(name, self.palette.clone().into(), |_| {
+            self.into()
+        })
+    }
 }
 
 impl Default for ThemePalette {
@@ -105,6 +122,145 @@ impl From<ThemePalette> for iced::theme::Palette {
             primary: palette.primary,
             success: palette.success,
             danger: palette.danger,
+        }
+    }
+}
+
+impl From<Theme> for Extended {
+    fn from(theme: Theme) -> Self {
+        let mut extended = Extended::generate(theme.palette.into());
+
+        if let Some(is_dark) = theme.is_dark {
+            extended.is_dark = is_dark;
+        }
+
+        if let Some(extended_palette) = theme.extended {
+            if let Some(background) = extended_palette.background {
+                if let Some(base) = background.base {
+                    extended.background.base = base.into();
+                }
+                if let Some(weak) = background.weak {
+                    extended.background.weak = weak.into();
+                }
+                if let Some(strong) = background.strong {
+                    extended.background.strong = strong.into();
+                }
+            }
+
+            // Handle primary
+            if let Some(primary) = extended_palette.primary {
+                if let Some(base) = primary.base {
+                    extended.primary.base = base.into();
+                }
+                if let Some(weak) = primary.weak {
+                    extended.primary.weak = weak.into();
+                }
+                if let Some(strong) = primary.strong {
+                    extended.primary.strong = strong.into();
+                }
+            }
+
+            // Handle secondary
+            if let Some(secondary) = extended_palette.secondary {
+                if let Some(base) = secondary.base {
+                    extended.secondary.base = base.into();
+                }
+                if let Some(weak) = secondary.weak {
+                    extended.secondary.weak = weak.into();
+                }
+                if let Some(strong) = secondary.strong {
+                    extended.secondary.strong = strong.into();
+                }
+            }
+
+            // Handle success
+            if let Some(success) = extended_palette.success {
+                if let Some(base) = success.base {
+                    extended.success.base = base.into();
+                }
+                if let Some(weak) = success.weak {
+                    extended.success.weak = weak.into();
+                }
+                if let Some(strong) = success.strong {
+                    extended.success.strong = strong.into();
+                }
+            }
+
+            // Handle danger
+            if let Some(danger) = extended_palette.danger {
+                if let Some(base) = danger.base {
+                    extended.danger.base = base.into();
+                }
+                if let Some(weak) = danger.weak {
+                    extended.danger.weak = weak.into();
+                }
+                if let Some(strong) = danger.strong {
+                    extended.danger.strong = strong.into();
+                }
+            }
+        }
+
+        extended
+    }
+}
+
+#[derive(Debug, Default, serde::Deserialize)]
+struct ExtendedThemePalette {
+    background: Option<ThemeBackground>,
+    primary: Option<ThemePrimary>,
+    secondary: Option<ThemeSecondary>,
+    success: Option<ThemeSuccess>,
+    danger: Option<ThemeDanger>,
+}
+
+#[derive(Debug, Default, serde::Deserialize)]
+struct ThemeBackground {
+    base: Option<ThemePair>,
+    weak: Option<ThemePair>,
+    strong: Option<ThemePair>,
+}
+
+#[derive(Debug, Default, serde::Deserialize)]
+struct ThemePrimary {
+    base: Option<ThemePair>,
+    weak: Option<ThemePair>,
+    strong: Option<ThemePair>,
+}
+
+#[derive(Debug, Default, serde::Deserialize)]
+struct ThemeSecondary {
+    base: Option<ThemePair>,
+    weak: Option<ThemePair>,
+    strong: Option<ThemePair>,
+}
+
+#[derive(Debug, Default, serde::Deserialize)]
+struct ThemeSuccess {
+    base: Option<ThemePair>,
+    weak: Option<ThemePair>,
+    strong: Option<ThemePair>,
+}
+
+#[derive(Debug, Default, serde::Deserialize)]
+struct ThemeDanger {
+    base: Option<ThemePair>,
+    weak: Option<ThemePair>,
+    strong: Option<ThemePair>,
+}
+
+#[derive(Debug, Default, serde::Deserialize)]
+struct ThemePair {
+    #[serde(with = "color_serde")]
+    color: Color,
+    #[serde(with = "color_serde")]
+    text: Color,
+}
+
+impl From<ThemePair> for iced::theme::palette::Pair {
+    fn from(pair: ThemePair) -> Self {
+        Self {
+            color: pair.color,
+            text: pair.text,
         }
     }
 }

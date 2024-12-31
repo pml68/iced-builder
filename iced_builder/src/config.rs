@@ -4,12 +4,12 @@ use serde::Deserialize;
 use tokio_stream::wrappers::ReadDirStream;
 use tokio_stream::StreamExt;
 
-use crate::theme::{theme_from_str, theme_index, Theme, ThemePalette};
+use crate::theme::{theme_from_str, theme_index, Appearance, Theme};
 use crate::{environment, Error, Result};
 
 #[derive(Debug, Default)]
 pub struct Config {
-    pub theme: Theme,
+    pub theme: Appearance,
     pub last_project: Option<PathBuf>,
 }
 
@@ -25,7 +25,6 @@ impl Config {
             std::fs::create_dir_all(dir.as_path())
                 .expect("expected permissions to create config folder");
         }
-        println!("{}", dir.to_string_lossy());
         dir
     }
 
@@ -36,7 +35,6 @@ impl Config {
             std::fs::create_dir_all(dir.as_path())
                 .expect("expected permissions to create themes folder");
         }
-        println!("{}", dir.to_string_lossy());
         dir
     }
 
@@ -49,6 +47,7 @@ impl Config {
 
         #[derive(Deserialize)]
         pub struct Configuration {
+            #[serde(default)]
             pub theme: String,
             pub last_project: Option<PathBuf>,
         }
@@ -73,17 +72,16 @@ impl Config {
         })
     }
 
-    pub async fn load_theme(theme_name: String) -> Result<Theme> {
+    pub async fn load_theme(theme_name: String) -> Result<Appearance> {
         use tokio::fs;
 
         let read_entry = |entry: fs::DirEntry| async move {
             let content = fs::read_to_string(entry.path()).await.ok()?;
 
-            let palette: ThemePalette =
-                toml::from_str(content.as_ref()).ok()?;
+            let theme: Theme = toml::from_str(content.as_ref()).ok()?;
             let name = entry.path().file_stem()?.to_string_lossy().to_string();
 
-            Some(iced::Theme::custom(name, palette.into()))
+            Some(theme.into_iced_theme(name))
         };
 
         let mut all = iced::Theme::ALL.to_owned();
@@ -115,7 +113,7 @@ impl Config {
             }
         }
 
-        Ok(Theme {
+        Ok(Appearance {
             selected,
             all: all.into(),
         })

@@ -1,5 +1,5 @@
 use iced::widget::{button, pane_grid, row, text, text_editor, Space};
-use iced::{Alignment, Length, Theme};
+use iced::{Alignment, Font, Length, Theme};
 use super::style;
 use crate::icon::copy;
 use crate::types::{DesignerPage, Message};
@@ -36,6 +36,7 @@ pub fn view(
                 } else {
                     highlighter::Theme::InspiredGitHub
                 },
+            .font(Font::MONOSPACE)
             )
             .height(Length::Fill)
             .padding(20),

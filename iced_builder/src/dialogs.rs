@@ -26,9 +26,5 @@ pub fn unsaved_changes_dialog(description: impl Into<String>) -> bool {
         .set_description(description)
         .show();
 
-    if let MessageDialogResult::Ok = result {
-        true
-    } else {
-        false
-    }
+    matches!(result, MessageDialogResult::Ok)
 }

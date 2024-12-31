@@ -349,12 +349,12 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
                 .into()
             }
             ElementName::Row => widget::Row::from_iter(
-                child_elements.into_iter().map(|el| el.into()),
+                child_elements.into_iter().map(Into::into),
             )
             .padding(20)
             .into(),
             ElementName::Column => widget::Column::from_iter(
-                child_elements.into_iter().map(|el| el.into()),
+                child_elements.into_iter().map(Into::into),
             )
             .padding(20)
             .into(),

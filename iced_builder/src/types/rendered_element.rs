@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use super::ElementName;
 use crate::types::Message;
-use crate::Result;
+use crate::Error;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderedElement {
@@ -62,7 +62,7 @@ impl RenderedElement {
         child_element: &RenderedElement,
     ) -> Option<&mut Self> {
         if child_element == self {
-            Some(self)
+            return Some(self);
         } else if self.child_elements.is_some() {
             if self
                 .child_elements
@@ -71,20 +71,17 @@ impl RenderedElement {
                 .contains(child_element)
             {
                 return Some(self);
-            } else {
-                if let Some(child_elements) = self.child_elements.as_mut() {
-                    for element in child_elements {
-                        let element = element.find_parent(child_element);
-                        if element.is_some() {
-                            return element;
-                        }
+            }
+            if let Some(child_elements) = self.child_elements.as_mut() {
+                for element in child_elements {
+                    let element = element.find_parent(child_element);
+                    if element.is_some() {
+                        return element;
                     }
                 }
-                return None;
             }
-        } else {
-            return None;
         }
+        return None;
     }
 
     pub fn is_parent(&self) -> bool {
@@ -128,7 +125,7 @@ impl RenderedElement {
         &self,
         element_tree: Option<&mut RenderedElement>,
         action: Action,
-    ) -> Result<()> {
+    ) -> Result<(), Error> {
         let element_tree = element_tree.unwrap();
 
         match action {
@@ -175,12 +172,12 @@ impl RenderedElement {
         self
     }
 
-    pub fn as_element<'a>(self) -> Element<'a, Message> {
+    pub fn into_element<'a>(self) -> Element<'a, Message> {
         let mut children = widget::column![];
 
         if let Some(els) = self.child_elements.clone() {
             for el in els {
-                children = children.push(el.clone().as_element());
+                children = children.push(el.clone().into_element());
             }
         }
         iced_drop::droppable(
@@ -263,7 +260,7 @@ impl RenderedElement {
                 imports = format!("{imports}image,");
                 view = format!("{view}\nimage(\"{path}\"){options}");
             }
-            ElementName::SVG(path) => {
+            ElementName::Svg(path) => {
                 imports = format!("{imports}svg,");
                 view = format!("{view}\nsvg(\"{path}\"){options}");
             }
@@ -337,7 +334,7 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
                     widget::button(widget::text(s)).into()
                 }
             }
-            ElementName::SVG(p) => widget::svg(p).into(),
+            ElementName::Svg(p) => widget::svg(p).into(),
             ElementName::Image(p) => widget::image(p).into(),
             ElementName::Container => {
                 widget::container(if child_elements.len() == 1 {
@@ -457,7 +454,7 @@ pub fn button(text: &str) -> RenderedElement {
 }
 
 pub fn svg(path: &str) -> RenderedElement {
-    RenderedElement::new(ElementName::SVG(path.to_owned()))
+    RenderedElement::new(ElementName::Svg(path.to_owned()))
 }
 
 pub fn image(path: &str) -> RenderedElement {

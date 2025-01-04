@@ -5,9 +5,9 @@ use tokio_stream::wrappers::ReadDirStream;
 use tokio_stream::StreamExt;
 
 use crate::theme::{theme_from_str, theme_index, Appearance, Theme};
-use crate::{environment, Error, Result};
+use crate::{environment, Error};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Config {
     pub theme: Appearance,
     pub last_project: Option<PathBuf>,
@@ -42,7 +42,7 @@ impl Config {
         Self::config_dir().join(environment::CONFIG_FILE_NAME)
     }
 
-    pub async fn load() -> Result<Self> {
+    pub async fn load() -> Result<Self, Error> {
         use tokio::fs;
 
         #[derive(Deserialize)]
@@ -72,7 +72,7 @@ impl Config {
         })
     }
 
-    pub async fn load_theme(theme_name: String) -> Result<Appearance> {
+    pub async fn load_theme(theme_name: String) -> Result<Appearance, Error> {
         use tokio::fs;
 
         let read_entry = |entry: fs::DirEntry| async move {
@@ -87,7 +87,7 @@ impl Config {
         let mut all = iced::Theme::ALL.to_owned();
         let mut selected = iced::Theme::default();
 
-        if theme_index(theme_name.clone(), iced::Theme::ALL).is_some() {
+        if theme_index(&theme_name, iced::Theme::ALL).is_some() {
             selected = theme_from_str(None, &theme_name);
         }
 

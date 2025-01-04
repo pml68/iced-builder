@@ -6,14 +6,14 @@ use thiserror::Error;
 #[derive(Debug, Clone, Error)]
 #[error(transparent)]
 pub enum Error {
-    IOError(Arc<io::Error>),
+    IO(Arc<io::Error>),
     #[error("config does not exist")]
     ConfigMissing,
     #[error("JSON parsing error: {0}")]
-    SerdeJSONError(Arc<serde_json::Error>),
+    SerdeJSON(Arc<serde_json::Error>),
     #[error("TOML parsing error: {0}")]
-    SerdeTOMLError(#[from] toml::de::Error),
-    FormatError(Arc<rust_format::Error>),
+    SerdeTOML(#[from] toml::de::Error),
+    RustFmt(Arc<rust_format::Error>),
     #[error("the element tree contains no matching element")]
     NonExistentElement,
     #[error(
@@ -26,19 +26,19 @@ pub enum Error {
 
 impl From<io::Error> for Error {
     fn from(value: io::Error) -> Self {
-        Self::IOError(Arc::new(value))
+        Self::IO(Arc::new(value))
     }
 }
 
 impl From<serde_json::Error> for Error {
     fn from(value: serde_json::Error) -> Self {
-        Self::SerdeJSONError(Arc::new(value))
+        Self::SerdeJSON(Arc::new(value))
     }
 }
 
 impl From<rust_format::Error> for Error {
     fn from(value: rust_format::Error) -> Self {
-        Self::FormatError(Arc::new(value))
+        Self::RustFmt(Arc::new(value))
     }
 }
 

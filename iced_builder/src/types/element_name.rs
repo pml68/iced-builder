@@ -3,13 +3,13 @@ use serde::{Deserialize, Serialize};
 use super::rendered_element::{
     button, column, container, image, row, svg, text, Action, RenderedElement,
 };
-use crate::{Error, Result};
+use crate::Error;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ElementName {
     Text(String),
     Button(String),
-    SVG(String),
+    Svg(String),
     Image(String),
     Container,
     Row,
@@ -20,7 +20,7 @@ impl ElementName {
     pub const ALL: &'static [Self; 7] = &[
         Self::Text(String::new()),
         Self::Button(String::new()),
-        Self::SVG(String::new()),
+        Self::Svg(String::new()),
         Self::Image(String::new()),
         Self::Container,
         Self::Row,
@@ -31,11 +31,11 @@ impl ElementName {
         &self,
         element_tree: Option<&mut RenderedElement>,
         action: Action,
-    ) -> Result<Option<RenderedElement>> {
+    ) -> Result<Option<RenderedElement>, Error> {
         let element = match self {
             Self::Text(_) => text(""),
             Self::Button(_) => button(""),
-            Self::SVG(_) => svg(""),
+            Self::Svg(_) => svg(""),
             Self::Image(_) => image(""),
             Self::Container => container(None),
             Self::Row => row(None),
@@ -75,7 +75,7 @@ impl std::fmt::Display for ElementName {
             match self {
                 Self::Text(_) => "Text",
                 Self::Button(_) => "Button",
-                Self::SVG(_) => "SVG",
+                Self::Svg(_) => "SVG",
                 Self::Image(_) => "Image",
                 Self::Container => "Container",
                 Self::Row => "Row",

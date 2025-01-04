@@ -1,20 +1,30 @@
+#![feature(test)]
+mod config;
+mod dialogs;
+mod environment;
+mod error;
+mod icon;
+mod panes;
+mod theme;
+mod types;
+mod widget;
+
 use std::path::PathBuf;
 
+use config::Config;
+use dialogs::{error_dialog, unsaved_changes_dialog, warning_dialog};
+use error::Error;
 use iced::advanced::widget::Id;
 use iced::widget::pane_grid::{self, Pane, PaneGrid};
 use iced::widget::{container, pick_list, row, text_editor, Column};
 use iced::{clipboard, keyboard, Alignment, Element, Length, Task, Theme};
-use iced_anim::{Animation, Spring};
-use iced_builder::config::Config;
-use iced_builder::dialogs::{
-    error_dialog, unsaved_changes_dialog, warning_dialog,
-};
-use iced_builder::panes::{code_view, designer_view, element_list};
-use iced_builder::types::{
-    Action, DesignerPage, ElementName, Message, Project,
-};
-use iced_builder::{icon, Error};
+use iced_anim::transition::Easing;
+use iced_anim::{Animated, Animation};
+use panes::{code_view, designer_view, element_list};
 use tokio::runtime;
+use types::{Action, DesignerPage, ElementName, Message, Project};
+
+//pub(crate) type Result<T> = core::result::Result<T, Error>;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config_load = {
@@ -40,7 +50,7 @@ struct App {
     project_path: Option<PathBuf>,
     project: Project,
     config: Config,
-    theme: Spring<Theme>,
+    theme: Animated<Theme>,
     pane_state: pane_grid::State<Panes>,
     focus: Option<Pane>,
     designer_page: DesignerPage,
@@ -73,7 +83,7 @@ impl App {
         if let Some(path) = config.last_project.clone() {
             if path.exists() && path.is_file() {
                 task = Task::perform(
-                    Project::from_path(path),
+                    Project::from_path(path, config.clone()),
                     Message::FileOpened,
                 );
             } else {
@@ -91,7 +101,7 @@ impl App {
                 project_path: None,
                 project: Project::new(),
                 config,
-                theme: Spring::new(theme),
+                theme: Animated::new(theme, Easing::EASE_IN),
                 pane_state: state,
                 focus: None,
                 designer_page: DesignerPage::DesignerView,
@@ -137,7 +147,7 @@ impl App {
                 }
             }
             Message::RefreshEditorContent => {
-                match self.project.clone().app_code(&self.config) {
+                match self.project.app_code(&self.config) {
                     Ok(code) => {
                         self.editor_content =
                             text_editor::Content::with_text(&code);
@@ -238,13 +248,13 @@ impl App {
                         self.is_loading = true;
 
                         return Task::perform(
-                            Project::from_file(),
+                            Project::from_file(self.config.clone()),
                             Message::FileOpened,
                         );
                     } else if unsaved_changes_dialog("You have unsaved changes. Do you wish to discard these and open another project?") {
                             self.is_dirty = false;
                             self.is_loading = true;
-                            return Task::perform(Project::from_file(), Message::FileOpened);
+                            return Task::perform(Project::from_file(self.config.clone()), Message::FileOpened);
                     }
                 }
             }
@@ -254,10 +264,11 @@ impl App {
 
                 match result {
                     Ok((path, project)) => {
-                        self.project = project.clone();
+                        self.project = project;
                         self.project_path = Some(path);
                         self.editor_content = text_editor::Content::with_text(
-                            &project
+                            &self
+                                .project
                                 .app_code(&self.config)
                                 .unwrap_or_else(|err| err.to_string()),
                         );

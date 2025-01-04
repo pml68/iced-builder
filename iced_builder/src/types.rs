@@ -7,15 +7,15 @@ use std::path::PathBuf;
 pub use element_name::ElementName;
 use iced::widget::{pane_grid, text_editor};
 use iced::Theme;
-use iced_anim::SpringEvent;
+use iced_anim::Event;
 pub use project::Project;
 pub use rendered_element::*;
 
-use crate::Result;
+use crate::Error;
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    ToggleTheme(SpringEvent<Theme>),
+    ToggleTheme(Event<Theme>),
     CopyCode,
     SwitchPage(DesignerPage),
     EditorAction(text_editor::Action),
@@ -35,10 +35,10 @@ pub enum Message {
     PaneDragged(pane_grid::DragEvent),
     NewFile,
     OpenFile,
-    FileOpened(Result<(PathBuf, Project)>),
+    FileOpened(Result<(PathBuf, Project), Error>),
     SaveFile,
     SaveFileAs,
-    FileSaved(Result<PathBuf>),
+    FileSaved(Result<PathBuf, Error>),
 }
 
 #[derive(Debug, Clone)]

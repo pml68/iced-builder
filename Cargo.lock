@@ -1508,6 +1508,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "fxhash"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c31b6d751ae2c7f11320402d34e41349dd1016f8d5d45e48c4312bc8625af50c"
+dependencies = [
+ "byteorder",
+]
+
+[[package]]
 name = "gdk-pixbuf-sys"
 version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1974,20 +1983,19 @@ dependencies = [
 
 [[package]]
 name = "iced_anim"
-version = "0.1.4"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0436df8d38e8b2bde6f3666b015640934b5d40649108387baaaac14605b38192"
+checksum = "386fbcdd1584feb1b11bb8c32b44bc5849663ed39c38a0ac8b191fa78773de44"
 dependencies = [
  "iced",
  "iced_anim_derive",
- "serde",
 ]
 
 [[package]]
 name = "iced_anim_derive"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5b89898a5300d2800451406a3d6cfaed89ef08797dc392143f7c16c5c747e95"
+checksum = "c22810793dcb18c4dedbf7d72f391f84877836f727917c3491df8141fe651b85"
 dependencies = [
  "quote",
  "syn 2.0.93",
@@ -1999,6 +2007,7 @@ version = "0.1.0"
 dependencies = [
  "dirs-next",
  "embed-resource 3.0.1",
+ "fxhash",
  "iced",
  "iced_anim",
  "iced_drop",

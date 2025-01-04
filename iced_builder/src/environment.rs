@@ -7,14 +7,6 @@ pub fn config_dir() -> PathBuf {
     portable_dir().unwrap_or_else(platform_specific_config_dir)
 }
 
-pub fn data_dir() -> PathBuf {
-    portable_dir().unwrap_or_else(|| {
-        dirs_next::data_dir()
-            .expect("expected valid data dir")
-            .join("iced-builder")
-    })
-}
-
 fn portable_dir() -> Option<PathBuf> {
     let exe = env::current_exe().ok()?;
     let dir = exe.parent()?;

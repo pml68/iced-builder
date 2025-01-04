@@ -8,7 +8,7 @@ use crate::config::Config;
 pub fn theme_index(theme_name: &str, slice: &[iced::Theme]) -> Option<usize> {
     slice
         .iter()
-        .position(|theme| &theme.to_string() == theme_name)
+        .position(|theme| theme.to_string() == theme_name)
 }
 
 pub fn theme_from_str(
@@ -43,7 +43,7 @@ pub fn theme_from_str(
                 if theme_name == config.theme.selected.to_string() {
                     config.theme.selected.clone()
                 } else if let Some(index) =
-                    theme_index(theme_name.into(), &config.theme.all)
+                    theme_index(theme_name, &config.theme.all)
                 {
                     config.theme.all[index].clone()
                 } else {
@@ -142,7 +142,7 @@ pub fn theme_to_string(theme: &iced::Theme) -> String {
 fn color_to_hex(color: Color) -> String {
     use std::fmt::Write;
 
-    let mut hex = String::with_capacity(16);
+    let mut hex = String::with_capacity(12);
 
     let [r, g, b, a] = color.into_rgba8();
 

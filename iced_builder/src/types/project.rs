@@ -46,10 +46,11 @@ impl Project {
     fn theme_code(&mut self, theme: &Theme) -> String {
         let theme_name = theme.to_string();
         if theme_index(&theme_name, Theme::ALL).is_none() {
-            self.theme_cache
+            (*self
+                .theme_cache
                 .entry(theme_name)
-                .or_insert(theme_to_string(theme))
-                .to_string()
+                .or_insert(theme_to_string(theme)))
+            .to_string()
         } else {
             theme_name.replace(" ", "")
         }
@@ -115,7 +116,7 @@ impl Project {
                     if theme_code.contains("Extended") {
                         theme_imports = "use iced::{{color,theme::{{Palette,palette::{{Extended,Background,Primary,Secondary,Success,Danger,Pair}}}}}};\n";
                     } else {
-                        theme_imports = "use iced::{{color,theme::Palette}};\n"
+                        theme_imports = "use iced::{{color,theme::Palette}};\n";
                     }
                 }
 

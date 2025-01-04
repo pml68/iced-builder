@@ -41,12 +41,12 @@ impl RenderedElement {
         Id::new(self.id.to_string())
     }
 
-    pub fn find_by_id(&mut self, id: Id) -> Option<&mut Self> {
-        if self.get_id() == id.clone() {
+    pub fn find_by_id(&mut self, id: &Id) -> Option<&mut Self> {
+        if &self.get_id() == id {
             Some(self)
         } else if let Some(child_elements) = self.child_elements.as_mut() {
             for element in child_elements {
-                let element = element.find_by_id(id.clone());
+                let element = element.find_by_id(id);
                 if element.is_some() {
                     return element;
                 }
@@ -81,7 +81,7 @@ impl RenderedElement {
                 }
             }
         }
-        return None;
+        None
     }
 
     pub fn is_parent(&self) -> bool {
@@ -109,10 +109,10 @@ impl RenderedElement {
         }
     }
 
-    pub fn insert_after(&mut self, id: Id, element: &RenderedElement) {
+    pub fn insert_after(&mut self, id: &Id, element: &RenderedElement) {
         if let Some(child_elements) = self.child_elements.as_mut() {
             if let Some(index) =
-                child_elements.iter().position(|x| x.get_id() == id)
+                child_elements.iter().position(|x| &x.get_id() == id)
             {
                 child_elements.insert(index + 1, element.clone());
             } else {
@@ -217,7 +217,7 @@ impl RenderedElement {
             for element in els {
                 let (c_imports, children) = element.codegen();
                 imports = format!("{imports}{c_imports}");
-                elements = format!("{elements}{},", children);
+                elements = format!("{elements}{children},");
             }
         }
 
@@ -345,13 +345,13 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
                 .padding(20)
                 .into()
             }
-            ElementName::Row => widget::Row::from_iter(
-                child_elements.into_iter().map(Into::into),
+            ElementName::Row => widget::Row::from_vec(
+                child_elements.into_iter().map(Into::into).collect(),
             )
             .padding(20)
             .into(),
-            ElementName::Column => widget::Column::from_iter(
-                child_elements.into_iter().map(Into::into),
+            ElementName::Column => widget::Column::from_vec(
+                child_elements.into_iter().map(Into::into).collect(),
             )
             .padding(20)
             .into(),
@@ -367,18 +367,18 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
 }
 
 #[derive(Debug, Clone)]
-pub enum Action {
+pub enum Action<'a> {
     AddNew,
-    PushFront(Id),
-    InsertAfter(Id, Id),
+    PushFront(&'a Id),
+    InsertAfter(&'a Id, &'a Id),
     Drop,
     Stop,
 }
 
-impl Action {
+impl<'a> Action<'a> {
     pub fn new(
-        ids: Vec<Id>,
-        element_tree: &mut Option<RenderedElement>,
+        ids: &'a [Id],
+        element_tree: &'a Option<RenderedElement>,
         source_id: Option<Id>,
     ) -> Self {
         let mut action = Self::Stop;
@@ -389,51 +389,39 @@ impl Action {
                 action = Self::Drop;
             }
         } else {
-            let id: Id = match source_id {
+            let id: &Id = match source_id {
                 Some(id) if ids.contains(&id) => {
                     let element_id =
-                        ids[ids.iter().position(|x| *x == id).unwrap()].clone();
-                    if ids.len() > 2 && ids[ids.clone().len() - 1] == element_id
-                    {
+                        &ids[ids.iter().position(|x| *x == id).unwrap()];
+                    if ids.len() > 2 && &ids[ids.len() - 1] == element_id {
                         return Self::Stop;
                     }
                     element_id
                 }
-                _ => ids.last().cloned().unwrap(),
+                _ => ids.last().unwrap(),
             };
-            let element = element_tree
-                .as_mut()
-                .unwrap()
-                .find_by_id(id.clone())
-                .unwrap();
+            let mut element_tree = element_tree.clone().unwrap();
+            let element = element_tree.find_by_id(id).unwrap();
 
             // Element is a parent and isn't a non-empty container
-            match (element.is_empty()
-                || !(element.name == ElementName::Container))
+            if (element.is_empty() || !(element.name == ElementName::Container))
                 && element.is_parent()
             {
-                true => {
-                    action = Self::PushFront(id);
-                }
-                false if ids.len() > 2 => {
-                    let parent = element_tree
-                        .as_mut()
-                        .unwrap()
-                        .find_by_id(ids[&ids.len() - 2].clone())
-                        .unwrap();
+                action = Self::PushFront(id);
+            } else if ids.len() > 2 {
+                let parent =
+                    element_tree.find_by_id(&ids[ids.len() - 2]).unwrap();
 
-                    if parent.name == ElementName::Container
-                        && parent.child_elements != Some(vec![])
-                    {
-                        action = Self::Stop;
-                    } else {
-                        action = Self::InsertAfter(
-                            ids[&ids.len() - 2].clone(),
-                            ids[&ids.len() - 1].clone(),
-                        );
-                    }
+                if parent.name == ElementName::Container
+                    && parent.child_elements != Some(vec![])
+                {
+                    action = Self::Stop;
+                } else {
+                    action = Self::InsertAfter(
+                        &ids[ids.len() - 2],
+                        &ids[ids.len() - 1],
+                    );
                 }
-                _ => {}
             }
         }
         action

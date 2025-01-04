@@ -42,12 +42,11 @@ impl ElementName {
             Self::Column => column(None),
         };
         match action {
-            Action::Stop => Ok(None),
-            Action::Drop => Ok(None),
+            Action::Stop | Action::Drop => Ok(None),
             Action::AddNew => Ok(Some(element)),
             Action::PushFront(id) => {
                 element_tree
-                    .ok_or("The action was of kind `PushFront`, but no element tree was provided.")?
+                    .ok_or("the action was of kind `PushFront`, but no element tree was provided.")?
                     .find_by_id(id)
                     .ok_or(Error::NonExistentElement)?
                     .push_front(&element);
@@ -56,7 +55,7 @@ impl ElementName {
             Action::InsertAfter(parent_id, child_id) => {
                 element_tree
                     .ok_or(
-                        "The action was of kind `InsertAfter`, but no element tree was provided.",
+                        "the action was of kind `InsertAfter`, but no element tree was provided.",
                     )?
                     .find_by_id(parent_id)
                     .ok_or(Error::NonExistentElement)?

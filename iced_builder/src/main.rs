@@ -113,7 +113,7 @@ impl App {
     }
 
     fn title(&self) -> String {
-        let saved_state = if !self.is_dirty { "" } else { " *" };
+        let saved_state = if self.is_dirty { " *" } else { "" };
 
         let project_name = match &self.project.title {
             Some(n) => {
@@ -126,7 +126,7 @@ impl App {
                     }
                 )
             }
-            None => "".to_owned(),
+            None => String::new(),
         };
 
         format!("iced Builder{project_name}{saved_state}")
@@ -166,11 +166,8 @@ impl App {
             Message::HandleNew(name, zones) => {
                 let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
                 if !ids.is_empty() {
-                    let action = Action::new(
-                        ids,
-                        &mut self.project.element_tree.clone(),
-                        None,
-                    );
+                    let eltree_clone = self.project.element_tree.clone();
+                    let action = Action::new(&ids, &eltree_clone, None);
                     let result = name.handle_action(
                         self.project.element_tree.as_mut(),
                         action,
@@ -198,9 +195,10 @@ impl App {
             Message::HandleMove(element, zones) => {
                 let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
                 if !ids.is_empty() {
+                    let eltree_clone = self.project.element_tree.clone();
                     let action = Action::new(
-                        ids,
-                        &mut self.project.element_tree.clone(),
+                        &ids,
+                        &eltree_clone,
                         Some(element.get_id()),
                     );
                     let result = element.handle_action(

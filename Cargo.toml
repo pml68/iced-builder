@@ -1,6 +1,73 @@
-[workspace]
-resolver = "2"
-members = [
-  "iced_drop",
-  "iced_builder"
-]
+[package]
+name = "iced_builder"
+description = "GUI builder for iced, built with iced."
+version = "0.1.0"
+edition = "2021"
+authors = ["pml68 <contact@pml68.dev>"]
+repository = "https://github.com/pml68/iced-builder"
+license = "GPL-3.0-or-later"
+keywords = ["gui", "iced"]
+
+[dependencies]
+iced = { version = "0.13.1", features = [ "image","svg","advanced","tokio"] }
+# iced_aw = { version = "0.11.0", default-features = false, features = ["menu","color_picker"] }
+iced_anim = { version = "0.2.0", features = ["derive"] }
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.134"
+toml = "0.8.19"
+tokio = { version = "1.42", features = ["fs"] }
+tokio-stream = { version = "0.1", features = ["fs"] }
+rfd = { version = "0.15.1", default-features = false, features = ["async-std", "gtk3"]  }
+rust-format = "0.3.4"
+uuid = { version = "1.11.0", features = ["v4", "serde"] }
+fxhash = "0.2.1"
+thiserror = "2.0.9"
+dirs-next = "2.0.0"
+
+[dependencies.iced_drop]
+git = "https://github.com/jhannyj/iced_drop"
+rev = "d259ec4dff098852d995d3bcaa5551a88330636f"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+xdg = "2.5.2"
+
+[build-dependencies]
+iced_fontello = "0.13.1"
+
+[target.'cfg(windows)'.build-dependencies]
+embed-resource = "3.0.1"
+windows_exe_info = "0.4"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[[bin]]
+name = "iced-builder"
+path = "src/main.rs"
+
+[lints.rust]
+missing_debug_implementations = "deny"
+# missing_docs = "deny"
+unsafe_code = "deny"
+unused_results = "deny"
+
+[lints.clippy]
+type-complexity = "allow"
+semicolon_if_nothing_returned = "deny"
+trivially-copy-pass-by-ref = "deny"
+default_trait_access = "deny"
+match-wildcard-for-single-variants = "deny"
+redundant-closure-for-method-calls = "deny"
+filter_map_next = "deny"
+manual_let_else = "deny"
+unused_async = "deny"
+from_over_into = "deny"
+needless_borrow = "deny"
+new_without_default = "deny"
+useless_conversion = "deny"
+
+[lints.rustdoc]
+broken_intra_doc_links = "forbid"

@@ -1,15 +1,15 @@
 use iced::widget::{button, pane_grid, row, text, text_editor, Space};
-use iced::{Alignment, Length, Theme};
+use iced::{Alignment, Font, Length, Theme};
 use super::style;
 use crate::icon::copy;
 use crate::types::{DesignerPage, Message};
 use crate::widget::tip;
 
-pub fn view<'a>(
-    editor_content: &'a text_editor::Content,
+pub fn view(
+    editor_content: &text_editor::Content,
     theme: Theme,
     is_focused: bool,
-) -> pane_grid::Content<'a, Message> {
+) -> pane_grid::Content<'_, Message> {
     let title = row![
         text("Generated Code"),
         Space::with_width(Length::Fill),
@@ -36,6 +36,7 @@ pub fn view<'a>(
                 } else {
                     highlighter::Theme::InspiredGitHub
                 },
+            .font(Font::MONOSPACE)
             )
             .height(Length::Fill)
             .padding(20),

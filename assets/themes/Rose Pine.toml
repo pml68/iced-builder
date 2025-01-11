@@ -1,0 +1,33 @@
+is_dark = true
+
+[palette]
+background = "#26233a"
+text = "#e0def4"
+primary = "#9ccfd8"
+success = "#f6c177"
+danger = "#eb6f92"
+
+[background]
+base = { color = "#191724", text = "#e0def4" }
+weak = { color = "#1f1d2e", text = "#e0def4" }
+strong = { color = "#26233a", text = "#f4ebd3" }
+
+[primary]
+base = { color = "#eb6f92", text = "#000000" }
+weak = { color = "#f6c177", text = "#000000" }
+strong = { color = "#ebbcba", text = "#000000" }
+
+[secondary]
+base = { color = "#31748f", text = "#ffffff" }
+weak = { color = "#9ccfd8", text = "#000000" }
+strong = { color = "#c4a7e7", text = "#000000" }
+
+[success]
+base = { color = "#9ccfd8", text = "#000000" }
+weak = { color = "#6e6a86", text = "#ffffff" }
+strong = { color = "#908caa", text = "#000000" }
+
+[danger]
+base = { color = "#eb6f92", text = "#ffffff" }
+weak = { color = "#f6c177", text = "#ffffff" }
+strong = { color = "#524f67", text = "#ffffff" }

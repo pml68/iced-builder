@@ -3,13 +3,13 @@ use serde::{Deserialize, Serialize};
 use super::rendered_element::{
     button, column, container, image, row, svg, text, Action, RenderedElement,
 };
-use crate::{Error, Result};
+use crate::Error;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ElementName {
     Text(String),
     Button(String),
-    SVG(String),
+    Svg(String),
     Image(String),
     Container,
     Row,
@@ -20,7 +20,7 @@ impl ElementName {
     pub const ALL: &'static [Self; 7] = &[
         Self::Text(String::new()),
         Self::Button(String::new()),
-        Self::SVG(String::new()),
+        Self::Svg(String::new()),
         Self::Image(String::new()),
         Self::Container,
         Self::Row,
@@ -31,23 +31,22 @@ impl ElementName {
         &self,
         element_tree: Option<&mut RenderedElement>,
         action: Action,
-    ) -> Result<Option<RenderedElement>> {
+    ) -> Result<Option<RenderedElement>, Error> {
         let element = match self {
             Self::Text(_) => text(""),
             Self::Button(_) => button(""),
-            Self::SVG(_) => svg(""),
+            Self::Svg(_) => svg(""),
             Self::Image(_) => image(""),
             Self::Container => container(None),
             Self::Row => row(None),
             Self::Column => column(None),
         };
         match action {
-            Action::Stop => Ok(None),
-            Action::Drop => Ok(None),
+            Action::Stop | Action::Drop => Ok(None),
             Action::AddNew => Ok(Some(element)),
             Action::PushFront(id) => {
                 element_tree
-                    .ok_or("The action was of kind `PushFront`, but no element tree was provided.")?
+                    .ok_or("the action was of kind `PushFront`, but no element tree was provided.")?
                     .find_by_id(id)
                     .ok_or(Error::NonExistentElement)?
                     .push_front(&element);
@@ -56,7 +55,7 @@ impl ElementName {
             Action::InsertAfter(parent_id, child_id) => {
                 element_tree
                     .ok_or(
-                        "The action was of kind `InsertAfter`, but no element tree was provided.",
+                        "the action was of kind `InsertAfter`, but no element tree was provided.",
                     )?
                     .find_by_id(parent_id)
                     .ok_or(Error::NonExistentElement)?
@@ -75,7 +74,7 @@ impl std::fmt::Display for ElementName {
             match self {
                 Self::Text(_) => "Text",
                 Self::Button(_) => "Button",
-                Self::SVG(_) => "SVG",
+                Self::Svg(_) => "SVG",
                 Self::Image(_) => "Image",
                 Self::Container => "Container",
                 Self::Row => "Row",

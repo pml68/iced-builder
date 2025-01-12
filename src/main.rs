@@ -27,6 +27,22 @@ use types::{Action, DesignerPage, ElementName, Message, Project};
 //pub(crate) type Result<T> = core::result::Result<T, Error>;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut args = std::env::args();
+    let _ = args.next();
+
+    let version = args
+        .next()
+        .map(|s| s == "--version" || s == "-V")
+        .unwrap_or_default();
+
+    if version {
+        println!("{} ({})", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
+        println!("by {}", env!("CARGO_PKG_AUTHORS"));
+        println!("{}", env!("CARGO_PKG_REPOSITORY"));
+
+        return Ok(());
+    }
+
     let config_load = {
         let rt = runtime::Builder::new_current_thread()
             .enable_all()

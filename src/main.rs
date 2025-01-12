@@ -1,8 +1,8 @@
-#![feature(test)]
 mod config;
 mod dialogs;
 mod environment;
 mod error;
+#[allow(clippy::all, dead_code)]
 mod icon;
 mod panes;
 mod theme;
@@ -167,7 +167,7 @@ impl App {
                 let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
                 if !ids.is_empty() {
                     let eltree_clone = self.project.element_tree.clone();
-                    let action = Action::new(&ids, &eltree_clone, None);
+                    let action = Action::new(&ids, eltree_clone.as_ref(), None);
                     let result = name.handle_action(
                         self.project.element_tree.as_mut(),
                         action,
@@ -198,7 +198,7 @@ impl App {
                     let eltree_clone = self.project.element_tree.clone();
                     let action = Action::new(
                         &ids,
-                        &eltree_clone,
+                        eltree_clone.as_ref(),
                         Some(element.get_id()),
                     );
                     let result = element.handle_action(
@@ -346,7 +346,7 @@ impl App {
                 match pane {
                     Panes::Designer => match &self.designer_page {
                         DesignerPage::DesignerView => designer_view::view(
-                            &self.project.element_tree,
+                            self.project.element_tree.as_ref(),
                             self.project.get_theme(&self.config),
                             is_focused,
                         ),

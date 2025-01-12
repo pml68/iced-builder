@@ -5,7 +5,7 @@ use super::style;
 use crate::types::{DesignerPage, Message, RenderedElement};
 
 pub fn view<'a>(
-    element_tree: &Option<RenderedElement>,
+    element_tree: Option<&RenderedElement>,
     designer_theme: iced::Theme,
     is_focused: bool,
 ) -> pane_grid::Content<'a, Message> {

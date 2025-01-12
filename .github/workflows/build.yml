@@ -1,0 +1,29 @@
+name: Build
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain: [stable, nightly]
+    steps:
+    - uses: hecrj/setup-rust-action@v2
+      with:
+        rust-version: ${{ matrix.toolchain }}
+    - uses: actions/checkout@master
+    - name: Install dependencies
+      run: |
+        export DEBIAN_FRONTED=noninteractive
+        sudo apt-get -qq update
+        sudo apt-get install -y libxkbcommon-dev libgtk-3-dev
+    - name: Build iced-builder binary
+      run: cargo build --verbose --release
+    - name: Archive iced-builder binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: iced-builder-x86_64-unknown-linux-gnu
+        path: target/release/iced-builder

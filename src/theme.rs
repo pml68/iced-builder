@@ -58,13 +58,13 @@ pub fn theme_from_str(
 
 fn palette_to_string(palette: &iced::theme::Palette) -> String {
     format!(
-        r#"Palette {{
+        r"Palette {{
             background: color!(0x{}),
             text: color!(0x{}),
             primary: color!(0x{}),
             success: color!(0x{}),
             danger: color!(0x{}),
-        }}"#,
+        }}",
         color_to_hex(palette.background),
         color_to_hex(palette.text),
         color_to_hex(palette.primary),
@@ -75,8 +75,8 @@ fn palette_to_string(palette: &iced::theme::Palette) -> String {
 
 fn extended_to_string(extended: &Extended) -> String {
     format!(
-        r#"
-Extended{{background:Background{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},primary:Primary{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},secondary:Secondary{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},success:Success{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},danger:Danger{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},is_dark:true,}}"#,
+        r"
+Extended{{background:Background{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},primary:Primary{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},secondary:Secondary{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},success:Success{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},danger:Danger{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},is_dark:true,}}",
         color_to_hex(extended.background.base.color),
         color_to_hex(extended.background.base.text),
         color_to_hex(extended.background.weak.color),

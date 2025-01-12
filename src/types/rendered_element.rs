@@ -378,7 +378,7 @@ pub enum Action<'a> {
 impl<'a> Action<'a> {
     pub fn new(
         ids: &'a [Id],
-        element_tree: &'a Option<RenderedElement>,
+        element_tree: Option<&'a RenderedElement>,
         source_id: Option<Id>,
     ) -> Self {
         let mut action = Self::Stop;
@@ -400,7 +400,7 @@ impl<'a> Action<'a> {
                 }
                 _ => ids.last().unwrap(),
             };
-            let mut element_tree = element_tree.clone().unwrap();
+            let mut element_tree = element_tree.unwrap().clone();
             let element = element_tree.find_by_id(id).unwrap();
 
             // Element is a parent and isn't a non-empty container

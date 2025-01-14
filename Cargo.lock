@@ -2003,6 +2003,7 @@ dependencies = [
  "fxhash",
  "iced",
  "iced_anim",
+ "iced_custom_highlighter",
  "iced_drop",
  "iced_fontello",
  "rfd",
@@ -2036,6 +2037,15 @@ dependencies = [
  "smol_str",
  "thiserror 1.0.69",
  "web-time",
+]
+
+[[package]]
+name = "iced_custom_highlighter"
+version = "0.1.0"
+source = "git+https://github.com/pml68/iced_custom_highlighter?branch=fix%2Ftemp-update-on-theme-changed#f780df7c0c65417731e9cd34143ae902796b7bbf"
+dependencies = [
+ "iced_widget",
+ "syntect",
 ]
 
 [[package]]

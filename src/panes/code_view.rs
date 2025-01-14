@@ -1,5 +1,7 @@
 use iced::widget::{button, pane_grid, row, text, text_editor, Space};
 use iced::{Alignment, Font, Length, Theme};
+use iced_custom_highlighter::{Highlight, Highlighter, Settings};
+
 use super::style;
 use crate::icon::copy;
 use crate::types::{DesignerPage, Message};
@@ -29,14 +31,10 @@ pub fn view(
     pane_grid::Content::new(
         text_editor(editor_content)
             .on_action(Message::EditorAction)
-            .highlight(
-                "rs",
-                if theme.to_string().contains("Dark") {
-                    highlighter::Theme::SolarizedDark
-                } else {
-                    highlighter::Theme::InspiredGitHub
-                },
             .font(Font::MONOSPACE)
+            .highlight_with::<Highlighter>(
+                Settings::new(vec![], Highlight::default_style, theme, "rs"),
+                Highlight::to_format,
             )
             .height(Length::Fill)
             .padding(20),

@@ -31,6 +31,10 @@ rev = "d259ec4dff098852d995d3bcaa5551a88330636f"
 [target.'cfg(target_os = "macos")'.dependencies]
 xdg = "2.5.2"
 
+[dependencies.iced_custom_highlighter]
+git = "https://github.com/pml68/iced_custom_highlighter"
+branch = "fix/temp-update-on-theme-changed"
+
 [build-dependencies]
 iced_fontello = "0.13.1"
 

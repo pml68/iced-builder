@@ -36,8 +36,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap_or_default();
 
     if version {
-        println!("{} ({})", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
-        println!("by {}", env!("CARGO_PKG_AUTHORS"));
+        println!("{}", env!("CARGO_PKG_VERSION"));
         println!("{}", env!("CARGO_PKG_REPOSITORY"));
 
         return Ok(());

@@ -3,7 +3,6 @@ use std::collections::BTreeMap;
 use iced::advanced::widget::Id;
 use iced::{widget, Element, Length};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 use super::ElementName;
 use crate::types::Message;
@@ -11,8 +10,8 @@ use crate::Error;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderedElement {
-    #[serde(skip, default = "Uuid::new_v4")]
-    id: Uuid,
+    #[serde(skip, default = "Id::unique")]
+    id: Id,
     child_elements: Option<Vec<RenderedElement>>,
     name: ElementName,
     options: BTreeMap<String, Option<String>>,
@@ -21,7 +20,7 @@ pub struct RenderedElement {
 impl RenderedElement {
     fn new(name: ElementName) -> Self {
         Self {
-            id: Uuid::new_v4(),
+            id: Id::unique(),
             child_elements: None,
             name,
             options: BTreeMap::new(),
@@ -30,19 +29,19 @@ impl RenderedElement {
 
     fn with(name: ElementName, child_elements: Vec<RenderedElement>) -> Self {
         Self {
-            id: Uuid::new_v4(),
+            id: Id::unique(),
             child_elements: Some(child_elements),
             name,
             options: BTreeMap::new(),
         }
     }
 
-    pub fn get_id(&self) -> Id {
-        Id::new(self.id.to_string())
+    pub fn get_id(&self) -> &Id {
+        &self.id
     }
 
     pub fn find_by_id(&mut self, id: &Id) -> Option<&mut Self> {
-        if &self.get_id() == id {
+        if self.get_id() == id {
             Some(self)
         } else if let Some(child_elements) = self.child_elements.as_mut() {
             for element in child_elements {
@@ -112,7 +111,7 @@ impl RenderedElement {
     pub fn insert_after(&mut self, id: &Id, element: &RenderedElement) {
         if let Some(child_elements) = self.child_elements.as_mut() {
             if let Some(index) =
-                child_elements.iter().position(|x| &x.get_id() == id)
+                child_elements.iter().position(|x| x.get_id() == id)
             {
                 child_elements.insert(index + 1, element.clone());
             } else {
@@ -192,7 +191,7 @@ impl RenderedElement {
             .padding(10)
             .style(widget::container::bordered_box),
         )
-        .id(self.get_id())
+        .id(self.get_id().clone())
         .drag_hide(true)
         .on_drop(move |point, rect| {
             Message::MoveElement(self.clone(), point, rect)
@@ -357,7 +356,7 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
             .into(),
         };
         iced_drop::droppable(content)
-            .id(value.get_id())
+            .id(value.get_id().clone())
             .drag_hide(true)
             .on_drop(move |point, rect| {
                 Message::MoveElement(value.clone(), point, rect)
@@ -379,7 +378,7 @@ impl<'a> Action<'a> {
     pub fn new(
         ids: &'a [Id],
         element_tree: Option<&'a RenderedElement>,
-        source_id: Option<Id>,
+        source_id: Option<&'a Id>,
     ) -> Self {
         let mut action = Self::Stop;
         if ids.len() == 1 {
@@ -390,9 +389,9 @@ impl<'a> Action<'a> {
             }
         } else {
             let id: &Id = match source_id {
-                Some(id) if ids.contains(&id) => {
+                Some(id) if ids.contains(id) => {
                     let element_id =
-                        &ids[ids.iter().position(|x| *x == id).unwrap()];
+                        &ids[ids.iter().position(|x| x == id).unwrap()];
                     if ids.len() > 2 && &ids[ids.len() - 1] == element_id {
                         return Self::Stop;
                     }

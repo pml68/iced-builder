@@ -367,7 +367,7 @@ impl App {
                         ),
                         DesignerPage::CodeView => code_view::view(
                             &self.editor_content,
-                            self.theme.target().clone(),
+                            self.theme.value().clone(),
                             is_focused,
                         ),
                     },

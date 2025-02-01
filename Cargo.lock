@@ -2041,7 +2041,7 @@ dependencies = [
 [[package]]
 name = "iced_custom_highlighter"
 version = "0.1.0"
-source = "git+https://github.com/pml68/iced_custom_highlighter?branch=fix%2Ftemp-update-on-theme-changed#a536d6585139bb772458acc158573eecf9794c51"
+source = "git+https://github.com/pml68/iced_custom_highlighter?branch=fix%2Ftemp-update-on-theme-changed#48f6da3c093ed1d57f5f229383b85e903f882f41"
 dependencies = [
  "iced_widget",
  "syntect",

@@ -1,5 +1,5 @@
 use iced::widget::{button, pane_grid, row, text, text_editor, Space};
-use iced::{Alignment, Font, Length, Theme};
+use iced::{Alignment, Background, Border, Font, Length, Theme};
 use iced_custom_highlighter::{Highlight, Highlighter, Settings};
 
 use super::style;
@@ -36,6 +36,23 @@ pub fn view(
                 Settings::new(vec![], Highlight::default_style, theme, "rs"),
                 Highlight::to_format,
             )
+            .style(|theme, _| {
+                let palette = theme.extended_palette();
+                text_editor::Style {
+                    background: Background::Color(
+                        palette.background.base.color,
+                    ),
+                    border: Border {
+                        radius: 2.0.into(),
+                        width: 1.0,
+                        color: palette.background.strong.color,
+                    },
+                    icon: palette.background.weak.text,
+                    placeholder: palette.background.strong.color,
+                    value: palette.background.base.text,
+                    selection: palette.primary.weak.color,
+                }
+            })
             .height(Length::Fill)
             .padding(20),
     )

@@ -22,7 +22,7 @@ use iced_anim::transition::Easing;
 use iced_anim::{Animated, Animation};
 use panes::{code_view, designer_view, element_list};
 use tokio::runtime;
-use types::{Action, DesignerPage, ElementName, Message, Project};
+use types::{Action, DesignerPane, ElementName, Message, Project};
 
 //pub(crate) type Result<T> = core::result::Result<T, Error>;
 
@@ -68,7 +68,7 @@ struct App {
     theme: Animated<Theme>,
     pane_state: pane_grid::State<Panes>,
     focus: Option<Pane>,
-    designer_page: DesignerPage,
+    designer_page: DesignerPane,
     element_list: &'static [ElementName],
     editor_content: text_editor::Content,
 }
@@ -119,7 +119,7 @@ impl App {
                 theme: Animated::new(theme, Easing::EASE_IN),
                 pane_state: state,
                 focus: None,
-                designer_page: DesignerPage::DesignerView,
+                designer_page: DesignerPane::DesignerView,
                 element_list: ElementName::ALL,
                 editor_content: text_editor::Content::new(),
             },
@@ -279,12 +279,7 @@ impl App {
                     Ok((path, project)) => {
                         self.project = project;
                         self.project_path = Some(path);
-                        self.editor_content = text_editor::Content::with_text(
-                            &self
-                                .project
-                                .app_code(&self.config)
-                                .unwrap_or_else(|err| err.to_string()),
-                        );
+                        return Task::done(Message::RefreshEditorContent);
                     }
                     Err(error) => error_dialog(error.to_string()),
                 }
@@ -360,12 +355,12 @@ impl App {
                 let is_focused = Some(id) == self.focus;
                 match pane {
                     Panes::Designer => match &self.designer_page {
-                        DesignerPage::DesignerView => designer_view::view(
+                        DesignerPane::DesignerView => designer_view::view(
                             self.project.element_tree.as_ref(),
                             self.project.get_theme(&self.config),
                             is_focused,
                         ),
-                        DesignerPage::CodeView => code_view::view(
+                        DesignerPane::CodeView => code_view::view(
                             &self.editor_content,
                             self.theme.value().clone(),
                             is_focused,

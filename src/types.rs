@@ -17,7 +17,7 @@ use crate::Error;
 pub enum Message {
     ToggleTheme(Event<Theme>),
     CopyCode,
-    SwitchPage(DesignerPage),
+    SwitchPage(DesignerPane),
     EditorAction(text_editor::Action),
     RefreshEditorContent,
     DropNewElement(ElementName, iced::Point, iced::Rectangle),
@@ -42,7 +42,7 @@ pub enum Message {
 }
 
 #[derive(Debug, Clone)]
-pub enum DesignerPage {
+pub enum DesignerPane {
     DesignerView,
     CodeView,
 }

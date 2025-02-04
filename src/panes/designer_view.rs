@@ -2,7 +2,7 @@ use iced::widget::{button, container, pane_grid, row, text, themer, Space};
 use iced::{Alignment, Element, Length};
 
 use super::style;
-use crate::types::{DesignerPage, Message, RenderedElement};
+use crate::types::{DesignerPane, Message, RenderedElement};
 
 pub fn view<'a>(
     element_tree: Option<&RenderedElement>,
@@ -21,7 +21,7 @@ pub fn view<'a>(
         text("Designer"),
         Space::with_width(Length::Fill),
         button("Switch to Code view")
-            .on_press(Message::SwitchPage(DesignerPage::CodeView)),
+            .on_press(Message::SwitchPage(DesignerPane::CodeView)),
     ]
     .align_y(Alignment::Center);
     let title_bar = pane_grid::TitleBar::new(title)

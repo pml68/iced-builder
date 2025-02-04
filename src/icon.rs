@@ -18,6 +18,6 @@ pub fn save<'a>() -> Text<'a> {
     icon("\u{1F4BE}")
 }
 
-fn icon<'a>(codepoint: &'a str) -> Text<'a> {
+fn icon(codepoint: &str) -> Text<'_> {
     text(codepoint).font(Font::with_name("icons"))
 }

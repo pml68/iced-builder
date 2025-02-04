@@ -5,7 +5,7 @@ use iced_custom_highlighter::{Highlight, Highlighter, Scope, Settings};
 
 use super::style;
 use crate::icon::copy;
-use crate::types::{DesignerPage, Message};
+use crate::types::{DesignerPane, Message};
 use crate::widget::tip;
 
 fn highlight_style(theme: &Theme, scope: &Scope) -> Format<Font> {
@@ -33,7 +33,7 @@ pub fn view(
         ),
         Space::with_width(20),
         button("Switch to Designer view")
-            .on_press(Message::SwitchPage(DesignerPage::DesignerView))
+            .on_press(Message::SwitchPage(DesignerPane::DesignerView))
     ]
     .align_y(Alignment::Center);
     let title_bar = pane_grid::TitleBar::new(title)

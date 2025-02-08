@@ -1,11 +1,22 @@
+use iced::advanced::text::highlighter::Format;
 use iced::widget::{button, pane_grid, row, text, text_editor, Space};
 use iced::{Alignment, Background, Border, Font, Length, Theme};
-use iced_custom_highlighter::{Highlight, Highlighter, Settings};
+use iced_custom_highlighter::{Highlight, Highlighter, Scope, Settings};
 
 use super::style;
 use crate::icon::copy;
 use crate::types::{DesignerPage, Message};
 use crate::widget::tip;
+
+fn highlight_style(theme: &Theme, scope: &Scope) -> Format<Font> {
+    match scope {
+        Scope::Custom { .. } | Scope::Other => Format {
+            color: Some(theme.extended_palette().primary.strong.color),
+            font: None,
+        },
+        _ => Highlight::default_style(theme, scope),
+    }
+}
 
 pub fn view(
     editor_content: &text_editor::Content,
@@ -33,7 +44,7 @@ pub fn view(
             .on_action(Message::EditorAction)
             .font(Font::MONOSPACE)
             .highlight_with::<Highlighter>(
-                Settings::new(vec![], Highlight::default_style, theme, "rs"),
+                Settings::new(vec![], highlight_style, theme, "rs"),
                 Highlight::to_format,
             )
             .style(|theme, _| {

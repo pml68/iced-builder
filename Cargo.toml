@@ -13,14 +13,14 @@ iced = { version = "0.13.1", features = [ "image","svg","advanced","tokio"] }
 # iced_aw = { version = "0.11.0", default-features = false, features = ["menu","color_picker"] }
 iced_anim = { version = "0.2.0", features = ["derive"] }
 serde = { version = "1.0.217", features = ["derive"] }
-serde_json = "1.0.134"
-toml = "0.8.19"
-tokio = { version = "1.42", features = ["fs"] }
+serde_json = "1.0.138"
+toml = "0.8.20"
+tokio = { version = "1.43", features = ["fs"] }
 tokio-stream = { version = "0.1", features = ["fs"] }
-rfd = { version = "0.15.1", default-features = false, features = ["async-std", "gtk3"]  }
+rfd = { version = "0.15.2", default-features = false, features = ["async-std", "gtk3"]  }
 rust-format = "0.3.4"
 fxhash = "0.2.1"
-thiserror = "2.0.9"
+thiserror = "2.0.11"
 dirs-next = "2.0.0"
 
 [dependencies.iced_drop]
@@ -35,7 +35,7 @@ git = "https://github.com/pml68/iced_custom_highlighter"
 branch = "fix/temp-update-on-theme-changed"
 
 [build-dependencies]
-iced_fontello = "0.13.1"
+iced_fontello = "0.13.2"
 
 [target.'cfg(windows)'.build-dependencies]
 embed-resource = "3.0.1"
@@ -46,6 +46,10 @@ opt-level = 1
 
 [profile.dev.package."*"]
 opt-level = 3
+
+[profile.release]
+lto = true
+strip = true
 
 [[bin]]
 name = "iced-builder"

@@ -2069,9 +2069,9 @@ dependencies = [
 
 [[package]]
 name = "iced_fontello"
-version = "0.13.1"
+version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0892c562844344b16b978e94350b142c5c80aff50448aefbe3e1df3f15e0a09e"
+checksum = "1088f296a44a5c7e51ae5e533954429bfa479d44b304cb7c370480994abab7ef"
 dependencies = [
  "reqwest",
  "serde",
@@ -4598,9 +4598,9 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.8.19"
+version = "0.8.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1ed1f98e3fdc28d6d910e6737ae6ab1a93bf1985935a1193e68f93eeb68d24e"
+checksum = "cd87a5cdd6ffab733b2f74bc4fd7ee5fff6634124999ac278c35fc78c6120148"
 dependencies = [
  "serde",
  "serde_spanned",

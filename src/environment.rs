@@ -34,6 +34,7 @@ fn platform_specific_config_dir() -> PathBuf {
 }
 
 #[cfg(target_os = "macos")]
+#[inline(always)]
 fn xdg_config_dir() -> Option<PathBuf> {
     let config_dir = xdg::BaseDirectories::with_prefix("iced-builder")
         .ok()

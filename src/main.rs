@@ -30,10 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut args = std::env::args();
     let _ = args.next();
 
-    let version = args
-        .next()
-        .map(|s| s == "--version" || s == "-V")
-        .unwrap_or_default();
+    let version = args.next().is_some_and(|s| s == "--version" || s == "-V");
 
     if version {
         println!("{}", env!("CARGO_PKG_VERSION"));

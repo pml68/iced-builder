@@ -1,4 +1,6 @@
-is_dark = true
+name = "Rosé Pine"
+
+dark = true
 
 [palette]
 background = "#26233a"

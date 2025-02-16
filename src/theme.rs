@@ -5,6 +5,9 @@ use iced::Color;
 
 use crate::config::Config;
 
+const DEFAULT_THEME_CONTENT: &str =
+    include_str!("../assets/themes/rose_pine.toml");
+
 pub fn theme_index(theme_name: &str, slice: &[iced::Theme]) -> Option<usize> {
     slice
         .iter()
@@ -166,18 +169,39 @@ pub struct Appearance {
 impl Default for Appearance {
     fn default() -> Self {
         Self {
-            selected: iced::Theme::default(),
-            all: iced::Theme::ALL.into(),
+            selected: Theme::default().into(),
+            all: {
+                let mut themes = iced::Theme::ALL.to_owned();
+                themes.push(Theme::default().into());
+                themes.into()
+            },
         }
     }
 }
 
-#[derive(Debug, Default, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize)]
 pub struct Theme {
+    name: String,
     palette: ThemePalette,
-    is_dark: Option<bool>,
+    dark: Option<bool>,
     #[serde(flatten)]
     extended: Option<ExtendedThemePalette>,
+}
+
+impl From<Theme> for iced::Theme {
+    fn from(value: Theme) -> Self {
+        iced::Theme::custom_with_fn(
+            value.name.clone(),
+            value.palette.clone().into(),
+            |_| value.into(),
+        )
+    }
+}
+
+impl Default for Theme {
+    fn default() -> Self {
+        toml::from_str(DEFAULT_THEME_CONTENT).expect("parse default theme")
+    }
 }
 
 #[derive(Debug, Clone, serde::Deserialize)]
@@ -192,14 +216,6 @@ pub struct ThemePalette {
     success: Color,
     #[serde(with = "color_serde")]
     danger: Color,
-}
-
-impl Theme {
-    pub fn into_iced_theme(self, name: String) -> iced::Theme {
-        iced::Theme::custom_with_fn(name, self.palette.clone().into(), |_| {
-            self.into()
-        })
-    }
 }
 
 impl Default for ThemePalette {
@@ -231,7 +247,7 @@ impl From<Theme> for Extended {
     fn from(theme: Theme) -> Self {
         let mut extended = Extended::generate(theme.palette.into());
 
-        if let Some(is_dark) = theme.is_dark {
+        if let Some(is_dark) = theme.dark {
             extended.is_dark = is_dark;
         }
 

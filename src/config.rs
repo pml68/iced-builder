@@ -79,13 +79,13 @@ impl Config {
             let content = fs::read_to_string(entry.path()).await.ok()?;
 
             let theme: Theme = toml::from_str(content.as_ref()).ok()?;
-            let name = entry.path().file_stem()?.to_string_lossy().to_string();
 
-            Some(theme.into_iced_theme(name))
+            Some(iced::Theme::from(theme))
         };
 
+        let mut selected = Theme::default().into();
         let mut all = iced::Theme::ALL.to_owned();
-        let mut selected = iced::Theme::default();
+        all.push(Theme::default().into());
 
         if theme_index(&theme_name, iced::Theme::ALL).is_some() {
             selected = theme_from_str(None, &theme_name);
@@ -98,18 +98,11 @@ impl Config {
                 continue;
             };
 
-            let Some(file_name) = entry.file_name().to_str().map(String::from)
-            else {
-                continue;
-            };
-
-            if let Some(file_name) = file_name.strip_suffix(".toml") {
-                if let Some(theme) = read_entry(entry).await {
-                    if file_name == theme_name {
-                        selected = theme.clone();
-                    }
-                    all.push(theme);
+            if let Some(theme) = read_entry(entry).await {
+                if theme.to_string() == theme_name {
+                    selected = theme.clone();
                 }
+                all.push(theme);
             }
         }
 

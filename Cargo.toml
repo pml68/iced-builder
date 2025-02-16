@@ -1,12 +1,13 @@
 [package]
 name = "iced_builder"
-description = "GUI builder for iced, built with iced."
+description = "UI builder for iced, built with iced."
 version = "0.1.0"
 edition = "2021"
 authors = ["pml68 <contact@pml68.dev>"]
 repository = "https://github.com/pml68/iced-builder"
 license = "GPL-3.0-or-later"
-keywords = ["gui", "iced"]
+categories = ["gui"]
+keywords = ["gui", "ui", "graphics", "interface", "widgets"]
 
 [dependencies]
 iced = { version = "0.13.1", features = [ "image","svg","advanced","tokio"] }

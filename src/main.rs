@@ -164,7 +164,7 @@ impl App {
                         self.editor_content =
                             text_editor::Content::with_text(&code);
                     }
-                    Err(error) => error_dialog(error.to_string()),
+                    Err(error) => error_dialog(error),
                 }
             }
             Message::DropNewElement(name, point, _) => {
@@ -188,7 +188,7 @@ impl App {
                         Ok(Some(ref element)) => {
                             self.project.element_tree = Some(element.clone());
                         }
-                        Err(error) => error_dialog(error.to_string()),
+                        Err(error) => error_dialog(error),
                         _ => {}
                     }
 
@@ -218,7 +218,7 @@ impl App {
                         action,
                     );
                     if let Err(error) = result {
-                        error_dialog(error.to_string());
+                        error_dialog(error);
                     }
 
                     self.is_dirty = true;
@@ -278,7 +278,7 @@ impl App {
                         self.project_path = Some(path);
                         return Task::done(Message::RefreshEditorContent);
                     }
-                    Err(error) => error_dialog(error.to_string()),
+                    Err(error) => error_dialog(error),
                 }
             }
             Message::SaveFile => {
@@ -311,7 +311,7 @@ impl App {
                         self.project_path = Some(path);
                         self.is_dirty = false;
                     }
-                    Err(error) => error_dialog(error.to_string()),
+                    Err(error) => error_dialog(error),
                 }
             }
         }

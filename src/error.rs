@@ -53,3 +53,9 @@ impl From<String> for Error {
         Self::Other(value)
     }
 }
+
+impl From<Error> for String {
+    fn from(value: Error) -> Self {
+        value.to_string()
+    }
+}

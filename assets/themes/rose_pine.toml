@@ -8,6 +8,7 @@ text = "#e0def4"
 primary = "#9ccfd8"
 success = "#f6c177"
 danger = "#eb6f92"
+warning = "#e4b363"
 
 [background]
 base = { color = "#191724", text = "#e0def4" }
@@ -33,3 +34,8 @@ strong = { color = "#908caa", text = "#000000" }
 base = { color = "#eb6f92", text = "#ffffff" }
 weak = { color = "#f6c177", text = "#ffffff" }
 strong = { color = "#524f67", text = "#ffffff" }
+
+[warning]
+base = { color = "#e4b363", text = "#ffffff" }
+weak = { color = "#f4e1a1", text = "#000000" }
+strong = { color = "#d8a343", text = "#ffffff" }

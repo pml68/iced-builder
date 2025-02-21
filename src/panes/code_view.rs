@@ -4,7 +4,7 @@ use iced::{Alignment, Background, Border, Font, Length, Theme};
 use iced_custom_highlighter::{Highlight, Highlighter, Scope, Settings};
 
 use super::style;
-use crate::icon::copy;
+use crate::icon;
 use crate::types::{DesignerPane, Message};
 use crate::widget::tip;
 
@@ -27,8 +27,11 @@ pub fn view(
         text("Generated Code"),
         Space::with_width(Length::Fill),
         tip(
-            button(copy()).on_press(Message::CopyCode),
-            "Copy code to clipboard",
+            button(icon::copy())
+                .on_press(Message::CopyCode)
+                .padding([2, 7])
+                .style(button::text),
+            "Copy",
             tip::Position::FollowCursor
         ),
         Space::with_width(20),

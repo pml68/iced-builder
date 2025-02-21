@@ -10,26 +10,24 @@ categories = ["gui"]
 keywords = ["gui", "ui", "graphics", "interface", "widgets"]
 
 [dependencies]
-iced = { version = "0.13.1", features = [ "image","svg","advanced","tokio"] }
-# iced_aw = { version = "0.11.0", default-features = false, features = ["menu","color_picker"] }
-iced_anim = { version = "0.2.0", features = ["derive"] }
+iced.workspace = true
+iced_anim = { git = "https://github.com/pml68/iced_anim", features = ["derive"] }
+iced_drop = { path = "iced_drop" }
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.138"
 toml = "0.8.20"
 tokio = { version = "1.43", features = ["fs"] }
 tokio-stream = { version = "0.1", features = ["fs"] }
-rfd = { version = "0.15.2", default-features = false, features = ["async-std", "gtk3"]  }
+rfd = { version = "0.15.2", default-features = false, features = ["tokio", "gtk3"]  }
 rust-format = "0.3.4"
 fxhash = "0.2.1"
 thiserror = "2.0.11"
 dirs-next = "2.0.0"
 
-[dependencies.iced_drop]
-git = "https://github.com/jhannyj/iced_drop"
-rev = "d259ec4dff098852d995d3bcaa5551a88330636f"
-
-[target.'cfg(target_os = "macos")'.dependencies]
-xdg = "2.5.2"
+[workspace.dependencies.iced]
+git = "https://github.com/iced-rs/iced"
+rev = "97f1db3783dca5a4f60a9f89668613de4dfe9edd"
+features = ["image", "svg", "advanced", "tokio"]
 
 [dependencies.iced_custom_highlighter]
 git = "https://github.com/pml68/iced_custom_highlighter"
@@ -37,6 +35,9 @@ branch = "fix/temp-update-on-theme-changed"
 
 [build-dependencies]
 iced_fontello = "0.13.2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+xdg = "2.5.2"
 
 [target.'cfg(windows)'.build-dependencies]
 embed-resource = "3.0.1"
@@ -55,6 +56,9 @@ strip = true
 [[bin]]
 name = "iced-builder"
 path = "src/main.rs"
+
+[workspace]
+members = ["iced_drop"]
 
 [lints.rust]
 missing_debug_implementations = "deny"

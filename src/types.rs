@@ -15,7 +15,7 @@ use crate::Error;
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    ToggleTheme(Event<Theme>),
+    SwitchTheme(Event<Theme>),
     CopyCode,
     SwitchPage(DesignerPane),
     EditorAction(text_editor::Action),

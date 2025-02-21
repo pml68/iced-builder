@@ -24,8 +24,6 @@ use panes::{code_view, designer_view, element_list};
 use tokio::runtime;
 use types::{Action, DesignerPane, ElementName, Message, Project};
 
-//pub(crate) type Result<T> = core::result::Result<T, Error>;
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut args = std::env::args();
     let _ = args.next();
@@ -146,7 +144,7 @@ impl App {
 
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
-            Message::ToggleTheme(event) => {
+            Message::SwitchTheme(event) => {
                 self.theme.update(event);
             }
             Message::CopyCode => {
@@ -320,7 +318,7 @@ impl App {
     }
 
     fn subscription(&self) -> iced::Subscription<Message> {
-        keyboard::on_key_press(|key, modifiers| {
+        let hotkeys = keyboard::on_key_press(|key, modifiers| {
             if modifiers.command() {
                 match key.as_ref() {
                     keyboard::Key::Character("o") => Some(Message::OpenFile),
@@ -337,14 +335,16 @@ impl App {
             } else {
                 None
             }
-        })
+        });
+
+        hotkeys
     }
 
     fn view(&self) -> Element<'_, Message> {
         let header = row![pick_list(
             self.config.theme.all.clone(),
-            Some(self.theme.target().clone()),
-            |theme| { Message::ToggleTheme(theme.into()) }
+            Some(self.theme.target()),
+            |theme| Message::SwitchTheme(theme.into())
         )]
         .width(200);
         let pane_grid =
@@ -383,7 +383,7 @@ impl App {
             .width(Length::Fill);
 
         Animation::new(&self.theme, container(content).height(Length::Fill))
-            .on_update(Message::ToggleTheme)
+            .on_update(Message::SwitchTheme)
             .into()
     }
 }

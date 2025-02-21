@@ -114,7 +114,7 @@ impl Project {
                 let mut theme_imports = "";
                 if theme_index(&theme.to_string(), Theme::ALL).is_none() {
                     if theme_code.contains("Extended") {
-                        theme_imports = "use iced::{{color,theme::{{Palette,palette::{{Extended,Background,Primary,Secondary,Success,Danger,Pair}}}}}};\n";
+                        theme_imports = "use iced::{{color,theme::{{Palette,palette::{{Extended,Background,Primary,Secondary,Success,Danger,Warning,Pair}}}}}};\n";
                     } else {
                         theme_imports = "use iced::{{color,theme::Palette}};\n";
                     }

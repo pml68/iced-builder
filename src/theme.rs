@@ -67,19 +67,21 @@ fn palette_to_string(palette: &iced::theme::Palette) -> String {
             primary: color!(0x{}),
             success: color!(0x{}),
             danger: color!(0x{}),
+            warning: color!(0x{}),
         }}",
         color_to_hex(palette.background),
         color_to_hex(palette.text),
         color_to_hex(palette.primary),
         color_to_hex(palette.success),
         color_to_hex(palette.danger),
+        color_to_hex(palette.warning),
     )
 }
 
 fn extended_to_string(extended: &Extended) -> String {
     format!(
         r"
-Extended{{background:Background{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},primary:Primary{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},secondary:Secondary{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},success:Success{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},danger:Danger{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},is_dark:true,}}",
+Extended{{background:Background{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},primary:Primary{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},secondary:Secondary{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},success:Success{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},danger:Danger{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},warning:Warning{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},is_dark:true,}}",
         color_to_hex(extended.background.base.color),
         color_to_hex(extended.background.base.text),
         color_to_hex(extended.background.weak.color),
@@ -110,6 +112,12 @@ Extended{{background:Background{{base:Pair{{color:color!(0x{}),text:color!(0x{})
         color_to_hex(extended.danger.weak.text),
         color_to_hex(extended.danger.strong.color),
         color_to_hex(extended.danger.strong.text),
+        color_to_hex(extended.warning.base.color),
+        color_to_hex(extended.warning.base.text),
+        color_to_hex(extended.warning.weak.color),
+        color_to_hex(extended.warning.weak.text),
+        color_to_hex(extended.warning.strong.color),
+        color_to_hex(extended.warning.strong.text),
     )
 }
 
@@ -216,6 +224,8 @@ pub struct ThemePalette {
     success: Color,
     #[serde(with = "color_serde")]
     danger: Color,
+    #[serde(with = "color_serde")]
+    warning: Color,
 }
 
 impl Default for ThemePalette {
@@ -227,6 +237,7 @@ impl Default for ThemePalette {
             primary: palette.primary,
             success: palette.success,
             danger: palette.danger,
+            warning: palette.warning,
         }
     }
 }
@@ -239,6 +250,7 @@ impl From<ThemePalette> for iced::theme::Palette {
             primary: palette.primary,
             success: palette.success,
             danger: palette.danger,
+            warning: palette.warning,
         }
     }
 }
@@ -264,7 +276,6 @@ impl From<Theme> for Extended {
                 }
             }
 
-            // Handle primary
             if let Some(primary) = extended_palette.primary {
                 if let Some(base) = primary.base {
                     extended.primary.base = base.into();
@@ -277,7 +288,6 @@ impl From<Theme> for Extended {
                 }
             }
 
-            // Handle secondary
             if let Some(secondary) = extended_palette.secondary {
                 if let Some(base) = secondary.base {
                     extended.secondary.base = base.into();
@@ -290,7 +300,6 @@ impl From<Theme> for Extended {
                 }
             }
 
-            // Handle success
             if let Some(success) = extended_palette.success {
                 if let Some(base) = success.base {
                     extended.success.base = base.into();
@@ -303,7 +312,6 @@ impl From<Theme> for Extended {
                 }
             }
 
-            // Handle danger
             if let Some(danger) = extended_palette.danger {
                 if let Some(base) = danger.base {
                     extended.danger.base = base.into();
@@ -313,6 +321,18 @@ impl From<Theme> for Extended {
                 }
                 if let Some(strong) = danger.strong {
                     extended.danger.strong = strong.into();
+                }
+            }
+
+            if let Some(warning) = extended_palette.warning {
+                if let Some(base) = warning.base {
+                    extended.warning.base = base.into();
+                }
+                if let Some(weak) = warning.weak {
+                    extended.warning.weak = weak.into();
+                }
+                if let Some(strong) = warning.strong {
+                    extended.warning.strong = strong.into();
                 }
             }
         }
@@ -328,6 +348,7 @@ struct ExtendedThemePalette {
     secondary: Option<ThemeSecondary>,
     success: Option<ThemeSuccess>,
     danger: Option<ThemeDanger>,
+    warning: Option<ThemeWarning>,
 }
 
 #[derive(Debug, Default, serde::Deserialize)]
@@ -360,6 +381,13 @@ struct ThemeSuccess {
 
 #[derive(Debug, Default, serde::Deserialize)]
 struct ThemeDanger {
+    base: Option<ThemePair>,
+    weak: Option<ThemePair>,
+    strong: Option<ThemePair>,
+}
+
+#[derive(Debug, Default, serde::Deserialize)]
+struct ThemeWarning {
     base: Option<ThemePair>,
     weak: Option<ThemePair>,
     strong: Option<ThemePair>,

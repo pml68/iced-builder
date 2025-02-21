@@ -1,4 +1,4 @@
-use iced::widget::{button, container, pane_grid, row, text, themer, Space};
+use iced::widget::{Space, button, container, pane_grid, row, text, themer};
 use iced::{Alignment, Element, Length};
 
 use super::style;

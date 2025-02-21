@@ -5,8 +5,8 @@ pub mod rendered_element;
 use std::path::PathBuf;
 
 pub use element_name::ElementName;
-use iced::widget::{pane_grid, text_editor};
 use iced::Theme;
+use iced::widget::{pane_grid, text_editor};
 use iced_anim::Event;
 pub use project::Project;
 pub use rendered_element::*;

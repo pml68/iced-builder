@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::rendered_element::{
-    button, column, container, image, row, svg, text, Action, RenderedElement,
+    Action, RenderedElement, button, column, container, image, row, svg, text,
 };
 use crate::Error;
 

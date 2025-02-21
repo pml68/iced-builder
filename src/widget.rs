@@ -1,5 +1,5 @@
-use iced::widget::{container, text, tooltip};
 use iced::Element;
+use iced::widget::{container, text, tooltip};
 
 pub mod tip {
     pub use super::tooltip::Position;

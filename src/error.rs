@@ -16,9 +16,7 @@ pub enum Error {
     RustFmt(Arc<rust_format::Error>),
     #[error("the element tree contains no matching element")]
     NonExistentElement,
-    #[error(
-        "the file dialog has been closed without selecting a valid option"
-    )]
+    #[error("the file dialog has been closed without selecting a valid option")]
     DialogClosed,
     #[error("{0}")]
     Other(String),

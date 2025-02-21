@@ -1,11 +1,11 @@
 use std::path::PathBuf;
 
 use serde::Deserialize;
-use tokio_stream::wrappers::ReadDirStream;
 use tokio_stream::StreamExt;
+use tokio_stream::wrappers::ReadDirStream;
 
-use crate::theme::{theme_from_str, theme_index, Appearance, Theme};
-use crate::{environment, Error};
+use crate::theme::{Appearance, Theme, theme_from_str, theme_index};
+use crate::{Error, environment};
 
 #[derive(Debug, Clone, Default)]
 pub struct Config {
@@ -75,7 +75,7 @@ impl Config {
     pub async fn load_theme(theme_name: String) -> Result<Appearance, Error> {
         use tokio::fs;
 
-        let read_entry = |entry: fs::DirEntry| async move {
+        let read_entry = async move |entry: fs::DirEntry| {
             let content = fs::read_to_string(entry.path()).await.ok()?;
 
             let theme: Theme = toml::from_str(content.as_ref()).ok()?;

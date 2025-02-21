@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use iced::theme::palette::Extended;
 use iced::Color;
+use iced::theme::palette::Extended;
 
 use crate::config::Config;
 

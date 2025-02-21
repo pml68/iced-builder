@@ -1,5 +1,5 @@
 use iced::advanced::text::highlighter::Format;
-use iced::widget::{button, pane_grid, row, text, text_editor, Space};
+use iced::widget::{Space, button, pane_grid, row, text, text_editor};
 use iced::{Alignment, Background, Border, Font, Length, Theme};
 use iced_custom_highlighter::{Highlight, Highlighter, Scope, Settings};
 

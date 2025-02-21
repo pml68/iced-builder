@@ -7,9 +7,9 @@ use rust_format::{Edition, Formatter, RustFmt};
 use serde::{Deserialize, Serialize};
 
 use super::rendered_element::RenderedElement;
+use crate::Error;
 use crate::config::Config;
 use crate::theme::{theme_from_str, theme_index, theme_to_string};
-use crate::Error;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Project {

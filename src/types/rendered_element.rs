@@ -1,12 +1,12 @@
 use std::collections::BTreeMap;
 
 use iced::advanced::widget::Id;
-use iced::{widget, Element, Length};
+use iced::{Element, Length, widget};
 use serde::{Deserialize, Serialize};
 
 use super::ElementName;
-use crate::types::Message;
 use crate::Error;
+use crate::types::Message;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderedElement {

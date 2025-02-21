@@ -1,4 +1,4 @@
-use iced::widget::{column, container, pane_grid, text, Column};
+use iced::widget::{Column, column, container, pane_grid, text};
 use iced::{Alignment, Element, Length};
 use iced_drop::droppable;
 

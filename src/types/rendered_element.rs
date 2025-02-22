@@ -4,9 +4,9 @@ use iced::advanced::widget::Id;
 use iced::{Element, Length, widget};
 use serde::{Deserialize, Serialize};
 
-use super::ElementName;
 use crate::Error;
-use crate::types::Message;
+use crate::options::ApplyOptions;
+use crate::types::{ElementName, Message};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RenderedElement {
@@ -36,12 +36,12 @@ impl RenderedElement {
         }
     }
 
-    pub fn get_id(&self) -> &Id {
+    pub fn id(&self) -> &Id {
         &self.id
     }
 
     pub fn find_by_id(&mut self, id: &Id) -> Option<&mut Self> {
-        if self.get_id() == id {
+        if self.id() == id {
             Some(self)
         } else if let Some(child_elements) = self.child_elements.as_mut() {
             for element in child_elements {
@@ -111,7 +111,7 @@ impl RenderedElement {
     pub fn insert_after(&mut self, id: &Id, element: &RenderedElement) {
         if let Some(child_elements) = self.child_elements.as_mut() {
             if let Some(index) =
-                child_elements.iter().position(|x| x.get_id() == id)
+                child_elements.iter().position(|x| x.id() == id)
             {
                 child_elements.insert(index + 1, element.clone());
             } else {
@@ -158,25 +158,25 @@ impl RenderedElement {
 
     fn preset_options(mut self, options: &[&str]) -> Self {
         for opt in options {
-            let _ = self.options.insert(opt.to_string(), None);
+            let _ = self.options.insert((*opt).to_string(), None);
         }
         self
     }
 
-    pub fn option<'a>(mut self, option: &'a str, value: &'a str) -> Self {
+    pub fn option(mut self, option: String, value: String) -> Self {
         let _ = self
             .options
-            .entry(option.to_owned())
-            .and_modify(|opt| *opt = Some(value.to_owned()));
+            .entry(option)
+            .and_modify(|opt| *opt = Some(value));
         self
     }
 
-    pub fn into_element<'a>(self) -> Element<'a, Message> {
+    pub fn text_view<'a>(self) -> Element<'a, Message> {
         let mut children = widget::column![];
 
         if let Some(els) = self.child_elements.clone() {
             for el in els {
-                children = children.push(el.clone().into_element());
+                children = children.push(el.clone().text_view());
             }
         }
         iced_drop::droppable(
@@ -191,7 +191,7 @@ impl RenderedElement {
             .padding(10)
             .style(widget::container::bordered_box),
         )
-        .id(self.get_id().clone())
+        .id(self.id().clone())
         .drag_hide(true)
         .on_drop(move |point, rect| {
             Message::MoveElement(self.clone(), point, rect)
@@ -313,24 +313,26 @@ impl std::fmt::Display for RenderedElement {
 
 impl<'a> From<RenderedElement> for Element<'a, Message> {
     fn from(value: RenderedElement) -> Self {
-        let child_elements = match value.child_elements {
-            Some(ref elements) => elements.clone(),
-            None => vec![],
-        };
+        let copy = value.clone();
+        let child_elements = copy.child_elements.unwrap_or_default();
 
-        let content: Element<'a, Message> = match value.name.clone() {
+        let content: Element<'a, Message> = match copy.name {
             ElementName::Text(s) => {
-                if s == String::new() {
+                if &s == "" {
                     widget::text("New Text").into()
                 } else {
                     widget::text(s).into()
                 }
             }
             ElementName::Button(s) => {
-                if s == String::new() {
-                    widget::button(widget::text("New Button")).into()
+                if &s == "" {
+                    widget::button(widget::text("New Button"))
+                        .apply_options(copy.options)
+                        .into()
                 } else {
-                    widget::button(widget::text(s)).into()
+                    widget::button(widget::text(s))
+                        .apply_options(copy.options)
+                        .into()
                 }
             }
             ElementName::Svg(p) => widget::svg(p).into(),
@@ -356,7 +358,7 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
             .into(),
         };
         iced_drop::droppable(content)
-            .id(value.get_id().clone())
+            .id(value.id().clone())
             .drag_hide(true)
             .on_drop(move |point, rect| {
                 Message::MoveElement(value.clone(), point, rect)
@@ -433,11 +435,14 @@ pub fn text(text: &str) -> RenderedElement {
         "line_height",
         "width",
         "height",
+        "align_x",
+        "align_y",
     ])
 }
 
 pub fn button(text: &str) -> RenderedElement {
     RenderedElement::new(ElementName::Button(text.to_owned()))
+        .preset_options(&["width", "height", "padding", "clip"])
 }
 
 pub fn svg(path: &str) -> RenderedElement {

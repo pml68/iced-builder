@@ -4,6 +4,7 @@ mod environment;
 mod error;
 #[allow(clippy::all, dead_code)]
 mod icon;
+mod options;
 mod panes;
 mod theme;
 mod types;
@@ -15,8 +16,7 @@ use config::Config;
 use dialogs::{error_dialog, unsaved_changes_dialog, warning_dialog};
 use error::Error;
 use iced::advanced::widget::Id;
-use iced::widget::pane_grid::{self, Pane, PaneGrid};
-use iced::widget::{Column, container, pick_list, row, text_editor};
+use iced::widget::{Column, container, pane_grid, pick_list, row, text_editor};
 use iced::{Alignment, Element, Length, Task, Theme, clipboard, keyboard};
 use iced_anim::transition::Easing;
 use iced_anim::{Animated, Animation};
@@ -62,7 +62,7 @@ struct App {
     config: Config,
     theme: Animated<Theme>,
     pane_state: pane_grid::State<Panes>,
-    focus: Option<Pane>,
+    focus: Option<pane_grid::Pane>,
     designer_page: DesignerPane,
     element_list: &'static [ElementName],
     editor_content: text_editor::Content,
@@ -209,7 +209,7 @@ impl App {
                     let action = Action::new(
                         &ids,
                         eltree_clone.as_ref(),
-                        Some(element.get_id()),
+                        Some(element.id()),
                     );
                     let result = element.handle_action(
                         self.project.element_tree.as_mut(),
@@ -354,8 +354,9 @@ impl App {
             |theme| Message::SwitchTheme(theme.into())
         )]
         .width(200);
-        let pane_grid =
-            PaneGrid::new(&self.pane_state, |id, pane, _is_maximized| {
+        let pane_grid = pane_grid::PaneGrid::new(
+            &self.pane_state,
+            |id, pane, _is_maximized| {
                 let is_focused = Some(id) == self.focus;
                 match pane {
                     Panes::Designer => match &self.designer_page {
@@ -374,13 +375,14 @@ impl App {
                         element_list::view(self.element_list, is_focused)
                     }
                 }
-            })
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .spacing(10)
-            .on_resize(10, Message::PaneResized)
-            .on_click(Message::PaneClicked)
-            .on_drag(Message::PaneDragged);
+            },
+        )
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .spacing(10)
+        .on_resize(10, Message::PaneResized)
+        .on_click(Message::PaneClicked)
+        .on_drag(Message::PaneDragged);
 
         let content = Column::new()
             .push(header)

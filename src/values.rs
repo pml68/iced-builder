@@ -1,4 +1,5 @@
 mod padding;
+mod rotation;
 
 pub trait ValueFromStr: Sized {
     type Err;

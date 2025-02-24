@@ -335,8 +335,12 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
                         .into()
                 }
             }
-            ElementName::Svg(p) => widget::svg(p).into(),
-            ElementName::Image(p) => widget::image(p).into(),
+            ElementName::Svg(p) => {
+                widget::svg(p).apply_options(copy.options).into()
+            }
+            ElementName::Image(p) => {
+                widget::image(p).apply_options(copy.options).into()
+            }
             ElementName::Container => {
                 widget::container(if child_elements.len() == 1 {
                     child_elements[0].clone().into()
@@ -350,11 +354,13 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
                 child_elements.into_iter().map(Into::into).collect(),
             )
             .padding(20)
+            .apply_options(copy.options)
             .into(),
             ElementName::Column => widget::Column::from_vec(
                 child_elements.into_iter().map(Into::into).collect(),
             )
             .padding(20)
+            .apply_options(copy.options)
             .into(),
         };
         iced_drop::droppable(content)
@@ -446,13 +452,27 @@ pub fn button(text: &str) -> RenderedElement {
 }
 
 pub fn svg(path: &str) -> RenderedElement {
-    RenderedElement::new(ElementName::Svg(path.to_owned()))
+    RenderedElement::new(ElementName::Svg(path.to_owned())).preset_options(&[
+        "width",
+        "height",
+        "content_fit",
+        "rotation",
+        "opacity",
+    ])
 }
 
 pub fn image(path: &str) -> RenderedElement {
-    RenderedElement::new(ElementName::Image(path.to_owned()))
+    RenderedElement::new(ElementName::Image(path.to_owned())).preset_options(&[
+        "width",
+        "height",
+        "content_fit",
+        "rotation",
+        "opacity",
+        "scale",
+    ])
 }
 
+// TODO: Container options
 pub fn container(content: Option<RenderedElement>) -> RenderedElement {
     match content {
         Some(el) => RenderedElement::with(ElementName::Container, vec![el]),
@@ -462,6 +482,9 @@ pub fn container(content: Option<RenderedElement>) -> RenderedElement {
 
 pub fn row(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {
     RenderedElement::with(ElementName::Row, child_elements.unwrap_or_default())
+        .preset_options(&[
+            "spacing", "padding", "width", "height", "align_y", "clip",
+        ])
 }
 
 pub fn column(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {
@@ -469,4 +492,13 @@ pub fn column(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {
         ElementName::Column,
         child_elements.unwrap_or_default(),
     )
+    .preset_options(&[
+        "spacing",
+        "padding",
+        "width",
+        "height",
+        "max_width",
+        "align_x",
+        "clip",
+    ])
 }

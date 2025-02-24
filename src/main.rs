@@ -8,6 +8,7 @@ mod options;
 mod panes;
 mod theme;
 mod types;
+mod values;
 mod widget;
 
 use std::path::PathBuf;

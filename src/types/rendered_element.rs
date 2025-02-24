@@ -318,14 +318,14 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
 
         let content: Element<'a, Message> = match copy.name {
             ElementName::Text(s) => {
-                if &s == "" {
+                if s.is_empty() {
                     widget::text("New Text").into()
                 } else {
                     widget::text(s).into()
                 }
             }
             ElementName::Button(s) => {
-                if &s == "" {
+                if s.is_empty() {
                     widget::button(widget::text("New Button"))
                         .apply_options(copy.options)
                         .into()

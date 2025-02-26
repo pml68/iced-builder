@@ -32,7 +32,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let version = args.next().is_some_and(|s| s == "--version" || s == "-V");
 
     if version {
-        println!("{}", env!("CARGO_PKG_VERSION"));
+        println!("iced-builder {}", environment::formatted_version());
         println!("{}", env!("CARGO_PKG_REPOSITORY"));
 
         return Ok(());
@@ -366,11 +366,9 @@ impl App {
                             self.project.get_theme(&self.config),
                             is_focused,
                         ),
-                        DesignerPane::CodeView => code_view::view(
-                            &self.editor_content,
-                            self.theme.value().clone(),
-                            is_focused,
-                        ),
+                        DesignerPane::CodeView => {
+                            code_view::view(&self.editor_content, is_focused)
+                        }
                     },
                     Panes::ElementList => {
                         element_list::view(self.element_list, is_focused)

@@ -20,7 +20,6 @@ fn highlight_style(theme: &Theme, scope: &Scope) -> Format<Font> {
 
 pub fn view(
     editor_content: &text_editor::Content,
-    theme: Theme,
     is_focused: bool,
 ) -> pane_grid::Content<'_, Message> {
     let title = row![
@@ -46,8 +45,9 @@ pub fn view(
         text_editor(editor_content)
             .on_action(Message::EditorAction)
             .font(Font::MONOSPACE)
+            .rehighlight_on_redraw(true)
             .highlight_with::<Highlighter>(
-                Settings::new(vec![], highlight_style, theme, "rs"),
+                Settings::new(vec![], highlight_style, "rs"),
                 Highlight::to_format,
             )
             .style(|theme, _| {

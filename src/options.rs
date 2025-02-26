@@ -4,9 +4,9 @@ use std::collections::BTreeMap;
 use iced::widget::{Button, Column, Container, Image, Row, Svg, Text};
 use iced::{Padding, Rotation};
 
-use crate::values::ValueFromStr;
+use crate::values::Value;
 
-pub trait ApplyOptions: Sized {
+pub trait ApplyOptions {
     fn apply_options(self, options: BTreeMap<String, Option<String>>) -> Self;
 }
 
@@ -15,7 +15,7 @@ impl<Message> ApplyOptions for Button<'_, Message> {
         let mut button = self;
 
         if let Some(padding) = options.get("padding").expect("padding key") {
-            let padding = Padding::value_from_str(padding).unwrap();
+            let padding = Padding::from_str(padding).unwrap();
             button = button.padding(padding);
         }
 
@@ -28,7 +28,7 @@ impl<Message> ApplyOptions for Column<'_, Message> {
         let mut column = self;
 
         if let Some(padding) = options.get("padding").expect("padding key") {
-            let padding = Padding::value_from_str(padding).unwrap();
+            let padding = Padding::from_str(padding).unwrap();
             column = column.padding(padding);
         }
 
@@ -41,7 +41,7 @@ impl<Message> ApplyOptions for Row<'_, Message> {
         let mut row = self;
 
         if let Some(padding) = options.get("padding").expect("padding key") {
-            let padding = Padding::value_from_str(padding).unwrap();
+            let padding = Padding::from_str(padding).unwrap();
             row = row.padding(padding);
         }
 
@@ -54,7 +54,7 @@ impl<Handle> ApplyOptions for Image<Handle> {
         let mut image = self;
 
         if let Some(rotation) = options.get("rotation").expect("rotation key") {
-            let rotation = Rotation::value_from_str(rotation).unwrap();
+            let rotation = Rotation::from_str(rotation).unwrap();
             image = image.rotation(rotation);
         }
 
@@ -67,7 +67,7 @@ impl ApplyOptions for Svg<'_> {
         let mut svg = self;
 
         if let Some(rotation) = options.get("rotation").expect("rotation key") {
-            let rotation = Rotation::value_from_str(rotation).unwrap();
+            let rotation = Rotation::from_str(rotation).unwrap();
             svg = svg.rotation(rotation);
         }
 

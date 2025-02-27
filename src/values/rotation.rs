@@ -25,6 +25,8 @@ impl Value for Rotation {
     type Err = ParseRotationError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.trim();
+
         if s.is_empty() {
             return Err(ParseRotationError::Empty);
         }
@@ -98,13 +100,13 @@ mod tests {
         assert_eq!(
             Rotation::from_str("3.a"),
             Err(ParseRotationError::ParseFloatError(
-                f32::from_str("3.a").expect_err("")
+                f32::from_str("3.a").expect_err("float parse should fail")
             ))
         )
     }
 
     #[test]
     fn cant_parse_empty_string() {
-        assert_eq!(Rotation::from_str(""), Err(ParseRotationError::Empty))
+        assert_eq!(Rotation::from_str(" "), Err(ParseRotationError::Empty))
     }
 }

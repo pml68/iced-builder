@@ -27,6 +27,8 @@ impl Value for Padding {
     type Err = ParsePaddingError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.trim();
+
         if s.is_empty() {
             return Err(ParsePaddingError::Empty);
         }
@@ -169,7 +171,7 @@ mod tests {
         assert_eq!(
             Padding::from_str("[1f,2,3,4]"),
             Err(ParsePaddingError::ParseFloatError(
-                f32::from_str("1f").expect_err("")
+                f32::from_str("1f").expect_err("float parse should fail")
             ))
         )
     }
@@ -194,6 +196,6 @@ mod tests {
 
     #[test]
     fn cant_parse_empty_string() {
-        assert_eq!(Padding::from_str(""), Err(ParsePaddingError::Empty))
+        assert_eq!(Padding::from_str(" "), Err(ParsePaddingError::Empty))
     }
 }

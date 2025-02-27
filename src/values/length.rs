@@ -50,7 +50,7 @@ impl Value for Length {
                 _ => Err(ParseLengthError::InvalidType),
             }
         } else {
-            if s.starts_with(|c: char| !c.is_alphabetic()) {
+            if s.starts_with(|c: char| c.is_ascii_digit()) {
                 return Err(ParseLengthError::MissingPrefix);
             }
 

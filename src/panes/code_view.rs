@@ -45,7 +45,6 @@ pub fn view(
         text_editor(editor_content)
             .on_action(Message::EditorAction)
             .font(Font::MONOSPACE)
-            .rehighlight_on_redraw(true)
             .highlight_with::<Highlighter>(
                 Settings::new(vec![], highlight_style, "rs"),
                 Highlight::to_format,

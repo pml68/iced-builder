@@ -1,5 +1,7 @@
+mod alignment;
 mod length;
 mod padding;
+mod pixels;
 mod rotation;
 
 pub trait Value: Sized {

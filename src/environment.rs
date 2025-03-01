@@ -1,3 +1,6 @@
+// (c) 2023-2025 Cory Forsstrom, Casper Rogild Storm
+// (c) 2024-2025 Polesznyák Márk László
+
 use std::env;
 use std::path::PathBuf;
 

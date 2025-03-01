@@ -2078,10 +2078,11 @@ dependencies = [
 [[package]]
 name = "iced_custom_highlighter"
 version = "0.1.0"
-source = "git+https://github.com/pml68/iced_custom_highlighter?branch=master#e4708bdb31a792918a4bc162aebbc296fce9ce85"
+source = "git+https://github.com/pml68/iced_custom_highlighter?branch=master#aa5e7e024061a759fb89947185bb4969c3e21e66"
 dependencies = [
  "iced_core",
  "syntect",
+ "two-face",
 ]
 
 [[package]]
@@ -4865,6 +4866,17 @@ name = "ttf-parser"
 version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2df906b07856748fa3f6e0ad0cbaa047052d4a7dd609e231c4f72cee8c36f31"
+
+[[package]]
+name = "two-face"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "384eda438ddf62e2c6f39a174452d952d9d9df5a8ad5ade22198609f8dcaf852"
+dependencies = [
+ "once_cell",
+ "serde",
+ "syntect",
+]
 
 [[package]]
 name = "typenum"

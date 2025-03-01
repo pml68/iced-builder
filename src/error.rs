@@ -7,16 +7,16 @@ use thiserror::Error;
 #[error(transparent)]
 pub enum Error {
     IO(Arc<io::Error>),
-    #[error("config does not exist")]
+    #[error("Config does not exist")]
     ConfigMissing,
     #[error("JSON parsing error: {0}")]
     SerdeJSON(Arc<serde_json::Error>),
     #[error("TOML parsing error: {0}")]
     SerdeTOML(#[from] toml::de::Error),
     RustFmt(Arc<rust_format::Error>),
-    #[error("the element tree contains no matching element")]
+    #[error("The element tree contains no matching element")]
     NonExistentElement,
-    #[error("the file dialog has been closed without selecting a valid option")]
+    #[error("The file dialog has been closed without selecting a valid option")]
     DialogClosed,
     #[error("{0}")]
     Other(String),

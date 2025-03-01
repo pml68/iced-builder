@@ -1,4 +1,5 @@
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 extern crate fxhash;
 use fxhash::FxHashMap;
@@ -58,7 +59,7 @@ impl Project {
 
     pub async fn from_path(
         path: PathBuf,
-        config: Config,
+        config: Arc<Config>,
     ) -> Result<(PathBuf, Self), Error> {
         let contents = tokio::fs::read_to_string(&path).await?;
         let mut project: Self = serde_json::from_str(&contents)?;
@@ -68,7 +69,9 @@ impl Project {
         Ok((path, project))
     }
 
-    pub async fn from_file(config: Config) -> Result<(PathBuf, Self), Error> {
+    pub async fn from_file(
+        config: Arc<Config>,
+    ) -> Result<(PathBuf, Self), Error> {
         let picked_file = rfd::AsyncFileDialog::new()
             .set_title("Open a JSON file...")
             .add_filter("*.json, *.JSON", &["json", "JSON"])

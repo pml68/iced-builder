@@ -66,8 +66,13 @@ mod tests {
     #[test]
     fn can_parse_with_s_prefix() {
         assert_eq!(
-            Rotation::from_str("s12.3"),
+            Rotation::from_str("  s12.3"),
             Ok(Rotation::Solid(Radians(12.3)))
+        );
+
+        assert_eq!(
+            Rotation::from_str("S9.4"),
+            Ok(Rotation::Solid(Radians(9.4)))
         )
     }
 
@@ -76,14 +81,11 @@ mod tests {
         assert_eq!(
             Rotation::from_str("f16.9"),
             Ok(Rotation::Floating(Radians(16.9)))
-        )
-    }
+        );
 
-    #[test]
-    fn can_parse_with_uppercase_prefix() {
         assert_eq!(
-            Rotation::from_str("S9.4"),
-            Ok(Rotation::Solid(Radians(9.4)))
+            Rotation::from_str("F21.45 "),
+            Ok(Rotation::Floating(Radians(21.45)))
         )
     }
 

@@ -1,5 +1,7 @@
 mod alignment;
+mod content_fit;
 mod length;
+mod line_height;
 mod padding;
 mod pixels;
 mod rotation;

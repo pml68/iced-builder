@@ -1,0 +1,4 @@
+[iced-builder]
+source = "git"
+git = "https://github.com/pml68/iced-builder"
+include_regex = "\\d+\\.\\d+\\.\\d+"

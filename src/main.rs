@@ -27,10 +27,9 @@ use tokio::runtime;
 use types::{Action, DesignerPane, ElementName, Message, Project};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut args = std::env::args();
-    let _ = args.next();
-
-    let version = args.next().is_some_and(|s| s == "--version" || s == "-V");
+    let version = std::env::args()
+        .nth(1)
+        .is_some_and(|s| s == "--version" || s == "-V");
 
     if version {
         println!("iced-builder {}", environment::formatted_version());

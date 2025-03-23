@@ -11,7 +11,7 @@ pub trait Value: Sized {
 
     fn from_str(s: &str) -> Result<Self, Self::Err>;
 
-    // TODO remove this once RenderedElement's options field is redone
+    // TODO: remove this once RenderedElement's options field is redone
     #[allow(dead_code)]
     fn to_string(&self) -> String;
 }

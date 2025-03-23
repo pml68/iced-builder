@@ -472,12 +472,28 @@ pub fn image(path: &str) -> RenderedElement {
     ])
 }
 
-// TODO: Container options
 pub fn container(content: Option<RenderedElement>) -> RenderedElement {
     match content {
         Some(el) => RenderedElement::with(ElementName::Container, vec![el]),
         None => RenderedElement::with(ElementName::Container, vec![]),
     }
+    .preset_options(&[
+        "padding",
+        "width",
+        "height",
+        "max_width",
+        "max_height",
+        "center_x",
+        "center_y",
+        "center",
+        "align_left",
+        "align_right",
+        "align_top",
+        "align_bottom",
+        "align_x",
+        "align_y",
+        "clip",
+    ])
 }
 
 pub fn row(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {

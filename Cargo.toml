@@ -28,7 +28,7 @@ dirs-next = "2.0.0"
 
 [workspace.dependencies.iced]
 git = "https://github.com/pml68/iced"
-rev = "3a491669e7fecf21c261de63dcb1e8069063648f"
+branch = "feat/rehighlight-on-redraw"
 features = ["image", "svg", "advanced", "tokio"]
 
 [build-dependencies]

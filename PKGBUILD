@@ -2,7 +2,7 @@
 
 pkgname=iced-builder
 _pkgver=0.1.0
-pkgver=0.1.0.g256e3ba
+pkgver=0.1.0.g5583c7a
 pkgrel=1
 pkgdesc='UI builder for iced, built with iced.'
 arch=(x86_64)
@@ -12,13 +12,12 @@ depends=(
   gcc-libs
   glibc
   gtk3
-  rustfmt
 )
 makedepends=(
   git
   cargo
 )
-options=('!lto' '!debug')
+options=('!lto' '!strip' '!debug')
 source=("$pkgname::git+${url}.git")
 sha256sums=('SKIP')
 
@@ -43,7 +42,12 @@ build() {
 }
 
 package() {
+  depends=(
+    rustfmt
+  )
+
   cd "${pkgname}"
 
   install -Dm755 "target/release/${pkgname}" "${pkgdir}/usr/bin/${pkgname}"
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 }

@@ -10,6 +10,10 @@ categories = ["gui"]
 keywords = ["gui", "ui", "graphics", "interface", "widgets"]
 rust-version = "1.85.0"
 
+[features]
+default = []
+debug = ["iced/debug"]
+
 [dependencies]
 iced.workspace = true
 iced_anim = { git = "https://github.com/pml68/iced_anim", features = ["derive"] }
@@ -43,6 +47,10 @@ windows_exe_info = "0.4"
 
 [profile.dev]
 opt-level = 1
+
+[profile.ci]
+inherits = "dev"
+opt-level = 0
 
 [profile.dev.package."*"]
 opt-level = 3

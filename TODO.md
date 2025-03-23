@@ -1,2 +1,3 @@
 - [ ] Make Designer view more usable
 - [ ] Rework options backend to work on-project-load
+- [ ] Remove GTK3 dependency

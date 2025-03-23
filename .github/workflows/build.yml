@@ -28,7 +28,7 @@ jobs:
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
           target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        key: ${{ runner.os }}-build-${{ matrix.rust-version }}-${{ hashFiles('**/Cargo.lock') }}
     - name: Build iced-builder binary
       run: cargo build --verbose --profile ci
     - name: Archive iced-builder binary

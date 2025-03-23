@@ -1,3 +1,6 @@
+// (c) 2022-2024 Cory Forsstrom, Casper Rogild Storm, Calvin Lee, Andrew Baldwin, Reza Alizadeh Majd
+// (c) 2024-2025 Polesznyák Márk László
+
 use std::path::PathBuf;
 
 use serde::Deserialize;

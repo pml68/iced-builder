@@ -1,7 +1,7 @@
-name: Lint
+name: CI
 on: [push, pull_request]
 jobs:
-  lint:
+  ci:
     runs-on: ubuntu-latest
     steps:
     - uses: hecrj/setup-rust-action@v2
@@ -15,3 +15,5 @@ jobs:
         sudo apt-get install -y libxkbcommon-dev libgtk-3-dev
     - name: Check lints
       run: cargo lint
+    - name: Run tests
+      run: cargo test --verbose

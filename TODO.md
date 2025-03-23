@@ -1,0 +1,2 @@
+- [ ] Make Designer view more usable
+- [ ] Rework options backend to work on-project-load

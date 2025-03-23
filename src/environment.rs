@@ -1,7 +1,20 @@
+// (c) 2023-2025 Cory Forsstrom, Casper Rogild Storm
+// (c) 2024-2025 Polesznyák Márk László
+
 use std::env;
 use std::path::PathBuf;
 
 pub const CONFIG_FILE_NAME: &str = "config.toml";
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const GIT_HASH: Option<&str> = option_env!("GIT_HASH");
+
+pub fn formatted_version() -> String {
+    let hash = GIT_HASH
+        .map(|hash| format!(" ({hash})"))
+        .unwrap_or_default();
+
+    format!("{}{hash}", VERSION)
+}
 
 pub fn config_dir() -> PathBuf {
     portable_dir().unwrap_or_else(platform_specific_config_dir)

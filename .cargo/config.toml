@@ -1,3 +1,10 @@
 [alias]
 lint = "clippy --no-deps -- -D warnings"
 lint-all = "clippy --no-deps -- -D clippy::pedantic"
+
+# [target.x86_64-unknown-linux-gnu]
+# linker = "clang"
+# rustflags = ["-C", "link-arg=-fuse-ld=/usr/bin/mold"]
+
+# [build]
+# rustflags = ["-Z", "threads=6"]

@@ -13,6 +13,7 @@ rust-version = "1.85.0"
 [dependencies]
 iced.workspace = true
 iced_anim = { git = "https://github.com/pml68/iced_anim", features = ["derive"] }
+iced_custom_highlighter = { git = "https://github.com/pml68/iced_custom_highlighter", branch = "master" }
 iced_drop = { path = "iced_drop" }
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.138"
@@ -26,13 +27,9 @@ thiserror = "2.0.11"
 dirs-next = "2.0.0"
 
 [workspace.dependencies.iced]
-git = "https://github.com/iced-rs/iced"
-rev = "97f1db3783dca5a4f60a9f89668613de4dfe9edd"
+git = "https://github.com/pml68/iced"
+branch = "feat/rehighlight-on-redraw"
 features = ["image", "svg", "advanced", "tokio"]
-
-[dependencies.iced_custom_highlighter]
-git = "https://github.com/pml68/iced_custom_highlighter"
-branch = "fix/temp-update-on-theme-changed"
 
 [build-dependencies]
 iced_fontello = "0.13.2"

@@ -12,12 +12,11 @@ fn items_list_view(items: &[ElementName]) -> Element<'_, Message> {
         .width(Length::Fill);
 
     for item in items {
-        column =
-            column.push(droppable(text(item.clone().to_string())).on_drop(
-                move |point, rect| {
-                    Message::DropNewElement(item.clone(), point, rect)
-                },
-            ));
+        column = column.push(
+            droppable(text(item.clone().to_string())).on_drop(|point, rect| {
+                Message::DropNewElement(item.clone(), point, rect)
+            }),
+        );
     }
 
     container(column)

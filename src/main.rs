@@ -350,7 +350,7 @@ impl App {
     }
 
     fn subscription(&self) -> iced::Subscription<Message> {
-        let hotkeys = keyboard::on_key_press(|key, modifiers| {
+        keyboard::on_key_press(|key, modifiers| {
             if modifiers.command() {
                 match key.as_ref() {
                     keyboard::Key::Character("o") => Some(Message::OpenFile),
@@ -367,9 +367,7 @@ impl App {
             } else {
                 None
             }
-        });
-
-        hotkeys
+        })
     }
 
     fn view(&self) -> Element<'_, Message> {

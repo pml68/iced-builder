@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use std::vec;
 
 use iced::advanced::widget::{Operation, Tree, Widget};
-use iced::advanced::{self, layout, mouse, overlay, renderer, Layout};
+use iced::advanced::{self, Layout, layout, mouse, overlay, renderer};
 use iced::{Element, Point, Rectangle, Size, Vector};
 
 /// An element that can be dragged and dropped on a [`DropZone`]
@@ -28,6 +28,7 @@ pub struct Droppable<
     drag_center: bool,
     drag_size: Option<Size>,
     reset_delay: usize,
+    status: Option<Status>,
 }
 
 impl<'a, Message, Theme, Renderer> Droppable<'a, Message, Theme, Renderer>
@@ -52,6 +53,7 @@ where
             drag_center: false,
             drag_size: None,
             reset_delay: 0,
+            status: None,
         }
     }
 
@@ -293,6 +295,30 @@ where
                 }
             }
         }
+
+        let current_status = if cursor.is_over(layout.bounds()) {
+            if self.on_drop.is_none() {
+                Status::Disabled
+            } else {
+                let state = tree.state.downcast_ref::<State>();
+
+                if let Action::Drag(_, _) = state.action {
+                    Status::Dragged
+                } else {
+                    Status::Hovered
+                }
+            }
+        } else {
+            Status::Active
+        };
+
+        if let iced::Event::Window(iced::window::Event::RedrawRequested(_now)) =
+            event
+        {
+            self.status = Some(current_status);
+        } else if self.status.is_some_and(|status| status != current_status) {
+            shell.request_redraw();
+        }
     }
 
     fn layout(
@@ -395,18 +421,17 @@ where
         _translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let state: &mut State = tree.state.downcast_mut::<State>();
-        let mut children = tree.children.iter_mut();
         if self.drag_overlay {
             if let Action::Drag(_, _) = state.action {
                 return Some(overlay::Element::new(Box::new(Overlay {
                     content: &self.content,
-                    tree: children.next().unwrap(),
+                    tree: &mut tree.children[0],
                     overlay_bounds: state.overlay_bounds,
                 })));
             }
         }
         self.content.as_widget_mut().overlay(
-            children.next().unwrap(),
+            &mut tree.children[0],
             layout,
             renderer,
             _translation,
@@ -428,21 +453,25 @@ where
             _viewport,
             _renderer,
         );
+
         if child_interact != mouse::Interaction::default() {
             return child_interact;
         }
 
         let state = tree.state.downcast_ref::<State>();
 
-        if self.on_drop.is_none() {
+        if self.on_drop.is_none() && cursor.is_over(layout.bounds()) {
             return mouse::Interaction::NotAllowed;
         }
+
         if let Action::Drag(_, _) = state.action {
             return mouse::Interaction::Grabbing;
         }
+
         if cursor.is_over(layout.bounds()) {
             return mouse::Interaction::Pointer;
         }
+
         mouse::Interaction::default()
     }
 }
@@ -466,6 +495,15 @@ pub struct State {
     widget_pos: Point,
     overlay_bounds: Rectangle,
     action: Action,
+}
+
+#[derive(Default, Clone, Copy, PartialEq, Debug)]
+pub enum Status {
+    #[default]
+    Active,
+    Hovered,
+    Dragged,
+    Disabled,
 }
 
 #[derive(Default, Clone, Copy, PartialEq, Debug)]

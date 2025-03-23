@@ -2,7 +2,7 @@
 
 pkgname=iced-builder
 _pkgver=0.1.0
-pkgver=0.1.0.g5583c7a
+pkgver=0.1.0.gb55bd80
 pkgrel=1
 pkgdesc='UI builder for iced, built with iced.'
 arch=(x86_64)
@@ -30,7 +30,7 @@ prepare() {
 
 pkgver() {
   cd "${pkgname}"
-  echo "${_pkgver}.g$(git describe --always --exclude='*')"
+  echo "$(cargo pkgid | cut -d@ -f2).g$(git describe --always --exclude='*')"
 }
 
 build() {

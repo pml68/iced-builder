@@ -23,6 +23,6 @@ jobs:
           target/
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - name: Check lints
-      run: cargo lint --profile ci
+      run: cargo lint
     - name: Run tests
       run: cargo test --verbose --profile ci

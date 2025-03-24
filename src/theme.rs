@@ -1,12 +1,14 @@
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use iced::Color;
+use iced::theme::Base;
 use iced::theme::palette::Extended;
+use serde::Deserialize;
 
 use crate::config::Config;
 
-const DEFAULT_THEME_CONTENT: &str =
-    include_str!("../assets/themes/rose_pine.toml");
+const DARK_THEME_CONTENT: &str = include_str!("../assets/themes/dark.toml");
+const LIGHT_THEME_CONTENT: &str = include_str!("../assets/themes/light.toml");
 
 pub fn theme_index(theme_name: &str, slice: &[iced::Theme]) -> Option<usize> {
     slice
@@ -59,115 +61,6 @@ pub fn theme_from_str(
     }
 }
 
-fn palette_to_string(palette: &iced::theme::Palette) -> String {
-    format!(
-        r"Palette {{
-            background: color!(0x{}),
-            text: color!(0x{}),
-            primary: color!(0x{}),
-            success: color!(0x{}),
-            danger: color!(0x{}),
-            warning: color!(0x{}),
-        }}",
-        color_to_hex(palette.background),
-        color_to_hex(palette.text),
-        color_to_hex(palette.primary),
-        color_to_hex(palette.success),
-        color_to_hex(palette.danger),
-        color_to_hex(palette.warning),
-    )
-}
-
-fn extended_to_string(extended: &Extended) -> String {
-    format!(
-        r"
-Extended{{background:Background{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},primary:Primary{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},secondary:Secondary{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},success:Success{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},danger:Danger{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},warning:Warning{{base:Pair{{color:color!(0x{}),text:color!(0x{}),}},weak:Pair{{color:color!(0x{}),text:color!(0x{}),}},strong:Pair{{color:color!(0x{}),text:color!(0x{}),}},}},is_dark:true,}}",
-        color_to_hex(extended.background.base.color),
-        color_to_hex(extended.background.base.text),
-        color_to_hex(extended.background.weak.color),
-        color_to_hex(extended.background.weak.text),
-        color_to_hex(extended.background.strong.color),
-        color_to_hex(extended.background.strong.text),
-        color_to_hex(extended.primary.base.color),
-        color_to_hex(extended.primary.base.text),
-        color_to_hex(extended.primary.weak.color),
-        color_to_hex(extended.primary.weak.text),
-        color_to_hex(extended.primary.strong.color),
-        color_to_hex(extended.primary.strong.text),
-        color_to_hex(extended.secondary.base.color),
-        color_to_hex(extended.secondary.base.text),
-        color_to_hex(extended.secondary.weak.color),
-        color_to_hex(extended.secondary.weak.text),
-        color_to_hex(extended.secondary.strong.color),
-        color_to_hex(extended.secondary.strong.text),
-        color_to_hex(extended.success.base.color),
-        color_to_hex(extended.success.base.text),
-        color_to_hex(extended.success.weak.color),
-        color_to_hex(extended.success.weak.text),
-        color_to_hex(extended.success.strong.color),
-        color_to_hex(extended.success.strong.text),
-        color_to_hex(extended.danger.base.color),
-        color_to_hex(extended.danger.base.text),
-        color_to_hex(extended.danger.weak.color),
-        color_to_hex(extended.danger.weak.text),
-        color_to_hex(extended.danger.strong.color),
-        color_to_hex(extended.danger.strong.text),
-        color_to_hex(extended.warning.base.color),
-        color_to_hex(extended.warning.base.text),
-        color_to_hex(extended.warning.weak.color),
-        color_to_hex(extended.warning.weak.text),
-        color_to_hex(extended.warning.strong.color),
-        color_to_hex(extended.warning.strong.text),
-    )
-}
-
-pub fn theme_to_string(theme: &iced::Theme) -> String {
-    let palette = theme.palette();
-    let extended = theme.extended_palette();
-
-    let generated_extended = Extended::generate(palette);
-
-    if &generated_extended == extended {
-        format!(
-            r#"custom(
-                "{}".to_string(),
-                {}
-            )"#,
-            theme,
-            palette_to_string(&palette)
-        )
-    } else {
-        format!(
-            r#"custom_with_fn(
-                "{}".to_string(),
-                {},
-                |_| {}
-            )"#,
-            theme,
-            palette_to_string(&palette),
-            extended_to_string(extended)
-        )
-    }
-}
-
-fn color_to_hex(color: Color) -> String {
-    use std::fmt::Write;
-
-    let mut hex = String::with_capacity(12);
-
-    let [r, g, b, a] = color.into_rgba8();
-
-    let _ = write!(&mut hex, "{:02X}", r);
-    let _ = write!(&mut hex, "{:02X}", g);
-    let _ = write!(&mut hex, "{:02X}", b);
-
-    if a < u8::MAX {
-        let _ = write!(&mut hex, ", {:.2}", a as f32 / 255.0);
-    }
-
-    hex
-}
-
 #[derive(Debug, Clone)]
 pub struct Appearance {
     pub selected: iced::Theme,
@@ -187,7 +80,158 @@ impl Default for Appearance {
     }
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, PartialEq, Deserialize)]
+pub struct OtherTheme {
+    name: String,
+    #[serde(flatten)]
+    colorscheme: ColorScheme,
+}
+
+impl Clone for OtherTheme {
+    fn clone(&self) -> Self {
+        Self {
+            name: self.name.clone(),
+            colorscheme: self.colorscheme,
+        }
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        self.name = source.name.clone();
+        self.colorscheme = source.colorscheme;
+    }
+}
+
+impl Default for OtherTheme {
+    fn default() -> Self {
+        match dark_light::detect().unwrap_or(dark_light::Mode::Unspecified) {
+            dark_light::Mode::Dark | dark_light::Mode::Unspecified => {
+                DARK.clone()
+            }
+            dark_light::Mode::Light => LIGHT.clone(),
+        }
+    }
+}
+
+impl Base for OtherTheme {
+    fn base(&self) -> iced::theme::Style {
+        iced::theme::Style {
+            background_color: self.colorscheme.surface.surface,
+            text_color: self.colorscheme.surface.on_surface,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct ColorScheme {
+    pub primary: Primary,
+    pub secondary: Secondary,
+    pub tertiary: Tertiary,
+    pub error: Error,
+    pub surface: Surface,
+    pub inverse: Inverse,
+    pub outline: Outline,
+}
+
+pub static DARK: LazyLock<OtherTheme> = LazyLock::new(|| {
+    toml::from_str(DARK_THEME_CONTENT).expect("parse dark theme")
+});
+
+pub static LIGHT: LazyLock<OtherTheme> = LazyLock::new(|| {
+    toml::from_str(LIGHT_THEME_CONTENT).expect("parse light theme")
+});
+
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct Primary {
+    #[serde(with = "color_serde")]
+    pub primary: Color,
+    #[serde(with = "color_serde")]
+    pub on_primary: Color,
+    #[serde(with = "color_serde")]
+    pub primary_container: Color,
+    #[serde(with = "color_serde")]
+    pub on_primary_container: Color,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct Secondary {
+    #[serde(with = "color_serde")]
+    pub secondary: Color,
+    #[serde(with = "color_serde")]
+    pub on_secondary: Color,
+    #[serde(with = "color_serde")]
+    pub secondary_container: Color,
+    #[serde(with = "color_serde")]
+    pub on_secondary_container: Color,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct Tertiary {
+    #[serde(with = "color_serde")]
+    pub tertiary: Color,
+    #[serde(with = "color_serde")]
+    pub on_tertiary: Color,
+    #[serde(with = "color_serde")]
+    pub tertiary_container: Color,
+    #[serde(with = "color_serde")]
+    pub on_tertiary_container: Color,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct Error {
+    #[serde(with = "color_serde")]
+    pub error: Color,
+    #[serde(with = "color_serde")]
+    pub on_error: Color,
+    #[serde(with = "color_serde")]
+    pub error_container: Color,
+    #[serde(with = "color_serde")]
+    pub on_error_container: Color,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct Surface {
+    #[serde(with = "color_serde")]
+    pub surface: Color,
+    #[serde(with = "color_serde")]
+    pub on_surface: Color,
+    #[serde(with = "color_serde")]
+    pub on_surface_variant: Color,
+    pub surface_container: SurfaceContainer,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct SurfaceContainer {
+    #[serde(with = "color_serde")]
+    pub lowest: Color,
+    #[serde(with = "color_serde")]
+    pub low: Color,
+    #[serde(with = "color_serde")]
+    pub base: Color,
+    #[serde(with = "color_serde")]
+    pub high: Color,
+    #[serde(with = "color_serde")]
+    pub highest: Color,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct Inverse {
+    #[serde(with = "color_serde")]
+    pub inverse_surface: Color,
+    #[serde(with = "color_serde")]
+    pub inverse_on_surface: Color,
+    #[serde(with = "color_serde")]
+    pub inverse_primary: Color,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct Outline {
+    #[serde(with = "color_serde")]
+    pub outline: Color,
+    #[serde(with = "color_serde")]
+    pub outline_variant: Color,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct Theme {
     name: String,
     palette: ThemePalette,
@@ -200,7 +244,7 @@ impl From<Theme> for iced::Theme {
     fn from(value: Theme) -> Self {
         iced::Theme::custom_with_fn(
             value.name.clone(),
-            value.palette.clone().into(),
+            value.palette.into(),
             |_| value.into(),
         )
     }
@@ -208,11 +252,12 @@ impl From<Theme> for iced::Theme {
 
 impl Default for Theme {
     fn default() -> Self {
-        toml::from_str(DEFAULT_THEME_CONTENT).expect("parse default theme")
+        toml::from_str(include_str!("../assets/themes/rose_pine.toml"))
+            .expect("parse default theme")
     }
 }
 
-#[derive(Debug, Clone, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, Deserialize)]
 pub struct ThemePalette {
     #[serde(with = "color_serde")]
     background: Color,
@@ -341,7 +386,7 @@ impl From<Theme> for Extended {
     }
 }
 
-#[derive(Debug, Default, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
 struct ExtendedThemePalette {
     background: Option<ThemeBackground>,
     primary: Option<ThemePrimary>,
@@ -351,49 +396,49 @@ struct ExtendedThemePalette {
     warning: Option<ThemeWarning>,
 }
 
-#[derive(Debug, Default, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
 struct ThemeBackground {
     base: Option<ThemePair>,
     weak: Option<ThemePair>,
     strong: Option<ThemePair>,
 }
 
-#[derive(Debug, Default, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
 struct ThemePrimary {
     base: Option<ThemePair>,
     weak: Option<ThemePair>,
     strong: Option<ThemePair>,
 }
 
-#[derive(Debug, Default, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
 struct ThemeSecondary {
     base: Option<ThemePair>,
     weak: Option<ThemePair>,
     strong: Option<ThemePair>,
 }
 
-#[derive(Debug, Default, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
 struct ThemeSuccess {
     base: Option<ThemePair>,
     weak: Option<ThemePair>,
     strong: Option<ThemePair>,
 }
 
-#[derive(Debug, Default, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
 struct ThemeDanger {
     base: Option<ThemePair>,
     weak: Option<ThemePair>,
     strong: Option<ThemePair>,
 }
 
-#[derive(Debug, Default, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
 struct ThemeWarning {
     base: Option<ThemePair>,
     weak: Option<ThemePair>,
     strong: Option<ThemePair>,
 }
 
-#[derive(Debug, Default, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
 struct ThemePair {
     #[serde(with = "color_serde")]
     color: Color,
@@ -410,16 +455,56 @@ impl From<ThemePair> for iced::theme::palette::Pair {
     }
 }
 
+pub fn parse_argb(s: &str) -> Option<Color> {
+    let hex = s.strip_prefix('#').unwrap_or(s);
+
+    let parse_channel = |from: usize, to: usize| {
+        let num =
+            usize::from_str_radix(&hex[from..=to], 16).ok()? as f32 / 255.0;
+
+        // If we only got half a byte (one letter), expand it into a full byte (two letters)
+        Some(if from == to { num + num * 16.0 } else { num })
+    };
+
+    Some(match hex.len() {
+        3 => Color::from_rgb(
+            parse_channel(0, 0)?,
+            parse_channel(1, 1)?,
+            parse_channel(2, 2)?,
+        ),
+        4 => Color::from_rgba(
+            parse_channel(1, 1)?,
+            parse_channel(2, 2)?,
+            parse_channel(3, 3)?,
+            parse_channel(0, 0)?,
+        ),
+        6 => Color::from_rgb(
+            parse_channel(0, 1)?,
+            parse_channel(2, 3)?,
+            parse_channel(4, 5)?,
+        ),
+        8 => Color::from_rgba(
+            parse_channel(2, 3)?,
+            parse_channel(4, 5)?,
+            parse_channel(6, 7)?,
+            parse_channel(0, 1)?,
+        ),
+        _ => None?,
+    })
+}
+
 mod color_serde {
     use iced::Color;
     use serde::{Deserialize, Deserializer};
+
+    use super::parse_argb;
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Color, D::Error>
     where
         D: Deserializer<'de>,
     {
         Ok(String::deserialize(deserializer)
-            .map(|hex| Color::parse(&hex))?
+            .map(|hex| parse_argb(&hex))?
             .unwrap_or(Color::TRANSPARENT))
     }
 }

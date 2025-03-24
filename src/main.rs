@@ -104,10 +104,7 @@ impl App {
 
         let task = if let Some(path) = config.last_project.clone() {
             if path.exists() && path.is_file() {
-                Task::perform(
-                    Project::from_path(path, config.clone()),
-                    Message::FileOpened,
-                )
+                Task::perform(Project::from_path(path), Message::FileOpened)
             } else {
                 warning_dialog(format!(
                     "The file {} does not exist, or isn't a file.",
@@ -181,7 +178,8 @@ impl App {
                     }
                     Err(error) => return error_dialog(error),
                 }
-            }
+                Err(error) => Task::future(error_dialog(error)).discard(),
+            },
             Message::DropNewElement(name, point, _) => {
                 return iced_drop::zones_on_point(
                     move |zones| Message::HandleNew(name.clone(), zones),
@@ -405,7 +403,7 @@ impl App {
                     Panes::Designer => match &self.designer_page {
                         DesignerPane::DesignerView => designer_view::view(
                             self.project.element_tree.as_ref(),
-                            self.project.get_theme(&self.config),
+                            self.project.get_theme(),
                             is_focused,
                         ),
                         DesignerPane::CodeView => {

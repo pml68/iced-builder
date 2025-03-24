@@ -32,6 +32,7 @@ rust-format = "0.3.4"
 fxhash = "0.2.1"
 thiserror = "2.0.11"
 dirs-next = "2.0.0"
+dark-light = "2.0.0"
 
 [workspace.dependencies.iced]
 git = "https://github.com/pml68/iced"

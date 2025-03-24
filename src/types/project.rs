@@ -1,24 +1,19 @@
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 
 extern crate fxhash;
-use fxhash::FxHashMap;
 use iced::Theme;
 use rust_format::{Edition, Formatter, RustFmt};
 use serde::{Deserialize, Serialize};
 
 use super::rendered_element::RenderedElement;
 use crate::Error;
-use crate::config::Config;
-use crate::theme::{theme_from_str, theme_index, theme_to_string};
+use crate::theme::{theme_from_str, theme_index};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Project {
     pub title: Option<String>,
     pub theme: Option<String>,
     pub element_tree: Option<RenderedElement>,
-    #[serde(skip)]
-    theme_cache: FxHashMap<String, String>,
 }
 
 impl Default for Project {
@@ -33,45 +28,24 @@ impl Project {
             title: None,
             theme: None,
             element_tree: None,
-            theme_cache: FxHashMap::default(),
         }
     }
 
-    pub fn get_theme(&self, config: &Config) -> Theme {
+    pub fn get_theme(&self) -> Theme {
         match &self.theme {
-            Some(theme) => theme_from_str(Some(config), theme),
+            Some(theme) => theme_from_str(None, theme),
             None => Theme::default(),
         }
     }
 
-    fn theme_code(&mut self, theme: &Theme) -> String {
-        let theme_name = theme.to_string();
-        if theme_index(&theme_name, Theme::ALL).is_none() {
-            (*self
-                .theme_cache
-                .entry(theme_name)
-                .or_insert(theme_to_string(theme)))
-            .to_string()
-        } else {
-            theme_name.replace(" ", "")
-        }
-    }
-
-    pub async fn from_path(
-        path: PathBuf,
-        config: Arc<Config>,
-    ) -> Result<(PathBuf, Self), Error> {
+    pub async fn from_path(path: PathBuf) -> Result<(PathBuf, Self), Error> {
         let contents = tokio::fs::read_to_string(&path).await?;
-        let mut project: Self = serde_json::from_str(&contents)?;
-
-        let _ = project.theme_code(&project.get_theme(&config));
+        let project: Self = serde_json::from_str(&contents)?;
 
         Ok((path, project))
     }
 
-    pub async fn from_file(
-        config: Arc<Config>,
-    ) -> Result<(PathBuf, Self), Error> {
+    pub async fn from_file() -> Result<(PathBuf, Self), Error> {
         let picked_file = rfd::AsyncFileDialog::new()
             .set_title("Open a JSON file...")
             .add_filter("*.json, *.JSON", &["json", "JSON"])
@@ -81,7 +55,7 @@ impl Project {
 
         let path = picked_file.path().to_owned();
 
-        Self::from_path(path, config).await
+        Self::from_path(path).await
     }
 
     pub async fn write_to_file(
@@ -108,12 +82,12 @@ impl Project {
         Ok(path)
     }
 
-    pub fn app_code(&mut self, config: &Config) -> Result<String, Error> {
+    pub fn app_code(&mut self) -> Result<String, Error> {
         match self.element_tree {
             Some(ref element_tree) => {
                 let (imports, view) = element_tree.codegen();
-                let theme = self.get_theme(config);
-                let theme_code = self.theme_code(&theme);
+                let theme = self.get_theme();
+                let theme_code = theme.to_string().replace(" ", "");
                 let mut theme_imports = "";
                 if theme_index(&theme.to_string(), Theme::ALL).is_none() {
                     if theme_code.contains("Extended") {

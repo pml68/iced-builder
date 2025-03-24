@@ -91,10 +91,7 @@ impl App {
 
         let task = if let Some(path) = config.last_project.clone() {
             if path.exists() && path.is_file() {
-                Task::perform(
-                    Project::from_path(path, config.clone()),
-                    Message::FileOpened,
-                )
+                Task::perform(Project::from_path(path), Message::FileOpened)
             } else {
                 Task::future(warning_dialog(format!(
                     "The file {} does not exist, or isn't a file.",
@@ -162,16 +159,14 @@ impl App {
                 }
                 Task::none()
             }
-            Message::RefreshEditorContent => {
-                match self.project.app_code(&self.config) {
-                    Ok(code) => {
-                        self.editor_content =
-                            text_editor::Content::with_text(&code);
-                        Task::none()
-                    }
-                    Err(error) => Task::future(error_dialog(error)).discard(),
+            Message::RefreshEditorContent => match self.project.app_code() {
+                Ok(code) => {
+                    self.editor_content =
+                        text_editor::Content::with_text(&code);
+                    Task::none()
                 }
-            }
+                Err(error) => Task::future(error_dialog(error)).discard(),
+            },
             Message::DropNewElement(name, point, _) => {
                 iced_drop::zones_on_point(
                     move |zones| Message::HandleNew(name.clone(), zones),
@@ -275,19 +270,13 @@ impl App {
                     if !self.is_dirty {
                         self.is_loading = true;
 
-                        Task::perform(
-                            Project::from_file(self.config.clone()),
-                            Message::FileOpened,
-                        )
+                        Task::perform(Project::from_file(), Message::FileOpened)
                     } else if unsaved_changes_dialog(
                         "You have unsaved changes. Do you wish to discard these and open another project?",
                     ) {
                         self.is_dirty = false;
                         self.is_loading = true;
-                        Task::perform(
-                            Project::from_file(self.config.clone()),
-                            Message::FileOpened,
-                        )
+                        Task::perform(Project::from_file(), Message::FileOpened)
                     } else {
                         Task::none()
                     }
@@ -385,7 +374,7 @@ impl App {
                     Panes::Designer => match &self.designer_page {
                         DesignerPane::DesignerView => designer_view::view(
                             self.project.element_tree.as_ref(),
-                            self.project.get_theme(&self.config),
+                            self.project.get_theme(),
                             is_focused,
                         ),
                         DesignerPane::CodeView => {

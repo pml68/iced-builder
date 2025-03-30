@@ -19,12 +19,15 @@ iced.workspace = true
 iced_anim = { git = "https://github.com/pml68/iced_anim", features = ["derive"] }
 iced_custom_highlighter = { git = "https://github.com/pml68/iced_custom_highlighter", branch = "master" }
 iced_drop = { path = "iced_drop" }
+iced_dialog = { git = "https://github.com/pml68/iced_dialog", branch = "iced/personal" }
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.138"
 toml = "0.8.20"
 tokio = { version = "1.43", features = ["fs"] }
 tokio-stream = { version = "0.1", features = ["fs"] }
-rfd = { version = "0.15.2", default-features = false, features = ["tokio", "gtk3"]  }
+# TODO: enable tokio when it actually compiles
+# rfd = { version = "0.15.2", default-features = false, features = ["tokio", "xdg-portal"]  }
+rfd = "0.15.3"
 rust-format = "0.3.4"
 fxhash = "0.2.1"
 thiserror = "2.0.11"

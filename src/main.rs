@@ -15,16 +15,25 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use config::Config;
-use dialogs::{error_dialog, unsaved_changes_dialog, warning_dialog};
+use dialogs::{
+    cancel_button, error_dialog, ok_button, unsaved_changes_dialog,
+    warning_dialog,
+};
 use error::Error;
 use iced::advanced::widget::Id;
-use iced::widget::{Column, container, pane_grid, pick_list, row, text_editor};
+use iced::widget::{
+    Column, container, pane_grid, pick_list, row, text, text_editor,
+};
 use iced::{Alignment, Element, Length, Task, Theme, clipboard, keyboard};
 use iced_anim::transition::Easing;
 use iced_anim::{Animated, Animation};
+use iced_dialog::dialog::Dialog;
 use panes::{code_view, designer_view, element_list};
 use tokio::runtime;
-use types::{Action, DesignerPane, ElementName, Message, Project};
+use types::{
+    Action, DesignerPane, DialogAction, DialogButtons, ElementName, Message,
+    Project,
+};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let version = std::env::args()
@@ -51,7 +60,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .theme(|state| state.theme.value().clone())
         .subscription(App::subscription)
         .run_with(move || App::new(config_load))?;
-
     Ok(())
 }
 
@@ -65,6 +73,11 @@ struct App {
     pane_state: pane_grid::State<Panes>,
     focus: Option<pane_grid::Pane>,
     designer_page: DesignerPane,
+    dialog_is_open: bool,
+    dialog_title: &'static str,
+    dialog_content: String,
+    dialog_buttons: DialogButtons,
+    dialog_action: DialogAction,
     element_list: &'static [ElementName],
     editor_content: text_editor::Content,
 }
@@ -96,11 +109,10 @@ impl App {
                     Message::FileOpened,
                 )
             } else {
-                Task::future(warning_dialog(format!(
+                warning_dialog(format!(
                     "The file {} does not exist, or isn't a file.",
                     path.to_string_lossy()
-                )))
-                .discard()
+                ))
             }
         } else {
             Task::none()
@@ -117,6 +129,11 @@ impl App {
                 pane_state: state,
                 focus: None,
                 designer_page: DesignerPane::DesignerView,
+                dialog_is_open: false,
+                dialog_title: "",
+                dialog_content: String::new(),
+                dialog_buttons: DialogButtons::None,
+                dialog_action: DialogAction::None,
                 element_list: ElementName::ALL,
                 editor_content: text_editor::Content::new(),
             },
@@ -146,41 +163,37 @@ impl App {
 
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
-            Message::SwitchTheme(event) => {
-                self.theme.update(event);
-
-                Task::none()
+            Message::SwitchTheme(event) => self.theme.update(event),
+            Message::CopyCode => {
+                return clipboard::write(self.editor_content.text());
             }
-            Message::CopyCode => clipboard::write(self.editor_content.text()),
-            Message::SwitchPage(page) => {
-                self.designer_page = page;
-                Task::none()
-            }
+            Message::SwitchPage(page) => self.designer_page = page,
             Message::EditorAction(action) => {
                 if let text_editor::Action::Scroll { lines: _ } = action {
                     self.editor_content.perform(action);
                 }
-                Task::none()
             }
             Message::RefreshEditorContent => {
                 match self.project.app_code(&self.config) {
                     Ok(code) => {
                         self.editor_content =
                             text_editor::Content::with_text(&code);
-                        Task::none()
                     }
-                    Err(error) => Task::future(error_dialog(error)).discard(),
+                    Err(error) => return error_dialog(error),
                 }
             }
             Message::DropNewElement(name, point, _) => {
-                iced_drop::zones_on_point(
+                return iced_drop::zones_on_point(
                     move |zones| Message::HandleNew(name.clone(), zones),
                     point,
                     None,
                     None,
-                )
+                );
             }
             Message::HandleNew(name, zones) => {
+                let refresh_editor_task =
+                    Task::done(Message::RefreshEditorContent);
+
                 let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
                 if !ids.is_empty() {
                     let eltree_clone = self.project.element_tree.clone();
@@ -195,23 +208,21 @@ impl App {
                             self.project.element_tree = Some(element.clone());
                         }
                         Err(error) => {
-                            return Task::future(error_dialog(error))
-                                .map(|_| Message::RefreshEditorContent);
+                            return error_dialog(error)
+                                .chain(refresh_editor_task);
                         }
                         _ => {}
                     }
-                    Task::done(Message::RefreshEditorContent)
-                } else {
-                    Task::none()
+                    return refresh_editor_task;
                 }
             }
             Message::MoveElement(element, point, _) => {
-                iced_drop::zones_on_point(
+                return iced_drop::zones_on_point(
                     move |zones| Message::HandleMove(element.clone(), zones),
                     point,
                     None,
                     None,
-                )
+                );
             }
             Message::HandleMove(element, zones) => {
                 let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
@@ -227,111 +238,119 @@ impl App {
                         action,
                     );
                     if let Err(error) = result {
-                        return Task::future(error_dialog(error)).discard();
+                        return error_dialog(error);
                     }
 
                     self.is_dirty = true;
-                    Task::done(Message::RefreshEditorContent)
-                } else {
-                    Task::none()
+                    return Task::done(Message::RefreshEditorContent);
                 }
             }
             Message::PaneResized(pane_grid::ResizeEvent { split, ratio }) => {
                 self.pane_state.resize(split, ratio);
-                Task::none()
             }
-            Message::PaneClicked(pane) => {
-                self.focus = Some(pane);
-                Task::none()
-            }
+            Message::PaneClicked(pane) => self.focus = Some(pane),
             Message::PaneDragged(pane_grid::DragEvent::Dropped {
                 pane,
                 target,
-            }) => {
-                self.pane_state.drop(pane, target);
-                Task::none()
+            }) => self.pane_state.drop(pane, target),
+            Message::PaneDragged(_) => {}
+            Message::OpenDialog(title, content, buttons, action) => {
+                self.dialog_title = title;
+                self.dialog_content = content;
+                self.dialog_buttons = buttons;
+                self.dialog_action = action;
+                self.dialog_is_open = true;
             }
-            Message::PaneDragged(_) => Task::none(),
+            Message::CloseDialog => self.dialog_is_open = false,
+            Message::DialogOk => {
+                let close_dialog_task = Task::done(Message::CloseDialog);
+
+                match self.dialog_action {
+                    DialogAction::None => {}
+                    DialogAction::NewFile => {
+                        self.is_dirty = false;
+                        self.project = Project::new();
+                        self.project_path = None;
+                        self.editor_content = text_editor::Content::new();
+                    }
+                    DialogAction::OpenFile => {
+                        self.is_dirty = false;
+                        self.is_loading = true;
+                        return Task::perform(
+                            Project::from_file(self.config.clone()),
+                            Message::FileOpened,
+                        )
+                        .chain(close_dialog_task);
+                    }
+                }
+
+                return close_dialog_task;
+            }
+            Message::DialogCancel => return Task::done(Message::CloseDialog),
             Message::NewFile => {
                 if !self.is_loading {
                     if !self.is_dirty {
                         self.project = Project::new();
                         self.project_path = None;
                         self.editor_content = text_editor::Content::new();
-                    } else if unsaved_changes_dialog(
-                        "You have unsaved changes. Do you wish to discard these and create a new project?",
-                    ) {
-                        self.is_dirty = false;
-                        self.project = Project::new();
-                        self.project_path = None;
-                        self.editor_content = text_editor::Content::new();
+                    } else {
+                        return unsaved_changes_dialog(
+                            "You have unsaved changes. Do you wish to discard these and create a new project?",
+                            DialogAction::NewFile,
+                        );
                     }
                 }
-
-                Task::none()
             }
             Message::OpenFile => {
                 if !self.is_loading {
                     if !self.is_dirty {
                         self.is_loading = true;
 
-                        Task::perform(
+                        return Task::perform(
                             Project::from_file(self.config.clone()),
                             Message::FileOpened,
-                        )
-                    } else if unsaved_changes_dialog(
-                        "You have unsaved changes. Do you wish to discard these and open another project?",
-                    ) {
-                        self.is_dirty = false;
-                        self.is_loading = true;
-                        Task::perform(
-                            Project::from_file(self.config.clone()),
-                            Message::FileOpened,
-                        )
+                        );
                     } else {
-                        Task::none()
+                        return unsaved_changes_dialog(
+                            "You have unsaved changes. Do you wish to discard these and open another project?",
+                            DialogAction::OpenFile,
+                        );
                     }
-                } else {
-                    Task::none()
                 }
             }
             Message::FileOpened(result) => {
                 self.is_loading = false;
                 self.is_dirty = false;
 
-                match result {
+                return match result {
                     Ok((path, project)) => {
                         self.project = project;
                         self.project_path = Some(path);
                         Task::done(Message::RefreshEditorContent)
                     }
-                    Err(error) => Task::future(error_dialog(error)).discard(),
-                }
+                    Err(error) => return error_dialog(error),
+                };
             }
             Message::SaveFile => {
                 if !self.is_loading {
                     self.is_loading = true;
 
-                    Task::perform(
+                    return Task::perform(
                         self.project
                             .clone()
                             .write_to_file(self.project_path.clone()),
                         Message::FileSaved,
-                    )
-                } else {
-                    Task::none()
+                    );
                 }
             }
             Message::SaveFileAs => {
                 if !self.is_loading {
                     self.is_loading = true;
 
-                    Task::perform(
+                    return Task::perform(
                         self.project.clone().write_to_file(None),
                         Message::FileSaved,
-                    )
-                } else {
-                    Task::none()
+                    );
                 }
             }
             Message::FileSaved(result) => {
@@ -341,12 +360,13 @@ impl App {
                     Ok(path) => {
                         self.project_path = Some(path);
                         self.is_dirty = false;
-                        Task::none()
                     }
-                    Err(error) => Task::future(error_dialog(error)).discard(),
+                    Err(error) => return error_dialog(error),
                 }
             }
         }
+
+        Task::none()
     }
 
     fn subscription(&self) -> iced::Subscription<Message> {
@@ -405,14 +425,26 @@ impl App {
         .on_click(Message::PaneClicked)
         .on_drag(Message::PaneDragged);
 
-        let content = Column::new()
+        let base = Column::new()
             .push(header)
             .push(pane_grid)
             .spacing(5)
             .align_x(Alignment::Center)
             .width(Length::Fill);
 
-        Animation::new(&self.theme, container(content).height(Length::Fill))
+        let content = Dialog::with_buttons(
+            self.dialog_is_open,
+            container(base).height(Length::Fill),
+            text(&self.dialog_content),
+            match self.dialog_buttons {
+                DialogButtons::None => vec![],
+                DialogButtons::Ok => vec![ok_button()],
+                DialogButtons::OkCancel => vec![ok_button(), cancel_button()],
+            },
+        )
+        .title(self.dialog_title);
+
+        Animation::new(&self.theme, content)
             .on_update(Message::SwitchTheme)
             .into()
     }

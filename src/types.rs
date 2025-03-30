@@ -27,6 +27,10 @@ pub enum Message {
     PaneResized(pane_grid::ResizeEvent),
     PaneClicked(pane_grid::Pane),
     PaneDragged(pane_grid::DragEvent),
+    OpenDialog(&'static str, String, DialogButtons, DialogAction),
+    CloseDialog,
+    DialogOk,
+    DialogCancel,
     NewFile,
     OpenFile,
     FileOpened(Result<(PathBuf, Project), Error>),
@@ -35,7 +39,23 @@ pub enum Message {
     FileSaved(Result<PathBuf, Error>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, Default)]
+pub enum DialogButtons {
+    #[default]
+    None,
+    Ok,
+    OkCancel,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub enum DialogAction {
+    #[default]
+    None,
+    NewFile,
+    OpenFile,
+}
+
+#[derive(Debug, Clone, Copy)]
 pub enum DesignerPane {
     DesignerView,
     CodeView,

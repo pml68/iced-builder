@@ -1,35 +1,47 @@
-use rfd::{
-    AsyncMessageDialog, MessageButtons, MessageDialog, MessageDialogResult,
-    MessageLevel,
-};
+use iced::{Element, Task};
+use iced_dialog::button;
 
-pub async fn error_dialog(description: impl Into<String>) {
-    let _ = AsyncMessageDialog::new()
-        .set_level(MessageLevel::Error)
-        .set_buttons(MessageButtons::Ok)
-        .set_title("Oops! Something went wrong.")
-        .set_description(description)
-        .show()
-        .await;
+use crate::Message;
+use crate::types::{DialogAction, DialogButtons};
+
+pub const UNSAVED_CHANGES_TITLE: &str = "Unsaved changes";
+pub const WARNING_TITLE: &str = "Heads up!";
+pub const ERROR_TITLE: &str = "Oops! Something went wrong.";
+
+pub fn ok_button<'a>() -> Element<'a, Message> {
+    button("Ok").on_press(Message::DialogOk).into()
 }
 
-pub async fn warning_dialog(description: impl Into<String>) {
-    let _ = AsyncMessageDialog::new()
-        .set_level(MessageLevel::Warning)
-        .set_buttons(MessageButtons::Ok)
-        .set_title("Heads up!")
-        .set_description(description)
-        .show()
-        .await;
+pub fn cancel_button<'a>() -> Element<'a, Message> {
+    button("Cancel").on_press(Message::DialogCancel).into()
 }
 
-pub fn unsaved_changes_dialog(description: impl Into<String>) -> bool {
-    let result = MessageDialog::new()
-        .set_level(MessageLevel::Warning)
-        .set_buttons(MessageButtons::OkCancel)
-        .set_title("Unsaved changes")
-        .set_description(description)
-        .show();
+pub fn error_dialog(description: impl Into<String>) -> Task<Message> {
+    Task::done(Message::OpenDialog(
+        ERROR_TITLE,
+        description.into(),
+        DialogButtons::Ok,
+        DialogAction::None,
+    ))
+}
 
-    matches!(result, MessageDialogResult::Ok)
+pub fn warning_dialog(description: impl Into<String>) -> Task<Message> {
+    Task::done(Message::OpenDialog(
+        WARNING_TITLE,
+        description.into(),
+        DialogButtons::Ok,
+        DialogAction::None,
+    ))
+}
+
+pub fn unsaved_changes_dialog(
+    description: impl Into<String>,
+    action: DialogAction,
+) -> Task<Message> {
+    Task::done(Message::OpenDialog(
+        UNSAVED_CHANGES_TITLE,
+        description.into(),
+        DialogButtons::OkCancel,
+        action,
+    ))
 }

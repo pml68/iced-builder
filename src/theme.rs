@@ -1,3 +1,6 @@
+pub mod button;
+pub mod text;
+
 use std::sync::{Arc, LazyLock};
 
 use iced::Color;
@@ -115,7 +118,7 @@ impl Default for OtherTheme {
 impl Base for OtherTheme {
     fn base(&self) -> iced::theme::Style {
         iced::theme::Style {
-            background_color: self.colorscheme.surface.surface,
+            background_color: self.colorscheme.surface.color,
             text_color: self.colorscheme.surface.on_surface,
         }
     }
@@ -130,6 +133,8 @@ pub struct ColorScheme {
     pub surface: Surface,
     pub inverse: Inverse,
     pub outline: Outline,
+    #[serde(with = "color_serde")]
+    pub shadow: Color,
 }
 
 pub static DARK: LazyLock<OtherTheme> = LazyLock::new(|| {
@@ -143,7 +148,7 @@ pub static LIGHT: LazyLock<OtherTheme> = LazyLock::new(|| {
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub struct Primary {
     #[serde(with = "color_serde")]
-    pub primary: Color,
+    pub color: Color,
     #[serde(with = "color_serde")]
     pub on_primary: Color,
     #[serde(with = "color_serde")]
@@ -155,7 +160,7 @@ pub struct Primary {
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub struct Secondary {
     #[serde(with = "color_serde")]
-    pub secondary: Color,
+    pub color: Color,
     #[serde(with = "color_serde")]
     pub on_secondary: Color,
     #[serde(with = "color_serde")]
@@ -167,7 +172,7 @@ pub struct Secondary {
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub struct Tertiary {
     #[serde(with = "color_serde")]
-    pub tertiary: Color,
+    pub color: Color,
     #[serde(with = "color_serde")]
     pub on_tertiary: Color,
     #[serde(with = "color_serde")]
@@ -179,7 +184,7 @@ pub struct Tertiary {
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub struct Error {
     #[serde(with = "color_serde")]
-    pub error: Color,
+    pub color: Color,
     #[serde(with = "color_serde")]
     pub on_error: Color,
     #[serde(with = "color_serde")]
@@ -191,7 +196,7 @@ pub struct Error {
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub struct Surface {
     #[serde(with = "color_serde")]
-    pub surface: Color,
+    pub color: Color,
     #[serde(with = "color_serde")]
     pub on_surface: Color,
     #[serde(with = "color_serde")]
@@ -226,9 +231,9 @@ pub struct Inverse {
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub struct Outline {
     #[serde(with = "color_serde")]
-    pub outline: Color,
+    pub color: Color,
     #[serde(with = "color_serde")]
-    pub outline_variant: Color,
+    pub variant: Color,
 }
 
 #[derive(Debug, Deserialize)]

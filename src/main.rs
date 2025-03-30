@@ -174,15 +174,12 @@ impl App {
                     self.editor_content.perform(action);
                 }
             }
-            Message::RefreshEditorContent => {
-                match self.project.app_code(&self.config) {
-                    Ok(code) => {
-                        self.editor_content =
-                            text_editor::Content::with_text(&code);
-                    }
-                    Err(error) => return error_dialog(error),
+            Message::RefreshEditorContent => match self.project.app_code() {
+                Ok(code) => {
+                    self.editor_content =
+                        text_editor::Content::with_text(&code);
                 }
-                Err(error) => Task::future(error_dialog(error)).discard(),
+                Err(error) => return error_dialog(error),
             },
             Message::DropNewElement(name, point, _) => {
                 return iced_drop::zones_on_point(
@@ -279,7 +276,7 @@ impl App {
                         self.is_dirty = false;
                         self.is_loading = true;
                         return Task::perform(
-                            Project::from_file(self.config.clone()),
+                            Project::from_file(),
                             Message::FileOpened,
                         )
                         .chain(close_dialog_task);
@@ -309,7 +306,7 @@ impl App {
                         self.is_loading = true;
 
                         return Task::perform(
-                            Project::from_file(self.config.clone()),
+                            Project::from_file(),
                             Message::FileOpened,
                         );
                     } else {

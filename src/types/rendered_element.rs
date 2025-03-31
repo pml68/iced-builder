@@ -319,9 +319,9 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
         let content: Element<'a, Message> = match copy.name {
             ElementName::Text(s) => {
                 if s.is_empty() {
-                    widget::text("New Text").into()
+                    widget::text("New Text").apply_options(copy.options).into()
                 } else {
-                    widget::text(s).into()
+                    widget::text(s).apply_options(copy.options).into()
                 }
             }
             ElementName::Button(s) => {
@@ -347,6 +347,7 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
                 } else {
                     Element::from("")
                 })
+                .apply_options(copy.options)
                 .padding(20)
                 .into()
             }

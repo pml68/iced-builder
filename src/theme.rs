@@ -6,6 +6,9 @@ use serde::Deserialize;
 
 use crate::config::Config;
 
+const DEFAULT_THEME_CONTENT: &str =
+    include_str!("../assets/themes/rose_pine.toml");
+
 pub fn theme_index(theme_name: &str, slice: &[iced::Theme]) -> Option<usize> {
     slice
         .iter()
@@ -97,8 +100,7 @@ impl From<Theme> for iced::Theme {
 
 impl Default for Theme {
     fn default() -> Self {
-        toml::from_str(include_str!("../assets/themes/rose_pine.toml"))
-            .expect("parse default theme")
+        toml::from_str(DEFAULT_THEME_CONTENT).expect("parse default theme")
     }
 }
 

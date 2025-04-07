@@ -69,12 +69,17 @@ impl Clone for Theme {
 
 impl Default for Theme {
     fn default() -> Self {
-        match dark_light::detect().unwrap_or(dark_light::Mode::Unspecified) {
-            dark_light::Mode::Dark | dark_light::Mode::Unspecified => {
-                DARK.clone()
+        static DEFAULT: LazyLock<Theme> = LazyLock::new(|| {
+            match dark_light::detect().unwrap_or(dark_light::Mode::Unspecified)
+            {
+                dark_light::Mode::Dark | dark_light::Mode::Unspecified => {
+                    DARK.clone()
+                }
+                dark_light::Mode::Light => LIGHT.clone(),
             }
-            dark_light::Mode::Light => LIGHT.clone(),
-        }
+        });
+
+        DEFAULT.clone()
     }
 }
 

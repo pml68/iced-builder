@@ -35,8 +35,6 @@ use types::{
     Project,
 };
 
-//pub type Element<'a, Message> = iced::Element<'a, Message, OtherTheme>;
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let version = std::env::args()
         .nth(1)
@@ -60,7 +58,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     iced::application(App::title, App::update, App::view)
         .font(icon::FONT)
         .theme(|state| state.theme.value().clone())
-        //.theme(|_| theme::LIGHT.clone())
         .subscription(App::subscription)
         .antialiasing(true)
         .run_with(move || App::new(config_load))?;
@@ -446,21 +443,5 @@ impl App {
         Animation::new(&self.theme, content)
             .on_update(Message::SwitchTheme)
             .into()
-        //row![
-        //    button("filled")
-        //        .style(theme::button::filled)
-        //        .on_press(Message::RefreshEditorContent),
-        //    button("elevated")
-        //        .style(theme::button::elevated)
-        //        .on_press(Message::RefreshEditorContent),
-        //    button("filled tonal")
-        //        .style(theme::button::filled_tonal)
-        //        .on_press(Message::RefreshEditorContent),
-        //    button("outlined")
-        //        .style(theme::button::outlined)
-        //        .on_press(Message::RefreshEditorContent),
-        //]
-        //.spacing(10)
-        //.into()
     }
 }

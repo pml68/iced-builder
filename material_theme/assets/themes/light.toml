@@ -1,0 +1,48 @@
+name = "Light"
+
+shadow = "#000000"
+
+[primary]
+color = "#34693f"
+on_primary = "#ffffff"
+primary_container = "#b6f1bb"
+on_primary_container = "#1b5129"
+
+[secondary]
+color = "#516351"
+on_secondary = "#ffffff"
+secondary_container = "#d3e8d1"
+on_secondary_container = "#394b3a"
+
+[tertiary]
+color = "#39656d"
+on_tertiary = "#ffffff"
+tertiary_container = "#bdeaf4"
+on_tertiary_container = "#1f4d55"
+
+[error]
+color = "#ba1a1a"
+on_error = "#ffffff"
+error_container = "#ffdad6"
+on_error_container = "#93000a"
+
+[surface]
+color = "#f7fbf2"
+on_surface = "#181d18"
+on_surface_variant = "#414941"
+
+[surface.surface_container]
+lowest = "#ffffff"
+low = "#f1f5ed"
+base = "#ebefe7"
+high = "#e5e9e1"
+highest = "#e0e4dc"
+
+[inverse]
+inverse_surface = "#2d322c"
+inverse_on_surface = "#eef2ea"
+inverse_primary = "#9bd4a1"
+
+[outline]
+color = "#727970"
+variant = "#c1c9be"

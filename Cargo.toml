@@ -16,23 +16,28 @@ debug = ["iced/debug"]
 
 [dependencies]
 iced.workspace = true
-iced_anim = { git = "https://github.com/pml68/iced_anim", features = ["derive"] }
+iced_anim.workspace = true
 iced_custom_highlighter = { git = "https://github.com/pml68/iced_custom_highlighter", branch = "master" }
 iced_drop = { path = "iced_drop" }
 iced_dialog = { git = "https://github.com/pml68/iced_dialog", branch = "iced/personal" }
-serde = { version = "1.0.217", features = ["derive"] }
-serde_json = "1.0.138"
-toml = "0.8.20"
-tokio = { version = "1.43", features = ["fs"] }
+material_theme = { path = "material_theme" }
+serde.workspace = true
+serde_json = "1.0.140"
+toml.workspace = true
+tokio = { version = "1.42.1", features = ["fs"] }
 tokio-stream = { version = "0.1", features = ["fs"] }
 # TODO: enable tokio when it actually compiles
 # rfd = { version = "0.15.2", default-features = false, features = ["tokio", "xdg-portal"]  }
 rfd = "0.15.3"
 rust-format = "0.3.4"
 fxhash = "0.2.1"
-thiserror = "2.0.11"
+thiserror = "2.0.12"
 dirs-next = "2.0.0"
-dark-light = "2.0.0"
+
+[workspace.dependencies]
+iced_anim = { version = "0.2.1", features = ["derive"] }
+serde = { version = "1.0.219", features = ["derive"] }
+toml = "0.8.20"
 
 [workspace.dependencies.iced]
 git = "https://github.com/pml68/iced"
@@ -46,7 +51,7 @@ iced_fontello = "0.13.2"
 xdg = "2.5.2"
 
 [target.'cfg(windows)'.build-dependencies]
-embed-resource = "3.0.1"
+embed-resource = "3.0.2"
 windows_exe_info = "0.5"
 
 [profile.dev]
@@ -68,7 +73,7 @@ name = "iced-builder"
 path = "src/main.rs"
 
 [workspace]
-members = ["iced_drop"]
+members = ["iced_drop", "material_theme", "theme_test"]
 
 [lints.rust]
 missing_debug_implementations = "deny"
@@ -89,3 +94,7 @@ from_over_into = "deny"
 needless_borrow = "deny"
 new_without_default = "deny"
 useless_conversion = "deny"
+
+[patch.crates-io]
+iced_anim = { git = "https://github.com/pml68/iced_anim" }
+iced_widget = { git = "https://github.com/pml68/iced", branch = "feat/rehighlight-on-redraw" }

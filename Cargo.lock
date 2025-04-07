@@ -1971,7 +1971,6 @@ dependencies = [
 name = "iced_builder"
 version = "0.1.0"
 dependencies = [
- "dark-light",
  "dirs-next",
  "embed-resource 3.0.2",
  "fxhash",
@@ -1981,6 +1980,7 @@ dependencies = [
  "iced_dialog",
  "iced_drop",
  "iced_fontello",
+ "material_theme",
  "rfd",
  "rust-format",
  "serde",
@@ -2671,6 +2671,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "62bb907fe88d54d8d9ce32a3cceab4218ed2f6b7d35617cafe9adf84e43919cb"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "material_theme"
+version = "0.14.0-dev"
+dependencies = [
+ "dark-light",
+ "iced_widget",
+ "serde",
+ "toml",
 ]
 
 [[package]]
@@ -4632,6 +4642,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "theme_test"
+version = "0.0.1"
+dependencies = [
+ "iced",
+ "material_theme",
 ]
 
 [[package]]

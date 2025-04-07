@@ -28,31 +28,6 @@ impl Theme {
     }
 }
 
-#[cfg(feature = "animate")]
-impl iced_anim::Animate for Theme {
-    fn components() -> usize {
-        ColorScheme::components()
-    }
-
-    fn update(&mut self, components: &mut impl Iterator<Item = f32>) {
-        let mut colors = self.colorscheme;
-        colors.update(components);
-
-        *self = Theme::new("Animating Theme", colors);
-    }
-
-    fn distance_to(&self, end: &Self) -> Vec<f32> {
-        self.colorscheme.distance_to(&end.colorscheme)
-    }
-
-    fn lerp(&mut self, start: &Self, end: &Self, progress: f32) {
-        let mut colors = self.colorscheme;
-        colors.lerp(&start.colorscheme, &end.colorscheme, progress);
-
-        *self = Theme::new("Animating Theme", colors);
-    }
-}
-
 impl Clone for Theme {
     fn clone(&self) -> Self {
         Self {
@@ -92,6 +67,47 @@ impl Base for Theme {
     }
 }
 
+#[cfg(feature = "animate")]
+impl iced_anim::Animate for Theme {
+    fn components() -> usize {
+        ColorScheme::components()
+    }
+
+    fn update(&mut self, components: &mut impl Iterator<Item = f32>) {
+        let mut colors = self.colorscheme;
+        colors.update(components);
+
+        *self = Theme::new("Animating Theme", colors);
+    }
+
+    fn distance_to(&self, end: &Self) -> Vec<f32> {
+        self.colorscheme.distance_to(&end.colorscheme)
+    }
+
+    fn lerp(&mut self, start: &Self, end: &Self, progress: f32) {
+        let mut colors = self.colorscheme;
+        colors.lerp(&start.colorscheme, &end.colorscheme, progress);
+
+        *self = Theme::new("Animating Theme", colors);
+    }
+}
+
+#[cfg(feature = "dialog")]
+impl iced_dialog::dialog::Catalog for Theme {
+    fn default_container<'a>()
+    -> <Self as iced_widget::container::Catalog>::Class<'a> {
+        Box::new(container::surface)
+    }
+}
+
+pub static DARK: LazyLock<Theme> = LazyLock::new(|| {
+    toml::from_str(DARK_THEME_CONTENT).expect("parse dark theme")
+});
+
+pub static LIGHT: LazyLock<Theme> = LazyLock::new(|| {
+    toml::from_str(LIGHT_THEME_CONTENT).expect("parse light theme")
+});
+
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 #[cfg_attr(feature = "animate", derive(iced_anim::Animate))]
 pub struct ColorScheme {
@@ -105,14 +121,6 @@ pub struct ColorScheme {
     #[serde(with = "color_serde")]
     pub shadow: Color,
 }
-
-pub static DARK: LazyLock<Theme> = LazyLock::new(|| {
-    toml::from_str(DARK_THEME_CONTENT).expect("parse dark theme")
-});
-
-pub static LIGHT: LazyLock<Theme> = LazyLock::new(|| {
-    toml::from_str(LIGHT_THEME_CONTENT).expect("parse light theme")
-});
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 #[cfg_attr(feature = "animate", derive(iced_anim::Animate))]

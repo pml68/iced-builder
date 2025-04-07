@@ -2678,6 +2678,8 @@ name = "material_theme"
 version = "0.14.0-dev"
 dependencies = [
  "dark-light",
+ "iced_anim",
+ "iced_dialog",
  "iced_widget",
  "serde",
  "toml",

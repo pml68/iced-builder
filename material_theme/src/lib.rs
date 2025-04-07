@@ -28,6 +28,31 @@ impl Theme {
     }
 }
 
+#[cfg(feature = "animate")]
+impl iced_anim::Animate for Theme {
+    fn components() -> usize {
+        ColorScheme::components()
+    }
+
+    fn update(&mut self, components: &mut impl Iterator<Item = f32>) {
+        let mut colors = self.colorscheme;
+        colors.update(components);
+
+        *self = Theme::new("Animating Theme", colors);
+    }
+
+    fn distance_to(&self, end: &Self) -> Vec<f32> {
+        self.colorscheme.distance_to(&end.colorscheme)
+    }
+
+    fn lerp(&mut self, start: &Self, end: &Self, progress: f32) {
+        let mut colors = self.colorscheme;
+        colors.lerp(&start.colorscheme, &end.colorscheme, progress);
+
+        *self = Theme::new("Animating Theme", colors);
+    }
+}
+
 impl Clone for Theme {
     fn clone(&self) -> Self {
         Self {
@@ -63,6 +88,7 @@ impl Base for Theme {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+#[cfg_attr(feature = "animate", derive(iced_anim::Animate))]
 pub struct ColorScheme {
     pub primary: Primary,
     pub secondary: Secondary,
@@ -84,6 +110,7 @@ pub static LIGHT: LazyLock<Theme> = LazyLock::new(|| {
 });
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+#[cfg_attr(feature = "animate", derive(iced_anim::Animate))]
 pub struct Primary {
     #[serde(with = "color_serde")]
     pub color: Color,
@@ -96,6 +123,7 @@ pub struct Primary {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+#[cfg_attr(feature = "animate", derive(iced_anim::Animate))]
 pub struct Secondary {
     #[serde(with = "color_serde")]
     pub color: Color,
@@ -108,6 +136,7 @@ pub struct Secondary {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+#[cfg_attr(feature = "animate", derive(iced_anim::Animate))]
 pub struct Tertiary {
     #[serde(with = "color_serde")]
     pub color: Color,
@@ -120,6 +149,7 @@ pub struct Tertiary {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+#[cfg_attr(feature = "animate", derive(iced_anim::Animate))]
 pub struct Error {
     #[serde(with = "color_serde")]
     pub color: Color,
@@ -132,6 +162,7 @@ pub struct Error {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+#[cfg_attr(feature = "animate", derive(iced_anim::Animate))]
 pub struct Surface {
     #[serde(with = "color_serde")]
     pub color: Color,
@@ -143,6 +174,7 @@ pub struct Surface {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+#[cfg_attr(feature = "animate", derive(iced_anim::Animate))]
 pub struct SurfaceContainer {
     #[serde(with = "color_serde")]
     pub lowest: Color,
@@ -157,6 +189,7 @@ pub struct SurfaceContainer {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+#[cfg_attr(feature = "animate", derive(iced_anim::Animate))]
 pub struct Inverse {
     #[serde(with = "color_serde")]
     pub inverse_surface: Color,
@@ -167,6 +200,7 @@ pub struct Inverse {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+#[cfg_attr(feature = "animate", derive(iced_anim::Animate))]
 pub struct Outline {
     #[serde(with = "color_serde")]
     pub color: Color,

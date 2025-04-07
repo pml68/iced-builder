@@ -14,12 +14,15 @@ rust-version = "1.85"
 [features]
 default = []
 animate = ["dep:iced_anim"]
+dialog = ["dep:iced_dialog"]
 
 [dependencies]
 iced_widget = "0.14.0-dev"
 serde.workspace = true
 toml.workspace = true
 dark-light = "2.0.0"
+iced_dialog.workspace = true
+iced_dialog.optional = true
 
 [dependencies.iced_anim]
 workspace = true

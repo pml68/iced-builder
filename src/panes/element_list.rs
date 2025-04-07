@@ -5,13 +5,13 @@ use iced_drop::droppable;
 use super::style;
 use crate::types::{ElementName, Message};
 
-fn items_list_view(items: &[ElementName]) -> Element<'_, Message> {
+fn items_list_view<'a>() -> Element<'a, Message> {
     let mut column = Column::new()
         .spacing(20)
         .align_x(Alignment::Center)
         .width(Length::Fill);
 
-    for item in items {
+    for item in ElementName::ALL {
         column = column.push(
             droppable(text(item.clone().to_string())).on_drop(|point, rect| {
                 Message::DropNewElement(item.clone(), point, rect)
@@ -25,11 +25,8 @@ fn items_list_view(items: &[ElementName]) -> Element<'_, Message> {
         .into()
 }
 
-pub fn view(
-    element_list: &[ElementName],
-    is_focused: bool,
-) -> pane_grid::Content<'_, Message> {
-    let items_list = items_list_view(element_list);
+pub fn view<'a>(is_focused: bool) -> pane_grid::Content<'a, Message> {
+    let items_list = items_list_view();
     let content = column![items_list]
         .align_x(Alignment::Center)
         .height(Length::Fill)

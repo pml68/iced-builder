@@ -31,8 +31,7 @@ use iced_dialog::dialog::Dialog;
 use panes::{code_view, designer_view, element_list};
 use tokio::runtime;
 use types::{
-    Action, DesignerPane, DialogAction, DialogButtons, ElementName, Message,
-    Project,
+    Action, DesignerPane, DialogAction, DialogButtons, Message, Project,
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -79,7 +78,6 @@ struct App {
     dialog_content: String,
     dialog_buttons: DialogButtons,
     dialog_action: DialogAction,
-    element_list: &'static [ElementName],
     editor_content: text_editor::Content,
 }
 
@@ -132,7 +130,6 @@ impl App {
                 dialog_content: String::new(),
                 dialog_buttons: DialogButtons::None,
                 dialog_action: DialogAction::None,
-                element_list: ElementName::ALL,
                 editor_content: text_editor::Content::new(),
             },
             task,
@@ -408,9 +405,7 @@ impl App {
                             code_view::view(&self.editor_content, is_focused)
                         }
                     },
-                    Panes::ElementList => {
-                        element_list::view(self.element_list, is_focused)
-                    }
+                    Panes::ElementList => element_list::view(is_focused),
                 }
             },
         )
@@ -438,7 +433,13 @@ impl App {
                 DialogButtons::OkCancel => vec![ok_button(), cancel_button()],
             },
         )
-        .title(self.dialog_title);
+        .title(self.dialog_title)
+        .container_style(|theme| container::Style {
+            background: Some(
+                theme.extended_palette().background.strong.color.into(),
+            ),
+            ..Default::default()
+        });
 
         Animation::new(&self.theme, content)
             .on_update(Message::SwitchTheme)

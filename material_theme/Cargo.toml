@@ -1,0 +1,40 @@
+[package]
+name = "material_theme"
+description = "An M3 inspired theme for `iced`"
+authors = ["pml68 <contact@pml68.dev>"]
+version = "0.14.0-dev"
+edition = "2024"
+license = "MIT"
+# readme = "README.md"
+repository = "https://github.com/pml68/iced_builder"
+categories = ["gui"]
+keywords = ["gui", "ui", "graphics", "interface", "widgets"]
+rust-version = "1.85"
+
+[dependencies]
+iced_widget = "0.14.0-dev"
+serde.workspace = true
+toml.workspace = true
+dark-light = "2.0.0"
+
+[lints.rust]
+unsafe_code = "deny"
+unused_results = "deny"
+
+[lints.clippy]
+type-complexity = "allow"
+semicolon_if_nothing_returned = "deny"
+trivially-copy-pass-by-ref = "deny"
+default_trait_access = "deny"
+match-wildcard-for-single-variants = "deny"
+redundant-closure-for-method-calls = "deny"
+filter_map_next = "deny"
+manual_let_else = "deny"
+unused_async = "deny"
+from_over_into = "deny"
+needless_borrow = "deny"
+new_without_default = "deny"
+useless_conversion = "deny"
+
+[lints.rustdoc]
+broken_intra_doc_links = "forbid"

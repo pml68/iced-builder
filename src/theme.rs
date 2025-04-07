@@ -1,17 +1,10 @@
-pub mod button;
-pub mod text;
-
-use std::sync::{Arc, LazyLock};
+use std::sync::Arc;
 
 use iced::Color;
-use iced::theme::Base;
 use iced::theme::palette::Extended;
 use serde::Deserialize;
 
 use crate::config::Config;
-
-const DARK_THEME_CONTENT: &str = include_str!("../assets/themes/dark.toml");
-const LIGHT_THEME_CONTENT: &str = include_str!("../assets/themes/light.toml");
 
 pub fn theme_index(theme_name: &str, slice: &[iced::Theme]) -> Option<usize> {
     slice
@@ -81,159 +74,6 @@ impl Default for Appearance {
             },
         }
     }
-}
-
-#[derive(Debug, PartialEq, Deserialize)]
-pub struct OtherTheme {
-    name: String,
-    #[serde(flatten)]
-    colorscheme: ColorScheme,
-}
-
-impl Clone for OtherTheme {
-    fn clone(&self) -> Self {
-        Self {
-            name: self.name.clone(),
-            colorscheme: self.colorscheme,
-        }
-    }
-
-    fn clone_from(&mut self, source: &Self) {
-        self.name = source.name.clone();
-        self.colorscheme = source.colorscheme;
-    }
-}
-
-impl Default for OtherTheme {
-    fn default() -> Self {
-        match dark_light::detect().unwrap_or(dark_light::Mode::Unspecified) {
-            dark_light::Mode::Dark | dark_light::Mode::Unspecified => {
-                DARK.clone()
-            }
-            dark_light::Mode::Light => LIGHT.clone(),
-        }
-    }
-}
-
-impl Base for OtherTheme {
-    fn base(&self) -> iced::theme::Style {
-        iced::theme::Style {
-            background_color: self.colorscheme.surface.color,
-            text_color: self.colorscheme.surface.on_surface,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
-pub struct ColorScheme {
-    pub primary: Primary,
-    pub secondary: Secondary,
-    pub tertiary: Tertiary,
-    pub error: Error,
-    pub surface: Surface,
-    pub inverse: Inverse,
-    pub outline: Outline,
-    #[serde(with = "color_serde")]
-    pub shadow: Color,
-}
-
-pub static DARK: LazyLock<OtherTheme> = LazyLock::new(|| {
-    toml::from_str(DARK_THEME_CONTENT).expect("parse dark theme")
-});
-
-pub static LIGHT: LazyLock<OtherTheme> = LazyLock::new(|| {
-    toml::from_str(LIGHT_THEME_CONTENT).expect("parse light theme")
-});
-
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
-pub struct Primary {
-    #[serde(with = "color_serde")]
-    pub color: Color,
-    #[serde(with = "color_serde")]
-    pub on_primary: Color,
-    #[serde(with = "color_serde")]
-    pub primary_container: Color,
-    #[serde(with = "color_serde")]
-    pub on_primary_container: Color,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
-pub struct Secondary {
-    #[serde(with = "color_serde")]
-    pub color: Color,
-    #[serde(with = "color_serde")]
-    pub on_secondary: Color,
-    #[serde(with = "color_serde")]
-    pub secondary_container: Color,
-    #[serde(with = "color_serde")]
-    pub on_secondary_container: Color,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
-pub struct Tertiary {
-    #[serde(with = "color_serde")]
-    pub color: Color,
-    #[serde(with = "color_serde")]
-    pub on_tertiary: Color,
-    #[serde(with = "color_serde")]
-    pub tertiary_container: Color,
-    #[serde(with = "color_serde")]
-    pub on_tertiary_container: Color,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
-pub struct Error {
-    #[serde(with = "color_serde")]
-    pub color: Color,
-    #[serde(with = "color_serde")]
-    pub on_error: Color,
-    #[serde(with = "color_serde")]
-    pub error_container: Color,
-    #[serde(with = "color_serde")]
-    pub on_error_container: Color,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
-pub struct Surface {
-    #[serde(with = "color_serde")]
-    pub color: Color,
-    #[serde(with = "color_serde")]
-    pub on_surface: Color,
-    #[serde(with = "color_serde")]
-    pub on_surface_variant: Color,
-    pub surface_container: SurfaceContainer,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
-pub struct SurfaceContainer {
-    #[serde(with = "color_serde")]
-    pub lowest: Color,
-    #[serde(with = "color_serde")]
-    pub low: Color,
-    #[serde(with = "color_serde")]
-    pub base: Color,
-    #[serde(with = "color_serde")]
-    pub high: Color,
-    #[serde(with = "color_serde")]
-    pub highest: Color,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
-pub struct Inverse {
-    #[serde(with = "color_serde")]
-    pub inverse_surface: Color,
-    #[serde(with = "color_serde")]
-    pub inverse_on_surface: Color,
-    #[serde(with = "color_serde")]
-    pub inverse_primary: Color,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
-pub struct Outline {
-    #[serde(with = "color_serde")]
-    pub color: Color,
-    #[serde(with = "color_serde")]
-    pub variant: Color,
 }
 
 #[derive(Debug, Deserialize)]

@@ -1,14 +1,15 @@
 #![allow(dead_code)]
-use iced::widget::button::{Catalog, Status, Style, StyleFn};
-use iced::{Background, Border, Color, Shadow, Vector};
+use iced_widget::button::{Catalog, Status, Style, StyleFn};
+use iced_widget::core::{Background, Border, Color, Shadow, Vector};
 
-use super::OtherTheme;
+use crate::Theme;
+use crate::utils::{elevation, mix};
 
-impl Catalog for OtherTheme {
+impl Catalog for Theme {
     type Class<'a> = StyleFn<'a, Self>;
 
     fn default<'a>() -> Self::Class<'a> {
-        Box::new(default)
+        Box::new(filled)
     }
 
     fn style(&self, class: &Self::Class<'_>, status: Status) -> Style {
@@ -16,65 +17,61 @@ impl Catalog for OtherTheme {
     }
 }
 
-fn default(theme: &OtherTheme, status: Status) -> Style {
-    filled(theme, status)
-}
-
 fn button(
     foreground: Color,
     background: Color,
-    background_hover: Color,
+    tone_overlay: Color,
     disabled: Color,
     shadow_color: Color,
     shadow_elevation: u8,
     status: Status,
 ) -> Style {
     let border = Border {
-        radius: 400.0.into(),
+        radius: 400.into(),
         ..Default::default()
     };
 
-    let elevation_to_offset = |elevation: u8| {
-        (match elevation {
-            0 => 0.0,
-            1 => 1.0,
-            2 => 3.0,
-            3 => 6.0,
-            4 => 8.0,
-            _ => 12.0,
-        } as f32)
+    let active = Style {
+        background: Some(Background::Color(background)),
+        text_color: foreground,
+        border,
+        shadow: Shadow {
+            color: shadow_color,
+            offset: Vector {
+                x: 0.0,
+                y: elevation(shadow_elevation),
+            },
+            blur_radius: elevation(shadow_elevation)
+                * (1.0 + 0.4_f32.powf(elevation(shadow_elevation))),
+        },
     };
 
     match status {
-        Status::Active | Status::Pressed => Style {
-            background: Some(Background::Color(background)),
-            text_color: foreground,
-            border,
-            shadow: Shadow {
-                color: shadow_color,
-                offset: Vector {
-                    x: 0.0,
-                    y: elevation_to_offset(shadow_elevation),
-                },
-                blur_radius: elevation_to_offset(shadow_elevation)
-                    * (1.0
-                        + 0.4_f32.powf(elevation_to_offset(shadow_elevation))),
-            },
+        Status::Active => active,
+        Status::Pressed => Style {
+            background: Some(Background::Color(mix(
+                background,
+                tone_overlay,
+                0.08,
+            ))),
+            ..active
         },
         Status::Hovered => Style {
-            background: Some(Background::Color(background_hover)),
+            background: Some(Background::Color(mix(
+                background,
+                tone_overlay,
+                0.1,
+            ))),
             text_color: foreground,
             border,
             shadow: Shadow {
                 color: shadow_color,
                 offset: Vector {
                     x: 0.0,
-                    y: elevation_to_offset(shadow_elevation + 1),
+                    y: elevation(shadow_elevation + 1),
                 },
-                blur_radius: (elevation_to_offset(shadow_elevation + 1))
-                    * (1.0
-                        + 0.4_f32
-                            .powf(elevation_to_offset(shadow_elevation + 1))),
+                blur_radius: (elevation(shadow_elevation + 1))
+                    * (1.0 + 0.4_f32.powf(elevation(shadow_elevation + 1))),
             },
         },
         Status::Disabled => Style {
@@ -92,7 +89,7 @@ fn button(
     }
 }
 
-pub fn elevated(theme: &OtherTheme, status: Status) -> Style {
+pub fn elevated(theme: &Theme, status: Status) -> Style {
     let surface_colors = theme.colorscheme.surface;
 
     let foreground = theme.colorscheme.primary.color;
@@ -104,7 +101,7 @@ pub fn elevated(theme: &OtherTheme, status: Status) -> Style {
     button(
         foreground,
         background,
-        background,
+        foreground,
         disabled,
         shadow_color,
         1,
@@ -112,7 +109,7 @@ pub fn elevated(theme: &OtherTheme, status: Status) -> Style {
     )
 }
 
-pub fn filled(theme: &OtherTheme, status: Status) -> Style {
+pub fn filled(theme: &Theme, status: Status) -> Style {
     let primary_colors = theme.colorscheme.primary;
 
     let foreground = primary_colors.on_primary;
@@ -124,7 +121,7 @@ pub fn filled(theme: &OtherTheme, status: Status) -> Style {
     button(
         foreground,
         background,
-        background,
+        foreground,
         disabled,
         shadow_color,
         0,
@@ -132,19 +129,18 @@ pub fn filled(theme: &OtherTheme, status: Status) -> Style {
     )
 }
 
-pub fn filled_tonal(theme: &OtherTheme, status: Status) -> Style {
+pub fn filled_tonal(theme: &Theme, status: Status) -> Style {
     let secondary_colors = theme.colorscheme.secondary;
 
     let foreground = secondary_colors.on_secondary_container;
     let background = secondary_colors.secondary_container;
     let disabled = theme.colorscheme.surface.on_surface;
-
     let shadow_color = theme.colorscheme.shadow;
 
     button(
         foreground,
         background,
-        background,
+        foreground,
         disabled,
         shadow_color,
         0,
@@ -152,7 +148,7 @@ pub fn filled_tonal(theme: &OtherTheme, status: Status) -> Style {
     )
 }
 
-pub fn outlined(theme: &OtherTheme, status: Status) -> Style {
+pub fn outlined(theme: &Theme, status: Status) -> Style {
     let foreground = theme.colorscheme.primary.color;
     let background = Color::TRANSPARENT;
     let disabled = theme.colorscheme.surface.on_surface;
@@ -178,7 +174,7 @@ pub fn outlined(theme: &OtherTheme, status: Status) -> Style {
     let style = button(
         foreground,
         background,
-        background,
+        foreground,
         disabled,
         Color::TRANSPARENT,
         0,
@@ -186,4 +182,28 @@ pub fn outlined(theme: &OtherTheme, status: Status) -> Style {
     );
 
     Style { border, ..style }
+}
+
+pub fn text(theme: &Theme, status: Status) -> Style {
+    let foreground = theme.colorscheme.primary.color;
+    let background = Color::TRANSPARENT;
+    let disabled = theme.colorscheme.surface.on_surface;
+
+    let style = button(
+        foreground,
+        background,
+        foreground,
+        disabled,
+        Color::TRANSPARENT,
+        0,
+        status,
+    );
+
+    match status {
+        Status::Hovered | Status::Pressed => style,
+        _ => Style {
+            background: None,
+            ..style
+        },
+    }
 }

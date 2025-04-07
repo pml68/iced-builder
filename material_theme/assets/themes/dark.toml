@@ -1,0 +1,48 @@
+name = "Dark"
+
+shadow = "#000000"
+
+[primary]
+color = "#9bd4a1"
+on_primary = "#003916"
+primary_container = "#1b5129"
+on_primary_container = "#b6f1bb"
+
+[secondary]
+color = "#b8ccb6"
+on_secondary = "#233425"
+secondary_container = "#394b3a"
+on_secondary_container = "#d3e8d1"
+
+[tertiary]
+color = "#a1ced7"
+on_tertiary = "#00363e"
+tertiary_container = "#1f4d55"
+on_tertiary_container = "#bdeaf4"
+
+[error]
+color = "#ffb4ab"
+on_error = "#690005"
+error_container = "#93000a"
+on_error_container = "#ffdad6"
+
+[surface]
+color = "#101510"
+on_surface = "#e0e4dc"
+on_surface_variant = "#c1c9be"
+
+[surface.surface_container]
+lowest = "#0b0f0b"
+low = "#181d18"
+base = "#1c211c"
+high = "#262b26"
+highest = "#313631"
+
+[inverse]
+inverse_surface = "#e0e4dc"
+inverse_on_surface = "#2d322c"
+inverse_primary = "#34693f"
+
+[outline]
+color = "#8b9389"
+variant = "#414941"

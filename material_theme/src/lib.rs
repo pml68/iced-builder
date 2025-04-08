@@ -6,6 +6,9 @@ use serde::Deserialize;
 
 pub mod button;
 pub mod container;
+#[cfg(feature = "dialog")]
+pub mod dialog;
+pub mod menu;
 pub mod scrollable;
 pub mod text;
 pub mod utils;
@@ -90,14 +93,6 @@ impl iced_anim::Animate for Theme {
         colors.lerp(&start.colorscheme, &end.colorscheme, progress);
 
         *self = Theme::new("Animating Theme", colors);
-    }
-}
-
-#[cfg(feature = "dialog")]
-impl iced_dialog::dialog::Catalog for Theme {
-    fn default_container<'a>()
-    -> <Self as iced_widget::container::Catalog>::Class<'a> {
-        Box::new(container::surface)
     }
 }
 

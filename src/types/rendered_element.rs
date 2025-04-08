@@ -317,53 +317,86 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
         let child_elements = copy.child_elements.unwrap_or_default();
 
         let content: Element<'a, Message> = match copy.name {
-            ElementName::Text(s) => {
-                if s.is_empty() {
-                    widget::text("New Text").apply_options(copy.options).into()
-                } else {
-                    widget::text(s).apply_options(copy.options).into()
-                }
+            ElementName::Text(s) => if s.is_empty() {
+                widget::text("New Text")
+            } else {
+                widget::text(s)
             }
-            ElementName::Button(s) => {
-                if s.is_empty() {
-                    widget::button(widget::text("New Button"))
-                        .apply_options(copy.options)
-                        .into()
-                } else {
-                    widget::button(widget::text(s))
-                        .apply_options(copy.options)
-                        .into()
-                }
-            }
+            .apply_options(copy.options)
+            .into(),
+            ElementName::Button(s) => widget::button(if s.is_empty() {
+                widget::text("New Button")
+            } else {
+                widget::text(s)
+            })
+            .apply_options(copy.options)
+            .into(),
             ElementName::Svg(p) => {
                 widget::svg(p).apply_options(copy.options).into()
             }
             ElementName::Image(p) => {
                 widget::image(p).apply_options(copy.options).into()
             }
-            ElementName::Container => {
-                widget::container(if child_elements.len() == 1 {
-                    child_elements[0].clone().into()
-                } else {
-                    Element::from("")
-                })
-                .apply_options(copy.options)
-                .padding(20)
-                .into()
+            ElementName::Container => if child_elements.len() == 1 {
+                widget::container(child_elements[0].clone())
+            } else {
+                widget::container("New Container")
+                    .padding(20)
+                    .style(|theme| widget::container::Style {
+                        border: iced::border::rounded(4).color(
+                            theme.extended_palette().background.strongest.text,
+                        ),
+                        ..Default::default()
+                    })
             }
-            ElementName::Row => widget::Row::from_vec(
-                child_elements.into_iter().map(Into::into).collect(),
-            )
-            .padding(20)
             .apply_options(copy.options)
             .into(),
-            ElementName::Column => widget::Column::from_vec(
-                child_elements.into_iter().map(Into::into).collect(),
-            )
-            .padding(20)
-            .apply_options(copy.options)
-            .into(),
+            ElementName::Row => {
+                if !child_elements.is_empty() {
+                    widget::Row::with_children(
+                        child_elements.into_iter().map(Into::into),
+                    )
+                    .apply_options(copy.options)
+                    .into()
+                } else {
+                    widget::container(
+                        widget::row!["New Row"]
+                            .padding(20)
+                            .apply_options(copy.options),
+                    )
+                    .style(|theme| widget::container::Style {
+                        border: iced::border::rounded(4).color(
+                            theme.extended_palette().background.strongest.text,
+                        ),
+                        ..Default::default()
+                    })
+                    .into()
+                }
+            }
+            ElementName::Column => {
+                if !child_elements.is_empty() {
+                    widget::Column::with_children(
+                        child_elements.into_iter().map(Into::into),
+                    )
+                    .apply_options(copy.options)
+                    .into()
+                } else {
+                    widget::container(
+                        widget::column!["New Column"]
+                            .padding(20)
+                            .apply_options(copy.options),
+                    )
+                    .style(|theme| widget::container::Style {
+                        border: iced::border::rounded(4).color(
+                            theme.extended_palette().background.strongest.text,
+                        ),
+                        ..Default::default()
+                    })
+                    .into()
+                }
+            }
         };
+
         iced_drop::droppable(content)
             .id(value.id().clone())
             .drag_hide(true)

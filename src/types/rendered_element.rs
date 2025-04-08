@@ -340,15 +340,19 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
             ElementName::Container => if child_elements.len() == 1 {
                 widget::container(child_elements[0].clone())
             } else {
-                widget::container("New Container")
-                    .padding(20)
-                    .style(|theme| widget::container::Style {
-                        border: iced::border::rounded(4).color(
-                            theme.extended_palette().background.strongest.text,
-                        ),
+                widget::container("New Container").style(
+                    |theme: &iced::Theme| widget::container::Style {
+                        border: iced::Border {
+                            color: theme.palette().text,
+
+                            width: 2.0,
+                            radius: 4.into(),
+                        },
                         ..Default::default()
-                    })
+                    },
+                )
             }
+            .padding(20)
             .apply_options(copy.options)
             .into(),
             ElementName::Row => {
@@ -356,6 +360,7 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
                     widget::Row::with_children(
                         child_elements.into_iter().map(Into::into),
                     )
+                    .padding(20)
                     .apply_options(copy.options)
                     .into()
                 } else {
@@ -364,10 +369,13 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
                             .padding(20)
                             .apply_options(copy.options),
                     )
-                    .style(|theme| widget::container::Style {
-                        border: iced::border::rounded(4).color(
-                            theme.extended_palette().background.strongest.text,
-                        ),
+                    .style(|theme: &iced::Theme| widget::container::Style {
+                        border: iced::Border {
+                            color: theme.palette().text,
+
+                            width: 2.0,
+                            radius: 4.into(),
+                        },
                         ..Default::default()
                     })
                     .into()
@@ -378,6 +386,7 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
                     widget::Column::with_children(
                         child_elements.into_iter().map(Into::into),
                     )
+                    .padding(20)
                     .apply_options(copy.options)
                     .into()
                 } else {
@@ -386,10 +395,13 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
                             .padding(20)
                             .apply_options(copy.options),
                     )
-                    .style(|theme| widget::container::Style {
-                        border: iced::border::rounded(4).color(
-                            theme.extended_palette().background.strongest.text,
-                        ),
+                    .style(|theme: &iced::Theme| widget::container::Style {
+                        border: iced::Border {
+                            color: theme.palette().text,
+
+                            width: 2.0,
+                            radius: 4.into(),
+                        },
                         ..Default::default()
                     })
                     .into()

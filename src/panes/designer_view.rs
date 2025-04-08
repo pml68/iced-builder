@@ -1,16 +1,29 @@
-use iced::widget::{Space, button, container, pane_grid, row, text, themer};
+use iced::widget::{
+    Space, button, center, container, pane_grid, responsive, row, text, themer,
+};
 use iced::{Alignment, Element, Length};
 
 use super::style;
 use crate::types::{DesignerPane, Message, RenderedElement};
 
 pub fn view<'a>(
-    element_tree: Option<&RenderedElement>,
+    element_tree: Option<&'a RenderedElement>,
     designer_theme: iced::Theme,
     is_focused: bool,
 ) -> pane_grid::Content<'a, Message> {
     let el_tree: Element<'a, Message> = match element_tree {
-        Some(tree) => tree.clone().into(),
+        Some(tree) => responsive(|size| {
+            center(
+                container(tree.clone())
+                    .style(|theme| {
+                        container::background(theme.palette().background)
+                    })
+                    .height(size.height * 0.5)
+                    .width(size.height * 0.8),
+            )
+            .into()
+        })
+        .into(),
         None => text("Open a project or begin creating one").into(),
     };
     let content = container(themer(designer_theme, el_tree))

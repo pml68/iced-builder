@@ -54,12 +54,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         rt.block_on(Config::load())
     };
 
-    iced::application(App::title, App::update, App::view)
-        .font(icon::FONT)
-        .theme(|state| state.theme.value().clone())
-        .subscription(App::subscription)
-        .antialiasing(true)
-        .run_with(move || App::new(config_load))?;
+    iced::application(
+        move || App::new(config_load.clone()),
+        App::update,
+        App::view,
+    )
+    .title(App::title)
+    .font(icon::FONT)
+    .theme(|state| state.theme.value().clone())
+    .subscription(App::subscription)
+    .antialiasing(true)
+    .run()?;
+
     Ok(())
 }
 

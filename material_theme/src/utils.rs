@@ -1,4 +1,10 @@
-use iced_widget::core::Color;
+use iced_widget::core::{Color, Shadow, Vector};
+
+pub const HOVERED_LAYER_OPACITY: f32 = 0.08;
+pub const PRESSED_LAYER_OPACITY: f32 = 0.1;
+
+pub const DISABLED_TEXT_OPACITY: f32 = 0.38;
+pub const DISABLED_CONTAINER_OPACITY: f32 = 0.12;
 
 pub fn elevation(elevation_level: u8) -> f32 {
     (match elevation_level {
@@ -9,6 +15,17 @@ pub fn elevation(elevation_level: u8) -> f32 {
         4 => 8.0,
         _ => 12.0,
     } as f32)
+}
+
+pub fn shadow_from_elevation(elevation: f32, color: Color) -> Shadow {
+    Shadow {
+        color,
+        offset: Vector {
+            x: 0.0,
+            y: elevation,
+        },
+        blur_radius: (elevation) * (1.0 + 0.4_f32.powf(elevation)),
+    }
 }
 
 pub fn mix(color1: Color, color2: Color, p2: f32) -> Color {

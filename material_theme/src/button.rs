@@ -1,9 +1,11 @@
-#![allow(dead_code)]
 use iced_widget::button::{Catalog, Status, Style, StyleFn};
-use iced_widget::core::{Background, Border, Color, Shadow, Vector};
+use iced_widget::core::{Background, Border, Color, border};
 
 use crate::Theme;
-use crate::utils::{elevation, mix};
+use crate::utils::{
+    DISABLED_CONTAINER_OPACITY, DISABLED_TEXT_OPACITY, HOVERED_LAYER_OPACITY,
+    PRESSED_LAYER_OPACITY, elevation, mix, shadow_from_elevation,
+};
 
 impl Catalog for Theme {
     type Class<'a> = StyleFn<'a, Self>;
@@ -23,27 +25,14 @@ fn button(
     tone_overlay: Color,
     disabled: Color,
     shadow_color: Color,
-    shadow_elevation: u8,
+    elevation_level: u8,
     status: Status,
 ) -> Style {
-    let border = Border {
-        radius: 400.into(),
-        ..Default::default()
-    };
-
     let active = Style {
         background: Some(Background::Color(background)),
         text_color: foreground,
-        border,
-        shadow: Shadow {
-            color: shadow_color,
-            offset: Vector {
-                x: 0.0,
-                y: elevation(shadow_elevation),
-            },
-            blur_radius: elevation(shadow_elevation)
-                * (1.0 + 0.4_f32.powf(elevation(shadow_elevation))),
-        },
+        border: border::rounded(400),
+        shadow: shadow_from_elevation(elevation(elevation_level), shadow_color),
     };
 
     match status {
@@ -52,7 +41,7 @@ fn button(
             background: Some(Background::Color(mix(
                 background,
                 tone_overlay,
-                0.08,
+                HOVERED_LAYER_OPACITY,
             ))),
             ..active
         },
@@ -60,30 +49,25 @@ fn button(
             background: Some(Background::Color(mix(
                 background,
                 tone_overlay,
-                0.1,
+                PRESSED_LAYER_OPACITY,
             ))),
             text_color: foreground,
-            border,
-            shadow: Shadow {
-                color: shadow_color,
-                offset: Vector {
-                    x: 0.0,
-                    y: elevation(shadow_elevation + 1),
-                },
-                blur_radius: (elevation(shadow_elevation + 1))
-                    * (1.0 + 0.4_f32.powf(elevation(shadow_elevation + 1))),
-            },
+            border: border::rounded(400),
+            shadow: shadow_from_elevation(
+                elevation(elevation_level + 1),
+                shadow_color,
+            ),
         },
         Status::Disabled => Style {
             background: Some(Background::Color(Color {
-                a: 0.12,
+                a: DISABLED_CONTAINER_OPACITY,
                 ..disabled
             })),
             text_color: Color {
-                a: 0.38,
+                a: DISABLED_TEXT_OPACITY,
                 ..disabled
             },
-            border,
+            border: border::rounded(400),
             ..Default::default()
         },
     }
@@ -163,7 +147,7 @@ pub fn outlined(theme: &Theme, status: Status) -> Style {
         },
         Status::Disabled => Border {
             color: Color {
-                a: 0.12,
+                a: DISABLED_CONTAINER_OPACITY,
                 ..disabled
             },
             width: 1.0,

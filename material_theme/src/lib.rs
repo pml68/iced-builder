@@ -69,6 +69,11 @@ impl Base for Theme {
             text_color: self.colorscheme.surface.on_surface,
         }
     }
+
+    fn palette(&self) -> Option<iced_widget::theme::Palette> {
+        // TODO: create a Palette
+        None
+    }
 }
 
 #[cfg(feature = "animate")]

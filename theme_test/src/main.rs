@@ -12,11 +12,10 @@ use material_theme::container::{
 };
 use material_theme::text::surface_variant;
 
-fn main() {
-    iced::application("Theme Test", (), view)
-        .theme(|_| material_theme::DARK.clone())
+fn main() -> iced::Result {
+    iced::application(|| {}, (), view)
+        .theme(|_| material_theme::LIGHT.clone())
         .run()
-        .unwrap();
 }
 
 #[derive(Debug, Clone)]

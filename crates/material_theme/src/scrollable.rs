@@ -98,21 +98,17 @@ pub fn default(theme: &Theme, status: Status) -> Style {
             Style {
                 horizontal_rail: if is_horizontal_scrollbar_disabled {
                     disabled
+                } else if is_horizontal_scrollbar_hovered {
+                    hovered_rail
                 } else {
-                    if is_horizontal_scrollbar_hovered {
-                        hovered_rail
-                    } else {
-                        active
-                    }
+                    active
                 },
                 vertical_rail: if is_vertical_scrollbar_disabled {
                     disabled
+                } else if is_vertical_scrollbar_hovered {
+                    hovered_rail
                 } else {
-                    if is_vertical_scrollbar_hovered {
-                        hovered_rail
-                    } else {
-                        active
-                    }
+                    active
                 },
                 ..style
             }
@@ -138,21 +134,17 @@ pub fn default(theme: &Theme, status: Status) -> Style {
             Style {
                 horizontal_rail: if is_horizontal_scrollbar_disabled {
                     disabled
+                } else if is_horizontal_scrollbar_dragged {
+                    dragged_rail
                 } else {
-                    if is_horizontal_scrollbar_dragged {
-                        dragged_rail
-                    } else {
-                        active
-                    }
+                    active
                 },
                 vertical_rail: if is_vertical_scrollbar_disabled {
                     disabled
+                } else if is_vertical_scrollbar_dragged {
+                    dragged_rail
                 } else {
-                    if is_vertical_scrollbar_dragged {
-                        dragged_rail
-                    } else {
-                        active
-                    }
+                    active
                 },
                 ..style
             }

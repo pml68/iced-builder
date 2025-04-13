@@ -7,4 +7,4 @@ edition = "2024"
 iced.workspace = true
 iced_anim.workspace = true
 iced_dialog.workspace = true
-material_theme = { path = "../material_theme", features = ["dialog", "animate"] }
+material_theme = { path = "../crates/material_theme", features = ["dialog", "animate"] }

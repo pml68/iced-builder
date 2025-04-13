@@ -1,6 +1,7 @@
 name = "Light"
 
 shadow = "#000000"
+scrim = "#4d000000"
 
 [primary]
 color = "#34693f"

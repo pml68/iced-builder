@@ -28,6 +28,44 @@ pub fn shadow_from_elevation(elevation: f32, color: Color) -> Shadow {
     }
 }
 
+pub fn parse_argb(s: &str) -> Option<Color> {
+    let hex = s.strip_prefix('#').unwrap_or(s);
+
+    let parse_channel = |from: usize, to: usize| {
+        let num =
+            usize::from_str_radix(&hex[from..=to], 16).ok()? as f32 / 255.0;
+
+        // If we only got half a byte (one letter), expand it into a full byte (two letters)
+        Some(if from == to { num + num * 16.0 } else { num })
+    };
+
+    Some(match hex.len() {
+        3 => Color::from_rgb(
+            parse_channel(0, 0)?,
+            parse_channel(1, 1)?,
+            parse_channel(2, 2)?,
+        ),
+        4 => Color::from_rgba(
+            parse_channel(1, 1)?,
+            parse_channel(2, 2)?,
+            parse_channel(3, 3)?,
+            parse_channel(0, 0)?,
+        ),
+        6 => Color::from_rgb(
+            parse_channel(0, 1)?,
+            parse_channel(2, 3)?,
+            parse_channel(4, 5)?,
+        ),
+        8 => Color::from_rgba(
+            parse_channel(2, 3)?,
+            parse_channel(4, 5)?,
+            parse_channel(6, 7)?,
+            parse_channel(0, 1)?,
+        ),
+        _ => None?,
+    })
+}
+
 pub fn mix(color1: Color, color2: Color, p2: f32) -> Color {
     if p2 <= 0.0 {
         return color1;

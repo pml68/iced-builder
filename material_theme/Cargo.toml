@@ -30,6 +30,7 @@ features = ["derive"]
 optional = true
 
 [lints.rust]
+missing_debug_implementations = "deny"
 unsafe_code = "deny"
 unused_results = "deny"
 

@@ -9,6 +9,7 @@ pub mod container;
 #[cfg(feature = "dialog")]
 pub mod dialog;
 pub mod menu;
+pub mod pick_list;
 pub mod scrollable;
 pub mod text;
 pub mod utils;
@@ -59,6 +60,12 @@ impl Default for Theme {
         });
 
         DEFAULT.clone()
+    }
+}
+
+impl std::fmt::Display for Theme {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name)
     }
 }
 
@@ -121,6 +128,8 @@ pub struct ColorScheme {
     pub outline: Outline,
     #[serde(with = "color_serde")]
     pub shadow: Color,
+    #[serde(with = "color_serde")]
+    pub scrim: Color,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
@@ -222,49 +231,11 @@ pub struct Outline {
     pub variant: Color,
 }
 
-pub fn parse_argb(s: &str) -> Option<Color> {
-    let hex = s.strip_prefix('#').unwrap_or(s);
-
-    let parse_channel = |from: usize, to: usize| {
-        let num =
-            usize::from_str_radix(&hex[from..=to], 16).ok()? as f32 / 255.0;
-
-        // If we only got half a byte (one letter), expand it into a full byte (two letters)
-        Some(if from == to { num + num * 16.0 } else { num })
-    };
-
-    Some(match hex.len() {
-        3 => Color::from_rgb(
-            parse_channel(0, 0)?,
-            parse_channel(1, 1)?,
-            parse_channel(2, 2)?,
-        ),
-        4 => Color::from_rgba(
-            parse_channel(1, 1)?,
-            parse_channel(2, 2)?,
-            parse_channel(3, 3)?,
-            parse_channel(0, 0)?,
-        ),
-        6 => Color::from_rgb(
-            parse_channel(0, 1)?,
-            parse_channel(2, 3)?,
-            parse_channel(4, 5)?,
-        ),
-        8 => Color::from_rgba(
-            parse_channel(2, 3)?,
-            parse_channel(4, 5)?,
-            parse_channel(6, 7)?,
-            parse_channel(0, 1)?,
-        ),
-        _ => None?,
-    })
-}
-
 mod color_serde {
     use iced_widget::core::Color;
     use serde::{Deserialize, Deserializer};
 
-    use super::parse_argb;
+    use super::utils::parse_argb;
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Color, D::Error>
     where

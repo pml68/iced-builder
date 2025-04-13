@@ -1,4 +1,4 @@
-use iced_widget::core::{Background, border};
+use iced_widget::core::{Background, Border, border};
 use iced_widget::overlay::menu::{Catalog, Style, StyleFn};
 
 use super::Theme;
@@ -20,7 +20,10 @@ pub fn default(theme: &Theme) -> Style {
     let colors = theme.colorscheme.surface;
 
     Style {
-        border: border::rounded(4),
+        border: Border {
+            radius: border::bottom(4),
+            ..Default::default()
+        },
         background: Background::Color(colors.surface_container.base),
         text_color: colors.on_surface,
         selected_background: Background::Color(mix(

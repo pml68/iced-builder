@@ -126,12 +126,9 @@ impl State {
         let dialog =
             dialog(self.show_dialog, base, iced::widget::text("Say Hi!"))
                 .title("This is a Dialog.")
-                .push_button(
-                    iced_dialog::button("Hi!").on_press(Message::CloseDialog),
-                )
-                .backdrop(|theme| theme.colorscheme.scrim)
+                .push_button(iced_dialog::button("Hi!", Message::CloseDialog))
                 .width(280)
-                .height(187);
+                .height(186);
 
         Animation::new(&self.theme, dialog)
             .on_update(Message::SwitchTheme)

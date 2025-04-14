@@ -46,7 +46,7 @@ xdg = "2.5.2"
 
 [target.'cfg(windows)'.build-dependencies]
 embed-resource = "3.0.1"
-windows_exe_info = "0.4"
+windows_exe_info = "0.5"
 
 [profile.dev]
 opt-level = 1

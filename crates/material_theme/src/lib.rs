@@ -12,6 +12,7 @@ pub mod menu;
 pub mod pick_list;
 pub mod scrollable;
 pub mod text;
+pub mod text_input;
 pub mod utils;
 
 const DARK_THEME_CONTENT: &str = include_str!("../assets/themes/dark.toml");

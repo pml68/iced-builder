@@ -1,6 +1,6 @@
 use iced::Element;
 use iced::Length::Fill;
-use iced::widget::{button, column, container, pick_list, row};
+use iced::widget::{button, column, container, pick_list, row, text_input};
 use iced_anim::{Animated, Animation, Event};
 use iced_dialog::dialog;
 use material_theme::button::{elevated, filled_tonal, outlined, text};
@@ -25,13 +25,15 @@ enum Message {
     Noop,
     OpenDialog,
     CloseDialog,
+    Input(String),
     SwitchTheme(Event<Theme>),
 }
 
 #[derive(Debug, Default)]
 pub struct State {
-    show_dialog: bool,
     theme: Animated<Theme>,
+    show_dialog: bool,
+    content: String,
 }
 
 impl State {
@@ -44,6 +46,7 @@ impl State {
             Message::CloseDialog => {
                 self.show_dialog = false;
             }
+            Message::Input(content) => self.content = content,
             Message::SwitchTheme(event) => {
                 self.theme.update(event);
             }
@@ -109,13 +112,18 @@ impl State {
                         .style(surface_container_highest),
                 ]
                 .spacing(10),
-                pick_list(
-                    [LIGHT.clone(), DARK.clone()],
-                    Some(self.theme.target()),
-                    |theme| Message::SwitchTheme(theme.into())
-                )
-                .placeholder("Select a theme..."),
-                button("Open Dialog").on_press(Message::OpenDialog)
+                column![
+                    pick_list(
+                        [LIGHT.clone(), DARK.clone()],
+                        Some(self.theme.target()),
+                        |theme| Message::SwitchTheme(theme.into())
+                    )
+                    .placeholder("Select a theme..."),
+                    button("Open Dialog").on_press(Message::OpenDialog),
+                    text_input("Type something here...", &self.content)
+                        .on_input(Message::Input)
+                ]
+                .spacing(10)
             ]
             .spacing(20),
         )

@@ -1,4 +1,4 @@
-use iced_widget::core::{Background, Border, border};
+use iced_widget::core::{Background, border};
 use iced_widget::pick_list::{Catalog, Status, Style, StyleFn};
 
 use super::Theme;
@@ -38,10 +38,7 @@ pub fn default(theme: &Theme, status: Status) -> Style {
         },
         Status::Opened { .. } => Style {
             background: Background::Color(surface.surface_container.highest),
-            border: Border {
-                radius: border::top(4),
-                ..Default::default()
-            },
+            border: border::rounded(4),
             ..active
         },
     }

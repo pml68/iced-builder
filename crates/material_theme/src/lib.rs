@@ -6,6 +6,7 @@ use serde::Deserialize;
 
 pub mod button;
 pub mod checkbox;
+pub mod combo_box;
 pub mod container;
 #[cfg(feature = "dialog")]
 pub mod dialog;

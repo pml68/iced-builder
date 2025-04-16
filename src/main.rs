@@ -64,6 +64,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     .theme(|state| state.theme.value().clone())
     .subscription(App::subscription)
     .antialiasing(true)
+    .centered()
     .run()?;
 
     Ok(())

@@ -9,6 +9,8 @@ pub mod checkbox;
 pub mod container;
 #[cfg(feature = "dialog")]
 pub mod dialog;
+#[cfg(feature = "markdown")]
+pub mod markdown;
 pub mod menu;
 pub mod pick_list;
 pub mod scrollable;

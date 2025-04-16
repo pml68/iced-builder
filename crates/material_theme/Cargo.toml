@@ -13,10 +13,12 @@ rust-version = "1.85"
 
 [features]
 default = []
-# Provides support for animating with `iced_anim`
+# Provides support for animating with `iced_anim`.
 animate = ["dep:iced_anim"]
-# Provides support for `iced_dialog`
+# Provides support for `iced_dialog`.
 dialog = ["dep:iced_dialog"]
+# Provides support for the markdown widget.
+markdown = ["iced_widget/markdown"]
 
 [dependencies]
 iced_widget = "0.14.0-dev"

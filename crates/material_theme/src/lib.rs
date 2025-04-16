@@ -5,6 +5,7 @@ use iced_widget::core::theme::{Base, Style};
 use serde::Deserialize;
 
 pub mod button;
+pub mod checkbox;
 pub mod container;
 #[cfg(feature = "dialog")]
 pub mod dialog;

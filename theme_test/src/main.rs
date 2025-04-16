@@ -1,6 +1,8 @@
 use iced::Element;
 use iced::Length::Fill;
-use iced::widget::{button, column, container, pick_list, row, text_input};
+use iced::widget::{
+    button, checkbox, column, container, pick_list, row, text_input,
+};
 use iced_anim::{Animated, Animation, Event};
 use iced_dialog::dialog;
 use material_theme::button::{elevated, filled_tonal, outlined, text};
@@ -26,6 +28,7 @@ enum Message {
     OpenDialog,
     CloseDialog,
     Input(String),
+    CheckBox(bool),
     SwitchTheme(Event<Theme>),
 }
 
@@ -34,6 +37,7 @@ pub struct State {
     theme: Animated<Theme>,
     show_dialog: bool,
     content: String,
+    is_checked: bool,
 }
 
 impl State {
@@ -47,6 +51,7 @@ impl State {
                 self.show_dialog = false;
             }
             Message::Input(content) => self.content = content,
+            Message::CheckBox(is_checked) => self.is_checked = is_checked,
             Message::SwitchTheme(event) => {
                 self.theme.update(event);
             }
@@ -121,7 +126,13 @@ impl State {
                     .placeholder("Select a theme..."),
                     button("Open Dialog").on_press(Message::OpenDialog),
                     text_input("Type something here...", &self.content)
-                        .on_input(Message::Input)
+                        .on_input(Message::Input),
+                    checkbox("Normal", self.is_checked)
+                        .on_toggle(Message::CheckBox),
+                    checkbox("Error", self.is_checked)
+                        .on_toggle(Message::CheckBox)
+                        .style(material_theme::checkbox::error),
+                    checkbox("Disabled", self.is_checked),
                 ]
                 .spacing(10)
             ]

@@ -13,7 +13,9 @@ rust-version = "1.85"
 
 [features]
 default = []
+# Provides support for animating with `iced_anim`
 animate = ["dep:iced_anim"]
+# Provides support for `iced_dialog`
 dialog = ["dep:iced_dialog"]
 
 [dependencies]

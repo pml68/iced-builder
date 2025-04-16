@@ -19,6 +19,8 @@ animate = ["dep:iced_anim"]
 dialog = ["dep:iced_dialog"]
 # Provides support for the markdown widget.
 markdown = ["iced_widget/markdown"]
+# Provides support for the SVG widget.
+svg = ["iced_widget/svg"]
 
 [dependencies]
 iced_widget = "0.14.0-dev"

@@ -14,6 +14,8 @@ pub mod markdown;
 pub mod menu;
 pub mod pick_list;
 pub mod scrollable;
+#[cfg(feature = "svg")]
+pub mod svg;
 pub mod text;
 pub mod text_input;
 pub mod utils;

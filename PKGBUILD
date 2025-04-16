@@ -10,6 +10,7 @@ license=('GPL-3.0-or-later')
 depends=(
   gcc-libs
   glibc
+  rustfmt
 )
 makedepends=(
   git
@@ -30,7 +31,10 @@ prepare() {
 
 pkgver() {
   cd "${pkgname}"
-  echo "$(cargo pkgid | cut -d@ -f2).r$(git rev-list --count HEAD).g$(git rev-parse --short HEAD)"
+  printf "%s.r%s.g%s" \
+    $(cargo pkgid | cut -d@ -f2) \
+    $(git rev-list --count HEAD) \
+    $(git rev-parse --short HEAD)
 }
 
 build() {
@@ -42,10 +46,6 @@ build() {
 }
 
 package() {
-  depends=(
-    rustfmt
-  )
-
   cd "${pkgname}"
 
   install -Dm755 "target/release/${pkgname}" "${pkgdir}/usr/bin/${pkgname}"

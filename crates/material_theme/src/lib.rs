@@ -14,6 +14,7 @@ pub mod dialog;
 pub mod markdown;
 pub mod menu;
 pub mod pick_list;
+pub mod progress_bar;
 #[cfg(feature = "qr_code")]
 pub mod qr_code;
 pub mod scrollable;

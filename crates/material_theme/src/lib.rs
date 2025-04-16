@@ -13,6 +13,8 @@ pub mod dialog;
 pub mod markdown;
 pub mod menu;
 pub mod pick_list;
+#[cfg(feature = "qr_code")]
+pub mod qr_code;
 pub mod scrollable;
 #[cfg(feature = "svg")]
 pub mod svg;

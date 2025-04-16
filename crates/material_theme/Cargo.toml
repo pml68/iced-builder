@@ -21,6 +21,8 @@ dialog = ["dep:iced_dialog"]
 markdown = ["iced_widget/markdown"]
 # Provides support for the SVG widget.
 svg = ["iced_widget/svg"]
+# Provides support for the QR code widget.
+qr_code = ["iced_widget/qr_code"]
 
 [dependencies]
 iced_widget = "0.14.0-dev"

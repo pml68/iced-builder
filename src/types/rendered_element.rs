@@ -223,7 +223,14 @@ impl RenderedElement {
         match &self.name {
             ElementName::Container => {
                 imports = format!("{imports}container,");
-                view = format!("{view}\ncontainer({elements}){options}");
+                view = format!(
+                    "{view}\ncontainer({}){options}",
+                    if elements.is_empty() {
+                        String::from("\"\"")
+                    } else {
+                        elements.to_string()
+                    }
+                );
             }
             ElementName::Row => {
                 imports = format!("{imports}row,");
@@ -237,7 +244,7 @@ impl RenderedElement {
                 imports = format!("{imports}text,");
                 view = format!(
                     "{view}\ntext(\"{}\"){options}",
-                    if *string == String::new() {
+                    if string.is_empty() {
                         "New Text"
                     } else {
                         string
@@ -248,7 +255,7 @@ impl RenderedElement {
                 imports = format!("{imports}button,");
                 view = format!(
                     "{view}\nbutton(\"{}\"){options}",
-                    if *string == String::new() {
+                    if string.is_empty() {
                         "New Button"
                     } else {
                         string

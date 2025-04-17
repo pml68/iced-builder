@@ -103,7 +103,7 @@ use iced::{{widget::{{{imports}}},Element}};
 {theme_imports}
 
 fn main() -> iced::Result {{
-    iced::application("{}", State::update, State::view).theme(State::theme).run()
+    iced::application(State::default, State::update, State::view).title("{}").theme(State::theme).run()
 }}
 
 #[derive(Default)]

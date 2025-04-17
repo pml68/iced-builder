@@ -83,7 +83,10 @@ impl Project {
     }
 
     pub fn app_code(&mut self) -> Result<String, Error> {
-        match self.element_tree {
+        use iced::debug;
+        let codegen = debug::time("Code Generation");
+
+        let result = match self.element_tree {
             Some(ref element_tree) => {
                 let (imports, view) = element_tree.codegen();
                 let theme = self.get_theme();
@@ -137,6 +140,9 @@ impl State {{
                 Ok(rustfmt.format_str(app_code)?)
             }
             None => Err("No element tree present".into()),
-        }
+        };
+
+        codegen.finish();
+        result
     }
 }

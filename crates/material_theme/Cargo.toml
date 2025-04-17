@@ -13,6 +13,8 @@ rust-version = "1.85"
 
 [features]
 default = []
+# Provides `serde` support
+serde = ["dep:serde"]
 # Provides support for animating with `iced_anim`.
 animate = ["dep:iced_anim"]
 # Provides support for `iced_dialog`.
@@ -26,9 +28,11 @@ qr_code = ["iced_widget/qr_code"]
 
 [dependencies]
 iced_widget = "0.14.0-dev"
-serde.workspace = true
-toml.workspace = true
 dark-light = "2.0.0"
+
+serde.workspace = true
+serde.optional = true
+
 iced_dialog.workspace = true
 iced_dialog.optional = true
 

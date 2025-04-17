@@ -2796,7 +2796,6 @@ dependencies = [
  "iced_dialog",
  "iced_widget",
  "serde",
- "toml",
 ]
 
 [[package]]

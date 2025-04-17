@@ -1,7 +1,7 @@
 use iced::Element;
 use iced::Length::Fill;
 use iced::widget::{
-    button, checkbox, column, container, pick_list, row, text_input,
+    button, checkbox, column, container, pick_list, radio, row, text_input,
 };
 use iced_anim::{Animated, Animation, Event};
 use iced_dialog::dialog;
@@ -29,6 +29,7 @@ enum Message {
     CloseDialog,
     Input(String),
     CheckBox(bool),
+    Radio(Choice),
     SwitchTheme(Event<Theme>),
 }
 
@@ -38,6 +39,14 @@ pub struct State {
     show_dialog: bool,
     content: String,
     is_checked: bool,
+    selection: Option<Choice>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Choice {
+    A,
+    B,
+    C,
 }
 
 impl State {
@@ -52,6 +61,7 @@ impl State {
             }
             Message::Input(content) => self.content = content,
             Message::CheckBox(is_checked) => self.is_checked = is_checked,
+            Message::Radio(choice) => self.selection = Some(choice),
             Message::SwitchTheme(event) => {
                 self.theme.update(event);
             }
@@ -133,6 +143,9 @@ impl State {
                         .on_toggle(Message::CheckBox)
                         .style(material_theme::checkbox::error),
                     checkbox("Disabled", self.is_checked),
+                    radio("A", Choice::A, self.selection, Message::Radio,),
+                    radio("B", Choice::B, self.selection, Message::Radio,),
+                    radio("C", Choice::C, self.selection, Message::Radio,),
                 ]
                 .spacing(10)
             ]

@@ -66,6 +66,26 @@ pub fn parse_argb(s: &str) -> Option<Color> {
     })
 }
 
+pub fn color_to_argb(color: Color) -> String {
+    use std::fmt::Write;
+
+    let mut hex = String::with_capacity(9);
+
+    let [r, g, b, a] = color.into_rgba8();
+
+    let _ = write!(&mut hex, "#");
+
+    if a < u8::MAX {
+        let _ = write!(&mut hex, "{a:02X}");
+    }
+
+    let _ = write!(&mut hex, "{r:02X}");
+    let _ = write!(&mut hex, "{g:02X}");
+    let _ = write!(&mut hex, "{b:02X}");
+
+    hex
+}
+
 pub fn mix(color1: Color, color2: Color, p2: f32) -> Color {
     if p2 <= 0.0 {
         return color1;

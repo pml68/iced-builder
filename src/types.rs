@@ -12,9 +12,11 @@ pub use project::Project;
 pub use rendered_element::*;
 
 use crate::Error;
+use crate::config::Config;
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    ConfigLoad(Result<Config, Error>),
     SwitchTheme(Event<iced::Theme>),
     CopyCode,
     SwitchPage(DesignerPane),

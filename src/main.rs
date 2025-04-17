@@ -29,7 +29,6 @@ use iced_anim::transition::Easing;
 use iced_anim::{Animated, Animation};
 use iced_dialog::dialog::Dialog;
 use panes::{code_view, designer_view, element_list};
-use tokio::runtime;
 use types::{
     Action, DesignerPane, DialogAction, DialogButtons, Message, Project,
 };
@@ -46,23 +45,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let config_load = {
-        let rt = runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()?;
-
-        rt.block_on(Config::load())
-    };
-
     iced::application(
-        move || App::new(config_load.clone()),
-        App::update,
-        App::view,
+        IcedBuilder::init,
+        IcedBuilder::update,
+        IcedBuilder::view,
     )
-    .title(App::title)
+    .title(IcedBuilder::title)
     .font(icon::FONT)
     .theme(|state| state.theme.value().clone())
-    .subscription(App::subscription)
+    .subscription(IcedBuilder::subscription)
     .antialiasing(true)
     .centered()
     .run()?;
@@ -70,7 +61,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-struct App {
+struct IcedBuilder {
     is_dirty: bool,
     is_loading: bool,
     project_path: Option<PathBuf>,
@@ -94,8 +85,8 @@ enum Panes {
     ElementList,
 }
 
-impl App {
-    fn new(config_load: Result<Config, Error>) -> (Self, Task<Message>) {
+impl IcedBuilder {
+    fn init() -> (Self, Task<Message>) {
         let state = pane_grid::State::with_configuration(
             pane_grid::Configuration::Split {
                 axis: pane_grid::Axis::Vertical,
@@ -105,21 +96,8 @@ impl App {
             },
         );
 
-        let config = Arc::new(config_load.unwrap_or_default());
+        let config = Arc::new(Config::default());
         let theme = config.selected_theme();
-
-        let task = if let Some(path) = config.last_project.clone() {
-            if path.exists() && path.is_file() {
-                Task::perform(Project::from_path(path), Message::FileOpened)
-            } else {
-                warning_dialog(format!(
-                    "The file {} does not exist, or isn't a file.",
-                    path.to_string_lossy()
-                ))
-            }
-        } else {
-            Task::none()
-        };
 
         (
             Self {
@@ -139,7 +117,7 @@ impl App {
                 dialog_action: DialogAction::None,
                 editor_content: text_editor::Content::new(),
             },
-            task,
+            Task::perform(Config::load(), Message::ConfigLoad),
         )
     }
 
@@ -165,6 +143,30 @@ impl App {
 
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
+            Message::ConfigLoad(result) => match result {
+                Ok(config) => {
+                    self.config = Arc::new(config);
+
+                    self.theme.update(self.config.selected_theme().into());
+                    return if let Some(path) = self.config.last_project.clone()
+                    {
+                        if path.exists() && path.is_file() {
+                            Task::perform(
+                                Project::from_path(path),
+                                Message::FileOpened,
+                            )
+                        } else {
+                            warning_dialog(format!(
+                                "The file {} does not exist, or isn't a file.",
+                                path.to_string_lossy()
+                            ))
+                        }
+                    } else {
+                        Task::none()
+                    };
+                }
+                Err(error) => return error_dialog(error),
+            },
             Message::SwitchTheme(event) => self.theme.update(event),
             Message::CopyCode => {
                 return clipboard::write(self.editor_content.text());

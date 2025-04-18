@@ -18,6 +18,7 @@ pub mod progress_bar;
 pub mod qr_code;
 pub mod radio;
 pub mod scrollable;
+pub mod slider;
 #[cfg(feature = "svg")]
 pub mod svg;
 pub mod text;

@@ -1,8 +1,9 @@
-use iced::Element;
 use iced::Length::Fill;
 use iced::widget::{
-    button, checkbox, column, container, pick_list, radio, row, text_input,
+    button, center, checkbox, column, container, pick_list, radio, row, slider,
+    text_input,
 };
+use iced::{Element, Length};
 use iced_anim::{Animated, Animation, Event};
 use iced_dialog::dialog;
 use material_theme::button::{elevated, filled_tonal, outlined, text};
@@ -30,6 +31,7 @@ enum Message {
     Input(String),
     CheckBox(bool),
     Radio(Choice),
+    Slider(f32),
     SwitchTheme(Event<Theme>),
 }
 
@@ -40,6 +42,7 @@ pub struct State {
     content: String,
     is_checked: bool,
     selection: Option<Choice>,
+    value: f32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -62,6 +65,7 @@ impl State {
             Message::Input(content) => self.content = content,
             Message::CheckBox(is_checked) => self.is_checked = is_checked,
             Message::Radio(choice) => self.selection = Some(choice),
+            Message::Slider(value) => self.value = value,
             Message::SwitchTheme(event) => {
                 self.theme.update(event);
             }
@@ -146,6 +150,10 @@ impl State {
                     radio("A", Choice::A, self.selection, Message::Radio,),
                     radio("B", Choice::B, self.selection, Message::Radio,),
                     radio("C", Choice::C, self.selection, Message::Radio,),
+                    center(iced::widget::text!("{:.1}", self.value))
+                        .width(Length::Fill)
+                        .height(Length::Shrink),
+                    slider(0.0..=100.0, self.value, Message::Slider).step(0.1)
                 ]
                 .spacing(10)
             ]

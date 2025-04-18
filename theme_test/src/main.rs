@@ -1,7 +1,7 @@
 use iced::Length::Fill;
 use iced::widget::{
-    button, center, checkbox, column, container, pick_list, radio, row, slider,
-    text_input,
+    button, center, checkbox, column, container, horizontal_rule, pick_list,
+    radio, row, slider, text_input,
 };
 use iced::{Element, Length};
 use iced_anim::{Animated, Animation, Event};
@@ -132,24 +132,35 @@ impl State {
                 ]
                 .spacing(10),
                 column![
+                    // Pick List
                     pick_list(
                         [LIGHT.clone(), DARK.clone()],
                         Some(self.theme.target()),
                         |theme| Message::SwitchTheme(theme.into())
                     )
                     .placeholder("Select a theme..."),
+                    horizontal_rule(1),
+                    // Button
                     button("Open Dialog").on_press(Message::OpenDialog),
+                    horizontal_rule(1),
+                    // Text Input
                     text_input("Type something here...", &self.content)
                         .on_input(Message::Input),
+                    horizontal_rule(1),
+                    // Checkbox
                     checkbox("Normal", self.is_checked)
                         .on_toggle(Message::CheckBox),
                     checkbox("Error", self.is_checked)
                         .on_toggle(Message::CheckBox)
                         .style(material_theme::checkbox::error),
                     checkbox("Disabled", self.is_checked),
+                    horizontal_rule(1),
+                    // Radio
                     radio("A", Choice::A, self.selection, Message::Radio,),
                     radio("B", Choice::B, self.selection, Message::Radio,),
                     radio("C", Choice::C, self.selection, Message::Radio,),
+                    horizontal_rule(1),
+                    // Slider
                     center(iced::widget::text!("{:.1}", self.value))
                         .width(Length::Fill)
                         .height(Length::Shrink),

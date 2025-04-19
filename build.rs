@@ -5,6 +5,17 @@ use std::path::Path;
 use std::process::Command;
 
 fn main() {
+    println!("cargo::rerun-if-changed=fonts/icons.toml");
+    iced_fontello::build("fonts/icons.toml").expect("Build icons font");
+    #[cfg(windows)]
+    {
+        embed_resource::compile(
+            "assets/windows/iced_builder.rc",
+            embed_resource::NONE,
+        );
+        windows_exe_info::versioninfo::link_cargo_env();
+    }
+
     let git_hash = Command::new("git")
         .args(["describe", "--always", "--dirty", "--exclude='*'"])
         .output()
@@ -47,16 +58,5 @@ fn main() {
     let head_ref = Path::new(&git_dir).join(head_ref);
     if head_ref.exists() {
         println!("cargo:rerun-if-changed={}", head_ref.display());
-    }
-
-    println!("cargo::rerun-if-changed=fonts/icons.toml");
-    iced_fontello::build("fonts/icons.toml").expect("Build icons font");
-    #[cfg(windows)]
-    {
-        embed_resource::compile(
-            "assets/windows/iced_builder.rc",
-            embed_resource::NONE,
-        );
-        windows_exe_info::versioninfo::link_cargo_env();
     }
 }

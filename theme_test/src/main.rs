@@ -1,7 +1,7 @@
 use iced::Length::Fill;
 use iced::widget::{
     button, center, checkbox, column, container, horizontal_rule, pick_list,
-    radio, row, slider, text_input,
+    radio, row, slider, text_input, toggler,
 };
 use iced::{Element, Length};
 use iced_anim::{Animated, Animation, Event};
@@ -29,7 +29,7 @@ enum Message {
     OpenDialog,
     CloseDialog,
     Input(String),
-    CheckBox(bool),
+    Bool(bool),
     Radio(Choice),
     Slider(f32),
     SwitchTheme(Event<Theme>),
@@ -63,7 +63,7 @@ impl State {
                 self.show_dialog = false;
             }
             Message::Input(content) => self.content = content,
-            Message::CheckBox(is_checked) => self.is_checked = is_checked,
+            Message::Bool(is_checked) => self.is_checked = is_checked,
             Message::Radio(choice) => self.selection = Some(choice),
             Message::Slider(value) => self.value = value,
             Message::SwitchTheme(event) => {
@@ -149,9 +149,9 @@ impl State {
                     horizontal_rule(1),
                     // Checkbox
                     checkbox("Normal", self.is_checked)
-                        .on_toggle(Message::CheckBox),
+                        .on_toggle(Message::Bool),
                     checkbox("Error", self.is_checked)
-                        .on_toggle(Message::CheckBox)
+                        .on_toggle(Message::Bool)
                         .style(material_theme::checkbox::error),
                     checkbox("Disabled", self.is_checked),
                     horizontal_rule(1),
@@ -164,7 +164,12 @@ impl State {
                     center(iced::widget::text!("{:.1}", self.value))
                         .width(Length::Fill)
                         .height(Length::Shrink),
-                    slider(0.0..=100.0, self.value, Message::Slider).step(0.1)
+                    slider(0.0..=100.0, self.value, Message::Slider).step(0.1),
+                    horizontal_rule(1),
+                    // Toggler
+                    toggler(self.is_checked)
+                        .on_toggle(Message::Bool)
+                        .size(24.0)
                 ]
                 .spacing(10)
             ]

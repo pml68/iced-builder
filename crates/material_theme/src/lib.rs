@@ -24,6 +24,7 @@ pub mod slider;
 pub mod svg;
 pub mod text;
 pub mod text_input;
+pub mod toggler;
 pub mod utils;
 
 pub static DARK: LazyLock<Theme> =

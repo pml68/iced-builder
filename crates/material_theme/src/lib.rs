@@ -12,6 +12,7 @@ pub mod dialog;
 #[cfg(feature = "markdown")]
 pub mod markdown;
 pub mod menu;
+pub mod pane_grid;
 pub mod pick_list;
 pub mod progress_bar;
 #[cfg(feature = "qr_code")]

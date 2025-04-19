@@ -22,25 +22,40 @@ pub fn view(
     editor_content: &text_editor::Content,
     is_focused: bool,
 ) -> pane_grid::Content<'_, Message> {
-    let title = row![
-        text("Generated Code"),
-        Space::with_width(Length::Fill),
-        tip(
-            button(icon::copy())
-                .on_press(Message::CopyCode)
-                .padding([2, 7])
-                .style(button::text),
-            "Copy",
-            tip::Position::FollowCursor
-        ),
-        Space::with_width(20),
-        button("Switch to Designer view")
-            .on_press(Message::SwitchPage(DesignerPane::DesignerView))
-    ]
-    .align_y(Alignment::Center);
-    let title_bar = pane_grid::TitleBar::new(title)
+    let title_bar = pane_grid::TitleBar::new(text("Generated Code").center())
+        .controls(pane_grid::Controls::dynamic(
+            row![
+                tip(
+                    button(icon::copy())
+                        .on_press(Message::CopyCode)
+                        .padding([2, 7])
+                        .style(button::text),
+                    "Copy",
+                    tip::Position::FollowCursor
+                ),
+                Space::with_width(20),
+                button("Switch to Designer view")
+                    .on_press(Message::SwitchPage(DesignerPane::DesignerView))
+            ]
+            .align_y(Alignment::Center),
+            row![
+                tip(
+                    button(icon::copy())
+                        .on_press(Message::CopyCode)
+                        .padding([2, 7])
+                        .style(button::text),
+                    "Copy",
+                    tip::Position::FollowCursor
+                ),
+                Space::with_width(20),
+                button(icon::switch())
+                    .on_press(Message::SwitchPage(DesignerPane::DesignerView))
+            ]
+            .align_y(Alignment::Center),
+        ))
         .padding(10)
         .style(style::title_bar);
+
     pane_grid::Content::new(
         text_editor(editor_content)
             .on_action(Message::EditorAction)

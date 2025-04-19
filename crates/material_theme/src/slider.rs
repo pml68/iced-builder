@@ -47,17 +47,17 @@ pub fn default(theme: &Theme, status: Status) -> Style {
 
     match status {
         Status::Active => {
-            styled(primary.color, secondary.secondary_container, 16.0)
+            styled(primary.color, secondary.secondary_container, 12.0)
         }
         Status::Hovered => styled(
             mix(primary.color, surface.on_surface, HOVERED_LAYER_OPACITY),
             secondary.secondary_container,
-            16.0,
+            12.0,
         ),
         Status::Dragged => styled(
             mix(primary.color, surface.on_surface, PRESSED_LAYER_OPACITY),
             secondary.secondary_container,
-            15.0,
+            11.0,
         ),
     }
 }

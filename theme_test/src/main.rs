@@ -1,7 +1,6 @@
-use iced::Length::Fill;
 use iced::widget::{
     button, center, checkbox, column, container, horizontal_rule, pane_grid,
-    pick_list, radio, row, slider, text_input, toggler,
+    pick_list, radio, row, slider, text_editor, text_input, toggler,
 };
 use iced::{Element, Length};
 use iced_anim::{Animated, Animation, Event};
@@ -32,6 +31,7 @@ enum Message {
     Bool(bool),
     Radio(Choice),
     Slider(f32),
+    Edit(text_editor::Action),
     Resize(pane_grid::ResizeEvent),
     SwitchTheme(Event<Theme>),
 }
@@ -44,6 +44,7 @@ pub struct State {
     is_checked: bool,
     selection: Option<Choice>,
     value: f32,
+    editor_content: text_editor::Content,
     panes: pane_grid::State<Pane>,
 }
 
@@ -56,6 +57,7 @@ impl Default for State {
             is_checked: Default::default(),
             selection: Default::default(),
             value: Default::default(),
+            editor_content: text_editor::Content::new(),
             panes: pane_grid::State::with_configuration(
                 pane_grid::Configuration::Split {
                     axis: pane_grid::Axis::Vertical,
@@ -95,6 +97,7 @@ impl State {
             Message::Bool(is_checked) => self.is_checked = is_checked,
             Message::Radio(choice) => self.selection = Some(choice),
             Message::Slider(value) => self.value = value,
+            Message::Edit(action) => self.editor_content.perform(action),
             Message::Resize(pane_grid::ResizeEvent { split, ratio }) => {
                 self.panes.resize(split, ratio);
             }
@@ -193,12 +196,13 @@ impl State {
                             )
                             .placeholder("Select a theme..."),
                             horizontal_rule(1),
-                            // Button
+                            // Dialog
                             button("Open Dialog").on_press(Message::OpenDialog),
                             horizontal_rule(1),
                             // Text Input
                             text_input("Type something here...", &self.content)
                                 .on_input(Message::Input),
+                            text_input("Disabled", "Disabled"),
                             horizontal_rule(1),
                             // Checkbox
                             checkbox("Normal", self.is_checked)
@@ -238,7 +242,14 @@ impl State {
                             // Toggler
                             toggler(self.is_checked)
                                 .on_toggle(Message::Bool)
-                                .size(24.0)
+                                .size(24.0),
+                            toggler(self.is_checked).size(24.0),
+                            horizontal_rule(1),
+                            // Text Editor
+                            text_editor(&self.editor_content)
+                                .on_action(Message::Edit),
+                            text_editor(&self.editor_content)
+                                .placeholder("Disabled")
                         ]
                         .spacing(10),
                     )

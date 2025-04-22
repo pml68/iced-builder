@@ -30,7 +30,10 @@ pub fn default(theme: &Theme, status: Status) -> Style {
         icon: surface.on_surface_variant,
         placeholder: surface.on_surface_variant,
         value: surface.on_surface,
-        selection: surface.on_surface,
+        selection: Color {
+            a: DISABLED_TEXT_OPACITY,
+            ..primary.color
+        },
     };
 
     match status {

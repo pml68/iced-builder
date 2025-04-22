@@ -74,7 +74,10 @@ pub fn default(theme: &Theme, status: Status) -> Style {
                 a: DISABLED_TEXT_OPACITY,
                 ..surface.on_surface
             },
-            Some(surface.on_surface),
+            Some(Color {
+                a: DISABLED_TEXT_OPACITY,
+                ..surface.on_surface
+            }),
         ),
     }
 }

@@ -143,7 +143,7 @@ pub fn outlined(theme: &Theme, status: Status) -> Style {
         Status::Active | Status::Pressed | Status::Hovered => Border {
             color: outline,
             width: 1.0,
-            radius: 400.0.into(),
+            radius: 400.into(),
         },
         Status::Disabled => Border {
             color: Color {
@@ -151,7 +151,7 @@ pub fn outlined(theme: &Theme, status: Status) -> Style {
                 ..disabled
             },
             width: 1.0,
-            radius: 400.0.into(),
+            radius: 400.into(),
         },
     };
 

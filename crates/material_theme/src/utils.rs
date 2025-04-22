@@ -1,5 +1,7 @@
 use iced_widget::core::{Color, Shadow, Vector};
 
+const COLOR_ERROR_MARGIN: f32 = 0.0001;
+
 pub const HOVERED_LAYER_OPACITY: f32 = 0.08;
 pub const PRESSED_LAYER_OPACITY: f32 = 0.1;
 
@@ -95,7 +97,9 @@ pub fn mix(color1: Color, color2: Color, p2: f32) -> Color {
 
     let p1 = 1.0 - p2;
 
-    if color1.a != 1.0 || color2.a != 1.0 {
+    if (color1.a - 1.0).abs() > COLOR_ERROR_MARGIN
+        || (color2.a - 1.0) > COLOR_ERROR_MARGIN
+    {
         let a = color1.a * p1 + color2.a * p2;
         if a > 0.0 {
             let c1 = color1.into_linear().map(|c| c * color1.a * p1);

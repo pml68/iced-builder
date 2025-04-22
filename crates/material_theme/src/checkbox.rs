@@ -18,7 +18,7 @@ impl Catalog for Theme {
 
 pub fn styled(
     background_color: Color,
-    background_hover: Option<Color>,
+    background_unchecked: Option<Color>,
     icon_color: Color,
     border_color: Color,
     text_color: Option<Color>,
@@ -28,7 +28,7 @@ pub fn styled(
         background: Background::Color(if is_checked {
             background_color
         } else {
-            background_hover.unwrap_or(Color::TRANSPARENT)
+            background_unchecked.unwrap_or(Color::TRANSPARENT)
         }),
         icon_color,
         border: if is_checked {
@@ -37,7 +37,7 @@ pub fn styled(
             Border {
                 color: border_color,
                 width: 2.0,
-                radius: border::radius(2),
+                radius: 2.into(),
             }
         },
         text_color,

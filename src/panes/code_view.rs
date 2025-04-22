@@ -71,7 +71,7 @@ pub fn view(
                         palette.background.base.color,
                     ),
                     border: Border {
-                        radius: 2.0.into(),
+                        radius: 2.into(),
                         width: 1.0,
                         color: palette.background.strong.color,
                     },

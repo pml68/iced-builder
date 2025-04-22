@@ -24,6 +24,7 @@ pub mod slider;
 #[cfg(feature = "svg")]
 pub mod svg;
 pub mod text;
+pub mod text_editor;
 pub mod text_input;
 pub mod toggler;
 pub mod utils;
@@ -59,7 +60,7 @@ impl Clone for Theme {
     }
 
     fn clone_from(&mut self, source: &Self) {
-        self.name = source.name.clone();
+        self.name.clone_from(&source.name);
         self.colorscheme = source.colorscheme;
     }
 }
@@ -142,6 +143,7 @@ pub struct ColorScheme {
     pub scrim: Color,
 }
 
+#[allow(clippy::cast_precision_loss)]
 macro_rules! from_argb {
     ($hex:expr) => {{
         let hex = $hex as u32;
@@ -155,6 +157,7 @@ macro_rules! from_argb {
     }};
 }
 
+#[allow(clippy::cast_precision_loss)]
 impl ColorScheme {
     const DARK: Self = Self {
         primary: Primary {

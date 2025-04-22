@@ -5,6 +5,7 @@ use iced::widget::{
 use iced::{Element, Length};
 use iced_anim::{Animated, Animation, Event};
 use iced_dialog::dialog;
+use material_theme::Theme;
 use material_theme::button::{elevated, filled_tonal, outlined, text};
 use material_theme::container::{
     error, error_container, inverse_surface, primary, primary_container,
@@ -13,11 +14,10 @@ use material_theme::container::{
     surface_container_lowest, tertiary, tertiary_container,
 };
 use material_theme::text::surface_variant;
-use material_theme::{DARK, LIGHT, Theme};
 
 fn main() -> iced::Result {
     iced::application(State::default, State::update, State::view)
-        .theme(|state| state.theme.value().clone())
+        .theme(|state| *state.theme.value())
         .run()
 }
 
@@ -190,7 +190,7 @@ impl State {
                         column![
                             // Pick List
                             pick_list(
-                                [LIGHT.clone(), DARK.clone()],
+                                Theme::ALL,
                                 Some(self.theme.target()),
                                 |theme| Message::SwitchTheme(theme.into())
                             )

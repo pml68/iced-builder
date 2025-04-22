@@ -1,7 +1,7 @@
 use std::sync::LazyLock;
 
+use iced_widget::core::Color;
 use iced_widget::core::theme::{Base, Style};
-use iced_widget::core::{Color, color};
 
 pub mod button;
 pub mod checkbox;
@@ -29,39 +29,32 @@ pub mod text_input;
 pub mod toggler;
 pub mod utils;
 
-pub static DARK: LazyLock<Theme> =
-    LazyLock::new(|| Theme::new("Dark", ColorScheme::DARK));
-pub static LIGHT: LazyLock<Theme> =
-    LazyLock::new(|| Theme::new("Light", ColorScheme::LIGHT));
-
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Theme {
-    pub name: String,
+    pub name: &'static str,
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub colorscheme: ColorScheme,
 }
 
 impl Theme {
+    pub const ALL: &'static [Self] = &[Self::DARK, Self::LIGHT];
+
+    pub const DARK: Self = Self {
+        name: "Dark",
+        colorscheme: ColorScheme::DARK,
+    };
+
+    pub const LIGHT: Self = Self {
+        name: "Light",
+        colorscheme: ColorScheme::LIGHT,
+    };
+
     pub fn new(name: impl Into<String>, colorscheme: ColorScheme) -> Self {
         Self {
-            name: name.into(),
+            name: Box::leak(name.into().into_boxed_str()),
             colorscheme,
         }
-    }
-}
-
-impl Clone for Theme {
-    fn clone(&self) -> Self {
-        Self {
-            name: self.name.clone(),
-            colorscheme: self.colorscheme,
-        }
-    }
-
-    fn clone_from(&mut self, source: &Self) {
-        self.name.clone_from(&source.name);
-        self.colorscheme = source.colorscheme;
     }
 }
 
@@ -71,13 +64,13 @@ impl Default for Theme {
             match dark_light::detect().unwrap_or(dark_light::Mode::Unspecified)
             {
                 dark_light::Mode::Dark | dark_light::Mode::Unspecified => {
-                    DARK.clone()
+                    Theme::DARK
                 }
-                dark_light::Mode::Light => LIGHT.clone(),
+                dark_light::Mode::Light => Theme::LIGHT,
             }
         });
 
-        DEFAULT.clone()
+        *DEFAULT
     }
 }
 
@@ -108,10 +101,8 @@ impl iced_anim::Animate for Theme {
     }
 
     fn update(&mut self, components: &mut impl Iterator<Item = f32>) {
-        let mut colors = self.colorscheme;
-        colors.update(components);
-
-        *self = Theme::new("Animating Theme", colors);
+        self.colorscheme.update(components);
+        self.name = "Animating Theme";
     }
 
     fn distance_to(&self, end: &Self) -> Vec<f32> {
@@ -119,10 +110,9 @@ impl iced_anim::Animate for Theme {
     }
 
     fn lerp(&mut self, start: &Self, end: &Self, progress: f32) {
-        let mut colors = self.colorscheme;
-        colors.lerp(&start.colorscheme, &end.colorscheme, progress);
-
-        *self = Theme::new("Animating Theme", colors);
+        self.colorscheme
+            .lerp(&start.colorscheme, &end.colorscheme, progress);
+        self.name = "Animating Theme";
     }
 }
 
@@ -153,7 +143,7 @@ macro_rules! from_argb {
         let g = (hex & 0x0000ff00) >> 8;
         let b = (hex & 0x000000ff);
 
-        color!(r as u8, g as u8, b as u8, a)
+        ::iced_widget::core::color!(r as u8, g as u8, b as u8, a)
     }};
 }
 

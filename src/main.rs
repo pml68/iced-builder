@@ -146,8 +146,8 @@ impl IcedBuilder {
             Message::ConfigLoad(result) => match result {
                 Ok(config) => {
                     self.config = Arc::new(config);
-
                     self.theme.update(self.config.selected_theme().into());
+
                     return if let Some(path) = self.config.last_project.clone()
                     {
                         if path.exists() && path.is_file() {

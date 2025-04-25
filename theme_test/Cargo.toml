@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 iced.workspace = true
+iced.features = ["debug"]
 iced_anim.workspace = true
 iced_dialog.workspace = true
 material_theme = { path = "../crates/material_theme", features = ["dialog", "animate"] }

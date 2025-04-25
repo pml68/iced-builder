@@ -29,6 +29,20 @@ pub mod text_input;
 pub mod toggler;
 pub mod utils;
 
+#[allow(clippy::cast_precision_loss)]
+macro_rules! from_argb {
+    ($hex:expr) => {{
+        let hex = $hex as u32;
+
+        let a = ((hex & 0xff000000) >> 24) as f32 / 255.0;
+        let r = (hex & 0x00ff0000) >> 16;
+        let g = (hex & 0x0000ff00) >> 8;
+        let b = (hex & 0x000000ff);
+
+        ::iced_widget::core::color!(r as u8, g as u8, b as u8, a)
+    }};
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Theme {
@@ -89,8 +103,20 @@ impl Base for Theme {
     }
 
     fn palette(&self) -> Option<iced_widget::theme::Palette> {
-        // TODO: create a Palette
-        None
+        let colors = self.colorscheme;
+
+        Some(iced_widget::theme::Palette {
+            background: colors.surface.color,
+            text: colors.surface.on_surface,
+            primary: colors.primary.color,
+            success: colors.primary.primary_container,
+            warning: utils::mix(
+                from_argb!(0xffffff00),
+                colors.primary.color,
+                0.25,
+            ),
+            danger: colors.error.color,
+        })
     }
 }
 
@@ -131,20 +157,6 @@ pub struct ColorScheme {
     pub shadow: Color,
     #[cfg_attr(feature = "serde", serde(with = "color_serde"))]
     pub scrim: Color,
-}
-
-#[allow(clippy::cast_precision_loss)]
-macro_rules! from_argb {
-    ($hex:expr) => {{
-        let hex = $hex as u32;
-
-        let a = ((hex & 0xff000000) >> 24) as f32 / 255.0;
-        let r = (hex & 0x00ff0000) >> 16;
-        let g = (hex & 0x0000ff00) >> 8;
-        let b = (hex & 0x000000ff);
-
-        ::iced_widget::core::color!(r as u8, g as u8, b as u8, a)
-    }};
 }
 
 #[allow(clippy::cast_precision_loss)]

@@ -43,7 +43,8 @@ toml = "0.8.20"
 [workspace.dependencies.iced]
 git = "https://github.com/pml68/iced"
 branch = "feat/rehighlight-on-redraw"
-features = ["image", "svg", "advanced", "tokio", "lazy"]
+default-features = false
+features = ["wgpu", "tiny-skia", "web-colors", "auto-detect-theme", "image", "svg", "advanced", "tokio", "lazy"]
 
 [build-dependencies]
 iced_fontello = "0.13.2"

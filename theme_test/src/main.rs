@@ -1,6 +1,7 @@
 use iced::widget::{
     button, center, checkbox, column, container, horizontal_rule, pane_grid,
-    pick_list, radio, row, slider, text_editor, text_input, toggler,
+    pick_list, progress_bar, radio, row, slider, text_editor, text_input,
+    toggler,
 };
 use iced::{Element, Length};
 use iced_anim::{Animated, Animation, Event};
@@ -238,6 +239,7 @@ impl State {
                                 .height(Length::Shrink),
                             slider(0.0..=100.0, self.value, Message::Slider)
                                 .step(0.1),
+                            progress_bar(0.0..=100.0, self.value),
                             horizontal_rule(1),
                             // Toggler
                             toggler(self.is_checked)

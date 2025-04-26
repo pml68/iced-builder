@@ -9,6 +9,8 @@ pub mod combo_box;
 pub mod container;
 #[cfg(feature = "dialog")]
 pub mod dialog;
+#[cfg(feature = "image")]
+pub mod image;
 #[cfg(feature = "markdown")]
 pub mod markdown;
 pub mod menu;

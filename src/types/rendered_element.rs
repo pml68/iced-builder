@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use iced::advanced::widget::Id;
-use iced::{Element, Length, widget};
+use iced::{Element, widget};
 use serde::{Deserialize, Serialize};
 
 use crate::Error;
@@ -169,34 +169,6 @@ impl RenderedElement {
             .entry(option)
             .and_modify(|opt| *opt = Some(value));
         self
-    }
-
-    pub fn text_view<'a>(self) -> Element<'a, Message> {
-        let mut children = widget::column![];
-
-        if let Some(els) = self.child_elements.clone() {
-            for el in els {
-                children = children.push(el.clone().text_view());
-            }
-        }
-        iced_drop::droppable(
-            widget::container(
-                widget::column![
-                    widget::text(self.name.clone().to_string()),
-                    children
-                ]
-                .width(Length::Fill)
-                .spacing(10),
-            )
-            .padding(10)
-            .style(widget::container::bordered_box),
-        )
-        .id(self.id().clone())
-        .drag_hide(true)
-        .on_drop(move |point, rect| {
-            Message::MoveElement(self.clone(), point, rect)
-        })
-        .into()
     }
 
     pub fn codegen(&self) -> (String, String) {

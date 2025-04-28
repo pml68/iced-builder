@@ -1,8 +1,8 @@
-use iced::{Element, Task};
+use iced::Task;
 use iced_dialog::button;
 
 use crate::Message;
-use crate::types::{DialogAction, DialogButtons};
+use crate::types::{DialogAction, DialogButtons, Element};
 
 pub const UNSAVED_CHANGES_TITLE: &str = "Unsaved changes";
 pub const WARNING_TITLE: &str = "Heads up!";

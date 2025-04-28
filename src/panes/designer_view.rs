@@ -1,7 +1,8 @@
 use iced::widget::{
     button, center, container, pane_grid, responsive, row, text, themer,
 };
-use iced::{Alignment, Element, Length};
+use iced::{Alignment, Length};
+use material_theme::Theme;
 
 use super::style;
 use crate::icon;
@@ -11,8 +12,8 @@ pub fn view<'a>(
     element_tree: Option<&'a RenderedElement>,
     designer_theme: iced::Theme,
     is_focused: bool,
-) -> pane_grid::Content<'a, Message> {
-    let el_tree: Element<'a, Message> = match element_tree {
+) -> pane_grid::Content<'a, Message, Theme> {
+    let el_tree: iced::Element<'a, Message> = match element_tree {
         Some(tree) => responsive(|size| {
             center(
                 container(tree.clone())

@@ -18,7 +18,7 @@ use material_theme::text::surface_variant;
 
 fn main() -> iced::Result {
     iced::application(State::default, State::update, State::view)
-        .theme(|state| *state.theme.value())
+        .theme(|state| state.theme.value().clone())
         .run()
 }
 

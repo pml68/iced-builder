@@ -1,9 +1,10 @@
 use iced::widget::{Column, column, container, pane_grid, text};
-use iced::{Alignment, Element, Length};
+use iced::{Alignment, Length};
 use iced_drop::droppable;
+use material_theme::Theme;
 
 use super::style;
-use crate::types::{ElementName, Message};
+use crate::types::{Element, ElementName, Message};
 
 fn items_list_view<'a>() -> Element<'a, Message> {
     let mut column = Column::new()
@@ -25,7 +26,7 @@ fn items_list_view<'a>() -> Element<'a, Message> {
         .into()
 }
 
-pub fn view<'a>(is_focused: bool) -> pane_grid::Content<'a, Message> {
+pub fn view<'a>(is_focused: bool) -> pane_grid::Content<'a, Message, Theme> {
     let items_list = items_list_view();
     let content = column![items_list]
         .align_x(Alignment::Center)

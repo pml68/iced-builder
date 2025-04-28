@@ -1,3 +1,4 @@
+mod appearance;
 mod config;
 mod dialogs;
 mod environment;
@@ -6,7 +7,6 @@ mod error;
 mod icon;
 mod options;
 mod panes;
-mod theme;
 mod types;
 mod values;
 mod widget;
@@ -24,13 +24,15 @@ use iced::advanced::widget::Id;
 use iced::widget::{
     Column, container, pane_grid, pick_list, row, text, text_editor,
 };
-use iced::{Alignment, Element, Length, Task, Theme, clipboard, keyboard};
+use iced::{Alignment, Length, Task, clipboard, keyboard};
 use iced_anim::transition::Easing;
 use iced_anim::{Animated, Animation};
 use iced_dialog::dialog::Dialog;
+use material_theme::Theme;
 use panes::{code_view, designer_view, element_list};
 use types::{
-    Action, DesignerPane, DialogAction, DialogButtons, Message, Project,
+    Action, DesignerPane, DialogAction, DialogButtons, Element, Message,
+    Project,
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -148,11 +150,10 @@ impl IcedBuilder {
                     self.config = Arc::new(config);
                     self.theme.update(self.config.selected_theme().into());
 
-                    return if let Some(path) = self.config.last_project.clone()
-                    {
+                    return if let Some(path) = self.config.last_project() {
                         if path.exists() && path.is_file() {
                             Task::perform(
-                                Project::from_path(path),
+                                Project::from_path(path.to_owned()),
                                 Message::FileOpened,
                             )
                         } else {
@@ -394,7 +395,7 @@ impl IcedBuilder {
 
     fn view(&self) -> Element<'_, Message> {
         let header = row![pick_list(
-            self.config.theme.all.clone(),
+            self.config.themes(),
             Some(self.theme.target()),
             |theme| Message::SwitchTheme(theme.into())
         )]
@@ -442,13 +443,7 @@ impl IcedBuilder {
                 DialogButtons::OkCancel => vec![ok_button(), cancel_button()],
             },
         )
-        .title(self.dialog_title)
-        .container_style(|theme| container::Style {
-            background: Some(
-                theme.extended_palette().background.strong.color.into(),
-            ),
-            ..Default::default()
-        });
+        .title(self.dialog_title);
 
         Animation::new(&self.theme, content)
             .on_update(Message::SwitchTheme)

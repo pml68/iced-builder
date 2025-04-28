@@ -258,7 +258,7 @@ impl<Message> ApplyOptions for Row<'_, Message> {
     }
 }
 
-impl<Handle> ApplyOptions for Image<Handle> {
+impl<Handle> ApplyOptions for Image<'_, Handle> {
     fn apply_options(self, options: BTreeMap<String, Option<String>>) -> Self {
         let mut image = self;
 

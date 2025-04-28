@@ -232,14 +232,15 @@ dependencies = [
 
 [[package]]
 name = "async-executor"
-version = "1.13.1"
+version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30ca9a001c1e8ba5149f91a74362376cc6bc5b919d92d988668657bd570bdcec"
+checksum = "bb812ffb58524bdd10860d7d974e2f01cc0950c2438a74ee5ec2e2280c6c4ffa"
 dependencies = [
  "async-task",
  "concurrent-queue",
  "fastrand",
  "futures-lite",
+ "pin-project-lite",
  "slab",
 ]
 
@@ -1941,7 +1942,7 @@ dependencies = [
 [[package]]
 name = "iced"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#64d4a365f3eb25f716c0632316d46d82bfe818c6"
+source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#11c915418f2ad45922d3ca9c113e8c2352497067"
 dependencies = [
  "iced_core",
  "iced_debug",
@@ -1976,7 +1977,7 @@ dependencies = [
 [[package]]
 name = "iced_beacon"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#64d4a365f3eb25f716c0632316d46d82bfe818c6"
+source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#11c915418f2ad45922d3ca9c113e8c2352497067"
 dependencies = [
  "bincode",
  "futures",
@@ -2017,7 +2018,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#64d4a365f3eb25f716c0632316d46d82bfe818c6"
+source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#11c915418f2ad45922d3ca9c113e8c2352497067"
 dependencies = [
  "bitflags 2.9.0",
  "bytes",
@@ -2046,7 +2047,7 @@ dependencies = [
 [[package]]
 name = "iced_debug"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#64d4a365f3eb25f716c0632316d46d82bfe818c6"
+source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#11c915418f2ad45922d3ca9c113e8c2352497067"
 dependencies = [
  "iced_beacon",
  "iced_core",
@@ -2056,7 +2057,7 @@ dependencies = [
 [[package]]
 name = "iced_devtools"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#64d4a365f3eb25f716c0632316d46d82bfe818c6"
+source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#11c915418f2ad45922d3ca9c113e8c2352497067"
 dependencies = [
  "iced_debug",
  "iced_program",
@@ -2094,7 +2095,7 @@ dependencies = [
 [[package]]
 name = "iced_futures"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#64d4a365f3eb25f716c0632316d46d82bfe818c6"
+source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#11c915418f2ad45922d3ca9c113e8c2352497067"
 dependencies = [
  "futures",
  "iced_core",
@@ -2108,7 +2109,7 @@ dependencies = [
 [[package]]
 name = "iced_graphics"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#64d4a365f3eb25f716c0632316d46d82bfe818c6"
+source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#11c915418f2ad45922d3ca9c113e8c2352497067"
 dependencies = [
  "bitflags 2.9.0",
  "bytemuck",
@@ -2129,7 +2130,7 @@ dependencies = [
 [[package]]
 name = "iced_program"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#64d4a365f3eb25f716c0632316d46d82bfe818c6"
+source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#11c915418f2ad45922d3ca9c113e8c2352497067"
 dependencies = [
  "iced_graphics",
  "iced_runtime",
@@ -2138,7 +2139,7 @@ dependencies = [
 [[package]]
 name = "iced_renderer"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#64d4a365f3eb25f716c0632316d46d82bfe818c6"
+source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#11c915418f2ad45922d3ca9c113e8c2352497067"
 dependencies = [
  "iced_graphics",
  "iced_tiny_skia",
@@ -2150,7 +2151,7 @@ dependencies = [
 [[package]]
 name = "iced_runtime"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#64d4a365f3eb25f716c0632316d46d82bfe818c6"
+source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#11c915418f2ad45922d3ca9c113e8c2352497067"
 dependencies = [
  "bytes",
  "iced_core",
@@ -2163,7 +2164,7 @@ dependencies = [
 [[package]]
 name = "iced_tiny_skia"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#64d4a365f3eb25f716c0632316d46d82bfe818c6"
+source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#11c915418f2ad45922d3ca9c113e8c2352497067"
 dependencies = [
  "bytemuck",
  "cosmic-text",
@@ -2180,7 +2181,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#64d4a365f3eb25f716c0632316d46d82bfe818c6"
+source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#11c915418f2ad45922d3ca9c113e8c2352497067"
 dependencies = [
  "bitflags 2.9.0",
  "bytemuck",
@@ -2201,7 +2202,7 @@ dependencies = [
 [[package]]
 name = "iced_widget"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#64d4a365f3eb25f716c0632316d46d82bfe818c6"
+source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#11c915418f2ad45922d3ca9c113e8c2352497067"
 dependencies = [
  "iced_renderer",
  "iced_runtime",
@@ -2219,7 +2220,7 @@ dependencies = [
 [[package]]
 name = "iced_winit"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#64d4a365f3eb25f716c0632316d46d82bfe818c6"
+source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#11c915418f2ad45922d3ca9c113e8c2352497067"
 dependencies = [
  "iced_debug",
  "iced_program",
@@ -2554,9 +2555,9 @@ dependencies = [
 
 [[package]]
 name = "kurbo"
-version = "0.11.1"
+version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89234b2cc610a7dd927ebde6b41dd1a5d4214cffaef4cf1fb2195d592f92518f"
+checksum = "1077d333efea6170d9ccb96d3c3026f300ca0773da4938cc4c811daa6df68b0c"
 dependencies = [
  "arrayvec",
  "smallvec",
@@ -4600,7 +4601,7 @@ version = "0.15.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68c7541fff44b35860c1a7a47a7cadf3e4a304c457b58f9870d9706ece028afc"
 dependencies = [
- "kurbo 0.11.1",
+ "kurbo 0.11.2",
  "siphasher",
 ]
 
@@ -4735,16 +4736,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755"
 dependencies = [
  "winapi-util",
-]
-
-[[package]]
-name = "theme_test"
-version = "0.0.1"
-dependencies = [
- "iced",
- "iced_anim",
- "iced_dialog",
- "material_theme",
 ]
 
 [[package]]
@@ -4954,9 +4945,9 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.8.21"
+version = "0.8.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "900f6c86a685850b1bc9f6223b20125115ee3f31e01207d81655bbcc0aea9231"
+checksum = "05ae329d1f08c4d17a59bed7ff5b5a769d062e64a62d34a3261b219e62cd5aae"
 dependencies = [
  "serde",
  "serde_spanned",
@@ -4975,9 +4966,9 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.22.25"
+version = "0.22.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10558ed0bd2a1562e630926a2d1f0b98c827da99fabd3fe20920a59642504485"
+checksum = "310068873db2c5b3e7659d2cc35d21855dbafa50d1ce336397c666e3cb08137e"
 dependencies = [
  "indexmap",
  "serde",
@@ -4989,9 +4980,9 @@ dependencies = [
 
 [[package]]
 name = "toml_write"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28391a4201ba7eb1984cfeb6862c0b3ea2cfe23332298967c749dddc0d6cd976"
+checksum = "bfb942dfe1d8e29a7ee7fcbde5bd2b9a25fb89aa70caea2eba3bee836ff41076"
 
 [[package]]
 name = "tower"
@@ -5210,7 +5201,7 @@ dependencies = [
  "flate2",
  "fontdb 0.18.0",
  "imagesize",
- "kurbo 0.11.1",
+ "kurbo 0.11.2",
  "log",
  "pico-args",
  "roxmltree",
@@ -5414,9 +5405,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-backend"
-version = "0.3.8"
+version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7208998eaa3870dad37ec8836979581506e0c5c64c20c9e79e9d2a10d6f47bf"
+checksum = "c2bea670be0e24795f39416e5461ccef0185b47df2749ed2b226b8a7557ac871"
 dependencies = [
  "cc",
  "downcast-rs",
@@ -5428,9 +5419,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-client"
-version = "0.31.8"
+version = "0.31.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2120de3d33638aaef5b9f4472bff75f07c56379cf76ea320bd3a3d65ecaf73f"
+checksum = "5029b0ff4f7be961c326169ee8e247d534d8507dbe390cac6aa3d2cc7c268825"
 dependencies = [
  "bitflags 2.9.0",
  "rustix 0.38.44",
@@ -5451,9 +5442,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-cursor"
-version = "0.31.8"
+version = "0.31.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a93029cbb6650748881a00e4922b076092a6a08c11e7fbdb923f064b23968c5d"
+checksum = "28d6ec438d7c38bde05a10e80c3e3a1212d85f941be9fc9f80c86e6f5f498252"
 dependencies = [
  "rustix 0.38.44",
  "wayland-client",
@@ -5462,9 +5453,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-protocols"
-version = "0.32.6"
+version = "0.32.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0781cf46869b37e36928f7b432273c0995aa8aed9552c556fb18754420541efc"
+checksum = "ba8de1f9dda5e589d08848af3ad4cd694bbfd059c3eb3c6d89c7120e8c0efa71"
 dependencies = [
  "bitflags 2.9.0",
  "wayland-backend",
@@ -5474,9 +5465,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-protocols-plasma"
-version = "0.3.6"
+version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ccaacc76703fefd6763022ac565b590fcade92202492381c95b2edfdf7d46b3"
+checksum = "87e10c27e3290310d7e0d3221bc4e945d9b296b249577af2eb595726b546a3f8"
 dependencies = [
  "bitflags 2.9.0",
  "wayland-backend",
@@ -5487,9 +5478,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-protocols-wlr"
-version = "0.3.6"
+version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "248a02e6f595aad796561fa82d25601bd2c8c3b145b1c7453fc8f94c1a58f8b2"
+checksum = "9f3334ee752fbe3c228adfda339a9e7a03e0ba65a78806d8d464b69928cf4ef2"
 dependencies = [
  "bitflags 2.9.0",
  "wayland-backend",

@@ -35,14 +35,14 @@ thiserror = "2.0.12"
 dirs-next = "2.0.0"
 
 [workspace.dependencies]
+iced_widget = "0.14.0-dev"
 iced_anim = { version = "0.2.1", features = ["derive"] }
 iced_dialog = { git = "https://github.com/pml68/iced_dialog", branch = "iced/personal" }
 serde = { version = "1.0.219", features = ["derive"] }
 toml = "0.8.21"
 
 [workspace.dependencies.iced]
-git = "https://github.com/pml68/iced"
-branch = "feat/rehighlight-on-redraw"
+version = "0.14.0-dev"
 default-features = false
 features = ["wgpu", "tiny-skia", "web-colors", "auto-detect-theme", "advanced", "tokio", "image", "svg", "lazy"]
 
@@ -75,7 +75,7 @@ name = "iced-builder"
 path = "src/main.rs"
 
 [workspace]
-members = ["crates/*", "theme_test"]
+members = ["crates/*"]
 default-members = ["crates/material_theme", "."]
 
 [lints.rust]
@@ -100,5 +100,6 @@ useless_conversion = "deny"
 clone_on_copy = "deny"
 
 [patch.crates-io]
+iced = { git = "https://github.com/pml68/iced", branch = "feat/rehighlight-on-redraw" }
 iced_anim = { git = "https://github.com/pml68/iced_anim" }
 iced_widget = { git = "https://github.com/pml68/iced", branch = "feat/rehighlight-on-redraw" }

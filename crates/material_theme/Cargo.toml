@@ -29,7 +29,6 @@ svg = ["iced_widget/svg"]
 qr_code = ["iced_widget/qr_code"]
 
 [dependencies]
-iced_widget = "0.14.0-dev"
 dark-light = "2.0.0"
 
 serde.workspace = true
@@ -37,6 +36,11 @@ serde.optional = true
 
 iced_dialog.workspace = true
 iced_dialog.optional = true
+
+[dependencies.iced_widget]
+version = "0.14.0-dev"
+git = "https://github.com/pml68/iced"
+branch = "feat/rehighlight-on-redraw"
 
 [dependencies.iced_anim]
 workspace = true

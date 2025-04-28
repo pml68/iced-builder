@@ -1,8 +1,10 @@
 // Generated automatically by iced_fontello at build time.
 // Do not edit manually. Source: ../fonts/icons.toml
 // 915ea6b0646871c0f04350f201f27f28881b61f3bd6ef292a415d67a211739c1
-use iced::widget::{text, Text};
 use iced::Font;
+use iced::widget::text;
+
+use crate::widget::Text;
 
 pub const FONT: &[u8] = include_bytes!("../fonts/icons.ttf");
 

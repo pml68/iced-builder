@@ -17,7 +17,7 @@ impl Catalog for Theme {
 }
 
 pub fn default(theme: &Theme) -> Style {
-    let colors = theme.colorscheme.surface;
+    let colors = theme.colors().surface;
 
     Style {
         border: border::rounded(4),

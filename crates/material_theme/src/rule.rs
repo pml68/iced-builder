@@ -17,7 +17,7 @@ impl Catalog for Theme {
 
 pub fn inset(theme: &Theme) -> Style {
     Style {
-        color: theme.colorscheme.outline.variant,
+        color: theme.colors().outline.variant,
         fill_mode: FillMode::Padded(8),
         width: 1,
         radius: Radius::default(),
@@ -25,7 +25,7 @@ pub fn inset(theme: &Theme) -> Style {
 }
 pub fn full_width(theme: &Theme) -> Style {
     Style {
-        color: theme.colorscheme.outline.variant,
+        color: theme.colors().outline.variant,
         fill_mode: FillMode::Full,
         width: 1,
         radius: Radius::default(),

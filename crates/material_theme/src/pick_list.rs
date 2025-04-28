@@ -20,7 +20,7 @@ impl Catalog for Theme {
 }
 
 pub fn default(theme: &Theme, status: Status) -> Style {
-    let surface = theme.colorscheme.surface;
+    let surface = theme.colors().surface;
 
     let active = Style {
         text_color: surface.on_surface,

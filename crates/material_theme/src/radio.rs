@@ -2,7 +2,7 @@ use iced_widget::core::{Background, Color};
 use iced_widget::radio::{Catalog, Status, Style, StyleFn};
 
 use super::Theme;
-use crate::utils::{DISABLED_TEXT_OPACITY, HOVERED_LAYER_OPACITY, mix};
+use crate::utils::{HOVERED_LAYER_OPACITY, disabled_text, mix};
 
 impl Catalog for Theme {
     type Class<'a> = StyleFn<'a, Self>;
@@ -17,8 +17,8 @@ impl Catalog for Theme {
 }
 
 pub fn default(theme: &Theme, status: Status) -> Style {
-    let surface = theme.colorscheme.surface;
-    let primary = theme.colorscheme.primary;
+    let surface = theme.colors().surface;
+    let primary = theme.colors().primary;
 
     let active = Style {
         background: Color::TRANSPARENT.into(),
@@ -46,10 +46,7 @@ pub fn default(theme: &Theme, status: Status) -> Style {
             border_color: if is_selected {
                 mix(primary.color, surface.on_surface, HOVERED_LAYER_OPACITY)
             } else {
-                Color {
-                    a: DISABLED_TEXT_OPACITY,
-                    ..surface.on_surface
-                }
+                disabled_text(surface.on_surface)
             },
             background: Background::Color(if is_selected {
                 Color {

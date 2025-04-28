@@ -2,6 +2,7 @@ use std::sync::LazyLock;
 
 use iced_widget::core::Color;
 use iced_widget::core::theme::{Base, Style};
+use utils::{lightness, mix};
 
 pub mod button;
 pub mod checkbox;
@@ -45,31 +46,47 @@ macro_rules! from_argb {
     }};
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[allow(clippy::large_enum_variant)]
+#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Theme {
-    pub name: &'static str,
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub colorscheme: ColorScheme,
+pub enum Theme {
+    Dark,
+    Light,
+    Custom(Custom),
 }
 
 impl Theme {
-    pub const ALL: &'static [Self] = &[Self::DARK, Self::LIGHT];
-
-    pub const DARK: Self = Self {
-        name: "Dark",
-        colorscheme: ColorScheme::DARK,
-    };
-
-    pub const LIGHT: Self = Self {
-        name: "Light",
-        colorscheme: ColorScheme::LIGHT,
-    };
+    pub const ALL: &'static [Self] = &[Self::Dark, Self::Light];
 
     pub fn new(name: impl Into<String>, colorscheme: ColorScheme) -> Self {
-        Self {
-            name: Box::leak(name.into().into_boxed_str()),
+        Self::Custom(Custom {
+            name: name.into(),
             colorscheme,
+            is_dark: lightness(colorscheme.surface.color) <= 0.5,
+        })
+    }
+
+    pub fn name(&self) -> &str {
+        match self {
+            Self::Dark => "Dark",
+            Self::Light => "Light",
+            Self::Custom(custom) => &custom.name,
+        }
+    }
+
+    pub fn colors(&self) -> ColorScheme {
+        match self {
+            Self::Dark => ColorScheme::DARK,
+            Self::Light => ColorScheme::LIGHT,
+            Self::Custom(custom) => custom.colorscheme,
+        }
+    }
+
+    pub fn is_dark(&self) -> bool {
+        match self {
+            Self::Dark => true,
+            Self::Light => false,
+            Self::Custom(custom) => custom.is_dark,
         }
     }
 }
@@ -80,43 +97,39 @@ impl Default for Theme {
             match dark_light::detect().unwrap_or(dark_light::Mode::Unspecified)
             {
                 dark_light::Mode::Dark | dark_light::Mode::Unspecified => {
-                    Theme::DARK
+                    Theme::Dark
                 }
-                dark_light::Mode::Light => Theme::LIGHT,
+                dark_light::Mode::Light => Theme::Light,
             }
         });
 
-        *DEFAULT
+        DEFAULT.clone()
     }
 }
 
 impl std::fmt::Display for Theme {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.name)
+        write!(f, "{}", self.name())
     }
 }
 
 impl Base for Theme {
     fn base(&self) -> Style {
         Style {
-            background_color: self.colorscheme.surface.color,
-            text_color: self.colorscheme.surface.on_surface,
+            background_color: self.colors().surface.color,
+            text_color: self.colors().surface.on_surface,
         }
     }
 
     fn palette(&self) -> Option<iced_widget::theme::Palette> {
-        let colors = self.colorscheme;
+        let colors = self.colors();
 
         Some(iced_widget::theme::Palette {
             background: colors.surface.color,
             text: colors.surface.on_surface,
             primary: colors.primary.color,
             success: colors.primary.primary_container,
-            warning: utils::mix(
-                from_argb!(0xffffff00),
-                colors.primary.color,
-                0.25,
-            ),
+            warning: mix(from_argb!(0xffffff00), colors.primary.color, 0.25),
             danger: colors.error.color,
         })
     }
@@ -129,18 +142,44 @@ impl iced_anim::Animate for Theme {
     }
 
     fn update(&mut self, components: &mut impl Iterator<Item = f32>) {
-        self.colorscheme.update(components);
-        self.name = "Animating Theme";
+        let mut colorscheme = self.colors();
+        colorscheme.update(components);
+        *self = Self::new("Animating Theme", colorscheme);
     }
 
     fn distance_to(&self, end: &Self) -> Vec<f32> {
-        self.colorscheme.distance_to(&end.colorscheme)
+        self.colors().distance_to(&end.colors())
     }
 
     fn lerp(&mut self, start: &Self, end: &Self, progress: f32) {
-        self.colorscheme
-            .lerp(&start.colorscheme, &end.colorscheme, progress);
-        self.name = "Animating Theme";
+        let mut colorscheme = self.colors();
+        colorscheme.lerp(&start.colors(), &end.colors(), progress);
+        *self = Self::new("Animating Theme", colorscheme);
+    }
+}
+
+#[derive(Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct Custom {
+    pub name: String,
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub colorscheme: ColorScheme,
+    pub is_dark: bool,
+}
+
+impl Clone for Custom {
+    fn clone(&self) -> Self {
+        Self {
+            name: self.name.clone(),
+            colorscheme: self.colorscheme,
+            is_dark: self.is_dark,
+        }
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        self.name.clone_from(&source.name);
+        self.colorscheme = source.colorscheme;
+        self.is_dark = source.is_dark;
     }
 }
 

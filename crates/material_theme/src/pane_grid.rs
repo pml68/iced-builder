@@ -20,18 +20,18 @@ pub fn default(theme: &Theme) -> Style {
     Style {
         hovered_region: Highlight {
             background: Background::Color(mix(
-                theme.colorscheme.tertiary.tertiary_container,
-                theme.colorscheme.surface.on_surface,
+                theme.colors().tertiary.tertiary_container,
+                theme.colors().surface.on_surface,
                 HOVERED_LAYER_OPACITY,
             )),
             border: border::rounded(12),
         },
         picked_split: Line {
-            color: theme.colorscheme.outline.variant,
+            color: theme.colors().outline.variant,
             width: 2.0,
         },
         hovered_split: Line {
-            color: theme.colorscheme.surface.on_surface,
+            color: theme.colors().surface.on_surface,
             width: 6.0,
         },
     }

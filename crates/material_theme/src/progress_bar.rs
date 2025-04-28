@@ -18,9 +18,9 @@ impl Catalog for Theme {
 pub fn default(theme: &Theme) -> Style {
     Style {
         background: Background::Color(
-            theme.colorscheme.secondary.secondary_container,
+            theme.colors().secondary.secondary_container,
         ),
-        bar: Background::Color(theme.colorscheme.primary.color),
+        bar: Background::Color(theme.colors().primary.color),
         border: border::rounded(400),
     }
 }

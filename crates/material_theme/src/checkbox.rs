@@ -2,7 +2,7 @@ use iced_widget::checkbox::{Catalog, Status, Style, StyleFn};
 use iced_widget::core::{Background, Border, Color, border};
 
 use super::Theme;
-use crate::utils::{DISABLED_CONTAINER_OPACITY, HOVERED_LAYER_OPACITY, mix};
+use crate::utils::{HOVERED_LAYER_OPACITY, disabled_text, mix};
 
 impl Catalog for Theme {
     type Class<'a> = StyleFn<'a, Self>;
@@ -45,8 +45,8 @@ pub fn styled(
 }
 
 pub fn default(theme: &Theme, status: Status) -> Style {
-    let surface = theme.colorscheme.surface;
-    let primary = theme.colorscheme.primary;
+    let surface = theme.colors().surface;
+    let primary = theme.colors().primary;
 
     match status {
         Status::Active { is_checked } => styled(
@@ -69,16 +69,10 @@ pub fn default(theme: &Theme, status: Status) -> Style {
             is_checked,
         ),
         Status::Disabled { is_checked } => styled(
-            Color {
-                a: DISABLED_CONTAINER_OPACITY,
-                ..surface.on_surface
-            },
+            disabled_text(surface.on_surface),
             None,
             surface.color,
-            Color {
-                a: DISABLED_CONTAINER_OPACITY,
-                ..surface.on_surface
-            },
+            disabled_text(surface.on_surface),
             Some(surface.on_surface),
             is_checked,
         ),
@@ -86,8 +80,8 @@ pub fn default(theme: &Theme, status: Status) -> Style {
 }
 
 pub fn error(theme: &Theme, status: Status) -> Style {
-    let surface = theme.colorscheme.surface;
-    let error = theme.colorscheme.error;
+    let surface = theme.colors().surface;
+    let error = theme.colors().error;
 
     match status {
         Status::Active { is_checked } => styled(
@@ -110,16 +104,10 @@ pub fn error(theme: &Theme, status: Status) -> Style {
             is_checked,
         ),
         Status::Disabled { is_checked } => styled(
-            Color {
-                a: DISABLED_CONTAINER_OPACITY,
-                ..surface.on_surface
-            },
+            disabled_text(surface.on_surface),
             None,
             surface.color,
-            Color {
-                a: DISABLED_CONTAINER_OPACITY,
-                ..surface.on_surface
-            },
+            disabled_text(surface.on_surface),
             Some(surface.on_surface),
             is_checked,
         ),

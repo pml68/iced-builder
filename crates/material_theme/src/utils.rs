@@ -30,6 +30,20 @@ pub fn shadow_from_elevation(elevation: f32, color: Color) -> Shadow {
     }
 }
 
+pub fn disabled_text(color: Color) -> Color {
+    Color {
+        a: DISABLED_TEXT_OPACITY,
+        ..color
+    }
+}
+
+pub fn disabled_container(color: Color) -> Color {
+    Color {
+        a: DISABLED_CONTAINER_OPACITY,
+        ..color
+    }
+}
+
 pub fn parse_argb(s: &str) -> Option<Color> {
     let hex = s.strip_prefix('#').unwrap_or(s);
 
@@ -86,6 +100,10 @@ pub fn color_to_argb(color: Color) -> String {
     let _ = write!(&mut hex, "{b:02X}");
 
     hex
+}
+
+pub const fn lightness(color: Color) -> f32 {
+    color.r * 0.299 + color.g * 0.587 + color.b * 0.114
 }
 
 pub fn mix(color1: Color, color2: Color, p2: f32) -> Color {

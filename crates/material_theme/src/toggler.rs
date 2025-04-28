@@ -3,8 +3,7 @@ use iced_widget::toggler::{Catalog, Status, Style, StyleFn};
 
 use super::Theme;
 use crate::utils::{
-    DISABLED_CONTAINER_OPACITY, DISABLED_TEXT_OPACITY, HOVERED_LAYER_OPACITY,
-    mix,
+    HOVERED_LAYER_OPACITY, disabled_container, disabled_text, mix,
 };
 
 impl Catalog for Theme {
@@ -35,8 +34,8 @@ pub fn styled(
 }
 
 pub fn default(theme: &Theme, status: Status) -> Style {
-    let surface = theme.colorscheme.surface;
-    let primary = theme.colorscheme.primary;
+    let surface = theme.colors().surface;
+    let primary = theme.colors().primary;
 
     match status {
         Status::Active { is_toggled } => {
@@ -45,8 +44,8 @@ pub fn default(theme: &Theme, status: Status) -> Style {
             } else {
                 styled(
                     surface.surface_container.highest,
-                    theme.colorscheme.outline.color,
-                    Some(theme.colorscheme.outline.color),
+                    theme.colors().outline.color,
+                    Some(theme.colors().outline.color),
                 )
             }
         }
@@ -61,23 +60,14 @@ pub fn default(theme: &Theme, status: Status) -> Style {
                         HOVERED_LAYER_OPACITY,
                     ),
                     surface.on_surface_variant,
-                    Some(theme.colorscheme.outline.color),
+                    Some(theme.colors().outline.color),
                 )
             }
         }
         Status::Disabled => styled(
-            Color {
-                a: DISABLED_CONTAINER_OPACITY,
-                ..surface.surface_container.highest
-            },
-            Color {
-                a: DISABLED_TEXT_OPACITY,
-                ..surface.on_surface
-            },
-            Some(Color {
-                a: DISABLED_TEXT_OPACITY,
-                ..surface.on_surface
-            }),
+            disabled_container(surface.surface_container.highest),
+            disabled_text(surface.on_surface),
+            Some(disabled_text(surface.on_surface)),
         ),
     }
 }

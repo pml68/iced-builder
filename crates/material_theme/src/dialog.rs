@@ -25,7 +25,7 @@ impl Catalog for Theme {
 }
 
 pub fn default_container(theme: &Theme) -> container::Style {
-    let colors = theme.colorscheme.surface;
+    let colors = theme.colors().surface;
     container::Style {
         background: Some(Background::Color(colors.surface_container.high)),
         text_color: Some(colors.on_surface_variant),
@@ -36,6 +36,6 @@ pub fn default_container(theme: &Theme) -> container::Style {
 
 pub fn default(theme: &Theme) -> Style {
     Style {
-        backdrop_color: theme.colorscheme.scrim,
+        backdrop_color: theme.colors().scrim,
     }
 }

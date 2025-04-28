@@ -1,4 +1,4 @@
-use iced_widget::core::{Border, Color, border};
+use iced_widget::core::{Background, Border, border};
 use iced_widget::scrollable::{
     Catalog, Rail, Scroller, Status, Style, StyleFn,
 };
@@ -7,8 +7,8 @@ use super::Theme;
 use super::container::surface_container;
 use super::utils::mix;
 use crate::utils::{
-    DISABLED_CONTAINER_OPACITY, DISABLED_TEXT_OPACITY, HOVERED_LAYER_OPACITY,
-    PRESSED_LAYER_OPACITY,
+    HOVERED_LAYER_OPACITY, PRESSED_LAYER_OPACITY, disabled_container,
+    disabled_text,
 };
 
 impl Catalog for Theme {
@@ -24,30 +24,23 @@ impl Catalog for Theme {
 }
 
 pub fn default(theme: &Theme, status: Status) -> Style {
-    let colors = theme.colorscheme.surface;
+    let surface = theme.colors().surface;
 
     let active = Rail {
         background: None,
         scroller: Scroller {
-            color: colors.on_surface,
+            color: surface.on_surface,
             border: border::rounded(400),
         },
         border: Border::default(),
     };
 
     let disabled = Rail {
-        background: Some(
-            Color {
-                a: DISABLED_CONTAINER_OPACITY,
-                ..colors.on_surface
-            }
-            .into(),
-        ),
+        background: Some(Background::Color(disabled_container(
+            surface.on_surface,
+        ))),
         scroller: Scroller {
-            color: Color {
-                a: DISABLED_TEXT_OPACITY,
-                ..colors.on_surface
-            },
+            color: disabled_text(surface.on_surface),
             border: border::rounded(400),
         },
         ..active
@@ -86,8 +79,8 @@ pub fn default(theme: &Theme, status: Status) -> Style {
             let hovered_rail = Rail {
                 scroller: Scroller {
                     color: mix(
-                        colors.on_surface,
-                        colors.color,
+                        surface.on_surface,
+                        surface.color,
                         HOVERED_LAYER_OPACITY,
                     ),
                     border: border::rounded(400),
@@ -122,8 +115,8 @@ pub fn default(theme: &Theme, status: Status) -> Style {
             let dragged_rail = Rail {
                 scroller: Scroller {
                     color: mix(
-                        colors.on_surface,
-                        colors.color,
+                        surface.on_surface,
+                        surface.color,
                         PRESSED_LAYER_OPACITY,
                     ),
                     border: border::rounded(400),

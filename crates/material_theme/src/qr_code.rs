@@ -15,7 +15,7 @@ impl Catalog for Theme {
 }
 
 pub fn default(theme: &Theme) -> Style {
-    let surface = theme.colorscheme.surface;
+    let surface = theme.colors().surface;
 
     Style {
         cell: surface.on_surface,

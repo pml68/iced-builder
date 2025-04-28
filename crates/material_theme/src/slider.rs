@@ -41,9 +41,9 @@ pub fn styled(left: Color, right: Color, handle_radius: f32) -> Style {
 }
 
 pub fn default(theme: &Theme, status: Status) -> Style {
-    let surface = theme.colorscheme.surface;
-    let primary = theme.colorscheme.primary;
-    let secondary = theme.colorscheme.secondary;
+    let surface = theme.colors().surface;
+    let primary = theme.colors().primary;
+    let secondary = theme.colors().secondary;
 
     match status {
         Status::Active => {

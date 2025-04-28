@@ -3,8 +3,8 @@ use iced_widget::core::{Background, Border, Color, border};
 
 use crate::Theme;
 use crate::utils::{
-    DISABLED_CONTAINER_OPACITY, DISABLED_TEXT_OPACITY, HOVERED_LAYER_OPACITY,
-    PRESSED_LAYER_OPACITY, elevation, mix, shadow_from_elevation,
+    HOVERED_LAYER_OPACITY, PRESSED_LAYER_OPACITY, disabled_container,
+    disabled_text, elevation, mix, shadow_from_elevation,
 };
 
 impl Catalog for Theme {
@@ -20,9 +20,8 @@ impl Catalog for Theme {
 }
 
 fn button(
-    foreground: Color,
     background: Color,
-    tone_overlay: Color,
+    foreground: Color,
     disabled: Color,
     shadow_color: Color,
     elevation_level: u8,
@@ -40,7 +39,7 @@ fn button(
         Status::Pressed => Style {
             background: Some(Background::Color(mix(
                 background,
-                tone_overlay,
+                foreground,
                 HOVERED_LAYER_OPACITY,
             ))),
             ..active
@@ -48,25 +47,18 @@ fn button(
         Status::Hovered => Style {
             background: Some(Background::Color(mix(
                 background,
-                tone_overlay,
+                foreground,
                 PRESSED_LAYER_OPACITY,
             ))),
-            text_color: foreground,
-            border: border::rounded(400),
             shadow: shadow_from_elevation(
                 elevation(elevation_level + 1),
                 shadow_color,
             ),
+            ..active
         },
         Status::Disabled => Style {
-            background: Some(Background::Color(Color {
-                a: DISABLED_CONTAINER_OPACITY,
-                ..disabled
-            })),
-            text_color: Color {
-                a: DISABLED_TEXT_OPACITY,
-                ..disabled
-            },
+            background: Some(Background::Color(disabled_container(disabled))),
+            text_color: disabled_text(disabled),
             border: border::rounded(400),
             ..Default::default()
         },
@@ -74,70 +66,46 @@ fn button(
 }
 
 pub fn elevated(theme: &Theme, status: Status) -> Style {
-    let surface_colors = theme.colorscheme.surface;
+    let surface = theme.colors().surface;
 
-    let foreground = theme.colorscheme.primary.color;
-    let background = surface_colors.surface_container.low;
-    let disabled = surface_colors.on_surface;
+    let foreground = theme.colors().primary.color;
+    let background = surface.surface_container.low;
+    let disabled = surface.on_surface;
 
-    let shadow_color = theme.colorscheme.shadow;
+    let shadow_color = theme.colors().shadow;
 
-    button(
-        foreground,
-        background,
-        foreground,
-        disabled,
-        shadow_color,
-        1,
-        status,
-    )
+    button(background, foreground, disabled, shadow_color, 1, status)
 }
 
 pub fn filled(theme: &Theme, status: Status) -> Style {
-    let primary_colors = theme.colorscheme.primary;
+    let primary = theme.colors().primary;
 
-    let foreground = primary_colors.on_primary;
-    let background = primary_colors.color;
-    let disabled = theme.colorscheme.surface.on_surface;
+    let foreground = primary.on_primary;
+    let background = primary.color;
+    let disabled = theme.colors().surface.on_surface;
 
-    let shadow_color = theme.colorscheme.shadow;
+    let shadow_color = theme.colors().shadow;
 
-    button(
-        foreground,
-        background,
-        foreground,
-        disabled,
-        shadow_color,
-        0,
-        status,
-    )
+    button(background, foreground, disabled, shadow_color, 0, status)
 }
 
 pub fn filled_tonal(theme: &Theme, status: Status) -> Style {
-    let secondary_colors = theme.colorscheme.secondary;
+    let secondary = theme.colors().secondary;
 
-    let foreground = secondary_colors.on_secondary_container;
-    let background = secondary_colors.secondary_container;
-    let disabled = theme.colorscheme.surface.on_surface;
-    let shadow_color = theme.colorscheme.shadow;
+    let foreground = secondary.on_secondary_container;
+    let background = secondary.secondary_container;
+    let disabled = theme.colors().surface.on_surface;
+    let shadow_color = theme.colors().shadow;
 
-    button(
-        foreground,
-        background,
-        foreground,
-        disabled,
-        shadow_color,
-        0,
-        status,
-    )
+    button(background, foreground, disabled, shadow_color, 0, status)
 }
 
 pub fn outlined(theme: &Theme, status: Status) -> Style {
-    let foreground = theme.colorscheme.primary.color;
+    let foreground = theme.colors().primary.color;
     let background = Color::TRANSPARENT;
-    let disabled = theme.colorscheme.surface.on_surface;
+    let disabled = theme.colors().surface.on_surface;
 
-    let outline = theme.colorscheme.outline.color;
+    let outline = theme.colors().outline.color;
 
     let border = match status {
         Status::Active | Status::Pressed | Status::Hovered => Border {
@@ -146,17 +114,13 @@ pub fn outlined(theme: &Theme, status: Status) -> Style {
             radius: 400.into(),
         },
         Status::Disabled => Border {
-            color: Color {
-                a: DISABLED_CONTAINER_OPACITY,
-                ..disabled
-            },
+            color: disabled_container(disabled),
             width: 1.0,
             radius: 400.into(),
         },
     };
 
     let style = button(
-        foreground,
         background,
         foreground,
         disabled,
@@ -169,12 +133,11 @@ pub fn outlined(theme: &Theme, status: Status) -> Style {
 }
 
 pub fn text(theme: &Theme, status: Status) -> Style {
-    let foreground = theme.colorscheme.primary.color;
+    let foreground = theme.colors().primary.color;
     let background = Color::TRANSPARENT;
-    let disabled = theme.colorscheme.surface.on_surface;
+    let disabled = theme.colors().surface.on_surface;
 
     let style = button(
-        foreground,
         background,
         foreground,
         disabled,
@@ -185,7 +148,7 @@ pub fn text(theme: &Theme, status: Status) -> Style {
 
     match status {
         Status::Hovered | Status::Pressed => style,
-        _ => Style {
+        Status::Active | Status::Disabled => Style {
             background: None,
             ..style
         },

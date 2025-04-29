@@ -1,7 +1,8 @@
+use std::borrow::Cow;
 use std::sync::LazyLock;
 
-use iced_widget::core::Color;
 use iced_widget::core::theme::{Base, Style};
+use iced_widget::core::{Color, color};
 use utils::{lightness, mix};
 
 pub mod button;
@@ -49,6 +50,7 @@ macro_rules! from_argb {
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(from = "Custom", into = "Custom"))]
 pub enum Theme {
     Dark,
     Light,
@@ -58,27 +60,22 @@ pub enum Theme {
 impl Theme {
     pub const ALL: &'static [Self] = &[Self::Dark, Self::Light];
 
-    pub fn new(name: impl Into<String>, colorscheme: ColorScheme) -> Self {
+    pub fn new(
+        name: impl Into<Cow<'static, str>>,
+        colorscheme: ColorScheme,
+    ) -> Self {
         Self::Custom(Custom {
             name: name.into(),
-            colorscheme,
             is_dark: lightness(colorscheme.surface.color) <= 0.5,
+            colorscheme,
         })
     }
 
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> Cow<'static, str> {
         match self {
-            Self::Dark => "Dark",
-            Self::Light => "Light",
-            Self::Custom(custom) => &custom.name,
-        }
-    }
-
-    pub fn colors(&self) -> ColorScheme {
-        match self {
-            Self::Dark => ColorScheme::DARK,
-            Self::Light => ColorScheme::LIGHT,
-            Self::Custom(custom) => custom.colorscheme,
+            Self::Dark => "Dark".into(),
+            Self::Light => "Light".into(),
+            Self::Custom(custom) => custom.name.clone(),
         }
     }
 
@@ -87,6 +84,14 @@ impl Theme {
             Self::Dark => true,
             Self::Light => false,
             Self::Custom(custom) => custom.is_dark,
+        }
+    }
+
+    pub fn colors(&self) -> ColorScheme {
+        match self {
+            Self::Dark => ColorScheme::DARK,
+            Self::Light => ColorScheme::LIGHT,
+            Self::Custom(custom) => custom.colorscheme,
         }
     }
 }
@@ -144,7 +149,11 @@ impl iced_anim::Animate for Theme {
     fn update(&mut self, components: &mut impl Iterator<Item = f32>) {
         let mut colorscheme = self.colors();
         colorscheme.update(components);
-        *self = Self::new("Animating Theme", colorscheme);
+        *self = Self::Custom(Custom {
+            name: "Animating Theme".into(),
+            is_dark: self.is_dark(),
+            colorscheme,
+        });
     }
 
     fn distance_to(&self, end: &Self) -> Vec<f32> {
@@ -154,32 +163,52 @@ impl iced_anim::Animate for Theme {
     fn lerp(&mut self, start: &Self, end: &Self, progress: f32) {
         let mut colorscheme = self.colors();
         colorscheme.lerp(&start.colors(), &end.colors(), progress);
-        *self = Self::new("Animating Theme", colorscheme);
+        *self = Self::Custom(Custom {
+            name: "Animating Theme".into(),
+            is_dark: self.is_dark(),
+            colorscheme,
+        });
     }
 }
 
 #[derive(Debug, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Custom {
-    pub name: String,
+    pub name: Cow<'static, str>,
+    pub is_dark: bool,
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub colorscheme: ColorScheme,
-    pub is_dark: bool,
+}
+
+impl From<Custom> for Theme {
+    fn from(custom: Custom) -> Self {
+        Self::Custom(custom)
+    }
+}
+
+impl From<Theme> for Custom {
+    fn from(theme: Theme) -> Self {
+        Self {
+            name: theme.name(),
+            is_dark: theme.is_dark(),
+            colorscheme: theme.colors(),
+        }
+    }
 }
 
 impl Clone for Custom {
     fn clone(&self) -> Self {
         Self {
             name: self.name.clone(),
-            colorscheme: self.colorscheme,
             is_dark: self.is_dark,
+            colorscheme: self.colorscheme,
         }
     }
 
     fn clone_from(&mut self, source: &Self) {
         self.name.clone_from(&source.name);
-        self.colorscheme = source.colorscheme;
         self.is_dark = source.is_dark;
+        self.colorscheme = source.colorscheme;
     }
 }
 
@@ -204,101 +233,101 @@ pub struct ColorScheme {
 impl ColorScheme {
     const DARK: Self = Self {
         primary: Primary {
-            color: from_argb!(0xff9bd4a1),
-            on_primary: from_argb!(0xff003916),
-            primary_container: from_argb!(0xff1b5129),
-            on_primary_container: from_argb!(0xffb6f1bb),
+            color: color!(0x9bd4a1),
+            on_primary: color!(0x003916),
+            primary_container: color!(0x1b5129),
+            on_primary_container: color!(0xb6f1bb),
         },
         secondary: Secondary {
-            color: from_argb!(0xffb8ccb6),
-            on_secondary: from_argb!(0xff233425),
-            secondary_container: from_argb!(0xff394b3a),
-            on_secondary_container: from_argb!(0xffd3e8d1),
+            color: color!(0xb8ccb6),
+            on_secondary: color!(0x233425),
+            secondary_container: color!(0x394b3a),
+            on_secondary_container: color!(0xd3e8d1),
         },
         tertiary: Tertiary {
-            color: from_argb!(0xffa1ced7),
-            on_tertiary: from_argb!(0xff00363e),
-            tertiary_container: from_argb!(0xff1f4d55),
-            on_tertiary_container: from_argb!(0xffbdeaf4),
+            color: color!(0xa1ced7),
+            on_tertiary: color!(0x00363e),
+            tertiary_container: color!(0x1f4d55),
+            on_tertiary_container: color!(0xbdeaf4),
         },
         error: Error {
-            color: from_argb!(0xffffb4ab),
-            on_error: from_argb!(0xff690005),
-            error_container: from_argb!(0xff93000a),
-            on_error_container: from_argb!(0xffffdad6),
+            color: color!(0xffb4ab),
+            on_error: color!(0x690005),
+            error_container: color!(0x93000a),
+            on_error_container: color!(0xffdad6),
         },
         surface: Surface {
-            color: from_argb!(0xff101510),
-            on_surface: from_argb!(0xffe0e4dc),
-            on_surface_variant: from_argb!(0xffc1c9be),
+            color: color!(0x101510),
+            on_surface: color!(0xe0e4dc),
+            on_surface_variant: color!(0xc1c9be),
             surface_container: SurfaceContainer {
-                lowest: from_argb!(0xff0b0f0b),
-                low: from_argb!(0xff181d18),
-                base: from_argb!(0xff1c211c),
-                high: from_argb!(0xff262b26),
-                highest: from_argb!(0xff313631),
+                lowest: color!(0x0b0f0b),
+                low: color!(0x181d18),
+                base: color!(0x1c211c),
+                high: color!(0x262b26),
+                highest: color!(0x313631),
             },
         },
         inverse: Inverse {
-            inverse_surface: from_argb!(0xffe0e4dc),
-            inverse_on_surface: from_argb!(0xff2d322c),
-            inverse_primary: from_argb!(0xff34693f),
+            inverse_surface: color!(0xe0e4dc),
+            inverse_on_surface: color!(0x2d322c),
+            inverse_primary: color!(0x34693f),
         },
         outline: Outline {
-            color: from_argb!(0xff8b9389),
-            variant: from_argb!(0xff414941),
+            color: color!(0x8b9389),
+            variant: color!(0x414941),
         },
-        shadow: from_argb!(0xff000000),
+        shadow: color!(0x000000),
         scrim: from_argb!(0x4d000000),
     };
 
     const LIGHT: Self = Self {
         primary: Primary {
-            color: from_argb!(0xff34693f),
-            on_primary: from_argb!(0xffffffff),
-            primary_container: from_argb!(0xffb6f1bb),
-            on_primary_container: from_argb!(0xff1b5129),
+            color: color!(0x34693f),
+            on_primary: color!(0xffffff),
+            primary_container: color!(0xb6f1bb),
+            on_primary_container: color!(0x1b5129),
         },
         secondary: Secondary {
-            color: from_argb!(0xff516351),
-            on_secondary: from_argb!(0xffffffff),
-            secondary_container: from_argb!(0xffd3e8d1),
-            on_secondary_container: from_argb!(0xff394b3a),
+            color: color!(0x516351),
+            on_secondary: color!(0xffffff),
+            secondary_container: color!(0xd3e8d1),
+            on_secondary_container: color!(0x394b3a),
         },
         tertiary: Tertiary {
-            color: from_argb!(0xff39656d),
-            on_tertiary: from_argb!(0xffffffff),
-            tertiary_container: from_argb!(0xffbdeaf4),
-            on_tertiary_container: from_argb!(0xff1f4d55),
+            color: color!(0x39656d),
+            on_tertiary: color!(0xffffff),
+            tertiary_container: color!(0xbdeaf4),
+            on_tertiary_container: color!(0x1f4d55),
         },
         error: Error {
-            color: from_argb!(0xffba1a1a),
-            on_error: from_argb!(0xffffffff),
-            error_container: from_argb!(0xffffdad6),
-            on_error_container: from_argb!(0xff93000a),
+            color: color!(0xba1a1a),
+            on_error: color!(0xffffff),
+            error_container: color!(0xffdad6),
+            on_error_container: color!(0x93000a),
         },
         surface: Surface {
-            color: from_argb!(0xfff7fbf2),
-            on_surface: from_argb!(0xff181d18),
-            on_surface_variant: from_argb!(0xff414941),
+            color: color!(0xf7fbf2),
+            on_surface: color!(0x181d18),
+            on_surface_variant: color!(0x414941),
             surface_container: SurfaceContainer {
-                lowest: from_argb!(0xffffffff),
-                low: from_argb!(0xfff1f5ed),
-                base: from_argb!(0xffebefe7),
-                high: from_argb!(0xffe5e9e1),
-                highest: from_argb!(0xffe0e4dc),
+                lowest: color!(0xffffff),
+                low: color!(0xf1f5ed),
+                base: color!(0xebefe7),
+                high: color!(0xe5e9e1),
+                highest: color!(0xe0e4dc),
             },
         },
         inverse: Inverse {
-            inverse_surface: from_argb!(0xff2d322c),
-            inverse_on_surface: from_argb!(0xffeef2ea),
-            inverse_primary: from_argb!(0xff9bd4a1),
+            inverse_surface: color!(0x2d322c),
+            inverse_on_surface: color!(0xeef2ea),
+            inverse_primary: color!(0x9bd4a1),
         },
         outline: Outline {
-            color: from_argb!(0xff727970),
-            variant: from_argb!(0xffc1c9be),
+            color: color!(0x727970),
+            variant: color!(0xc1c9be),
         },
-        shadow: from_argb!(0xff000000),
+        shadow: color!(0x000000),
         scrim: from_argb!(0x4d000000),
     };
 }

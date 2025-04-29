@@ -1,24 +1,34 @@
 // (c) 2022-2024 Cory Forsstrom, Casper Rogild Storm, Calvin Lee, Andrew Baldwin, Reza Alizadeh Majd
 // (c) 2024-2025 Polesznyák Márk László
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
+use material_theme::Theme;
 use serde::Deserialize;
 use tokio_stream::StreamExt;
 use tokio_stream::wrappers::ReadDirStream;
 
-use crate::theme::{Appearance, Theme, theme_from_str, theme_index};
+use crate::appearance::Appearance;
 use crate::{Error, environment};
 
 #[derive(Debug, Clone, Default)]
 pub struct Config {
-    pub theme: Appearance,
-    pub last_project: Option<PathBuf>,
+    appearance: Appearance,
+    last_project: Option<PathBuf>,
 }
 
 impl Config {
-    pub fn selected_theme(&self) -> iced::Theme {
-        self.theme.selected.clone()
+    pub fn selected_theme(&self) -> Theme {
+        self.appearance.selected.clone()
+    }
+
+    pub fn themes(&self) -> Arc<[Theme]> {
+        self.appearance.all.clone()
+    }
+
+    pub fn last_project(&self) -> Option<&Path> {
+        self.last_project.as_deref()
     }
 
     pub fn config_dir() -> PathBuf {
@@ -67,15 +77,18 @@ impl Config {
             last_project,
         } = toml::from_str(content.as_ref())?;
 
-        let theme = Self::load_theme(theme).await.unwrap_or_default();
+        let appearance =
+            Self::load_appearance(&theme).await.unwrap_or_default();
 
         Ok(Self {
-            theme,
+            appearance,
             last_project,
         })
     }
 
-    pub async fn load_theme(theme_name: String) -> Result<Appearance, Error> {
+    pub async fn load_appearance(
+        theme_name: &str,
+    ) -> Result<Appearance, Error> {
         use tokio::fs;
 
         let read_entry = async move |entry: fs::DirEntry| {
@@ -83,15 +96,16 @@ impl Config {
 
             let theme: Theme = toml::from_str(content.as_ref()).ok()?;
 
-            Some(iced::Theme::from(theme))
+            Some(theme)
         };
 
-        let mut selected = Theme::default().into();
-        let mut all = iced::Theme::ALL.to_owned();
-        all.push(Theme::default().into());
+        let mut selected = Theme::default();
+        let mut all = Theme::ALL.to_owned();
 
-        if theme_index(&theme_name, iced::Theme::ALL).is_some() {
-            selected = theme_from_str(None, &theme_name);
+        if let Some(index) =
+            Theme::ALL.iter().position(|t| t.name() == theme_name)
+        {
+            selected = Theme::ALL[index].clone();
         }
 
         let mut stream =
@@ -102,7 +116,7 @@ impl Config {
             };
 
             if let Some(theme) = read_entry(entry).await {
-                if theme.to_string() == theme_name {
+                if theme.name() == theme_name {
                     selected = theme.clone();
                 }
                 all.push(theme);

@@ -418,6 +418,7 @@ where
         tree: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
+        _viewport: &iced::Rectangle,
         _translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let state: &mut State = tree.state.downcast_mut::<State>();
@@ -434,6 +435,7 @@ where
             &mut tree.children[0],
             layout,
             renderer,
+            _viewport,
             _translation,
         )
     }

@@ -1,8 +1,10 @@
 // Generated automatically by iced_fontello at build time.
 // Do not edit manually. Source: ../fonts/icons.toml
-// 02c7558d187cdc056fdd0e6a638ef805fa10f5955f834575e51d75acd35bc70e
-use iced::widget::{text, Text};
+// 915ea6b0646871c0f04350f201f27f28881b61f3bd6ef292a415d67a211739c1
 use iced::Font;
+use iced::widget::text;
+
+use crate::widget::Text;
 
 pub const FONT: &[u8] = include_bytes!("../fonts/icons.ttf");
 
@@ -16,6 +18,10 @@ pub fn open<'a>() -> Text<'a> {
 
 pub fn save<'a>() -> Text<'a> {
     icon("\u{1F4BE}")
+}
+
+pub fn switch<'a>() -> Text<'a> {
+    icon("\u{21C6}")
 }
 
 fn icon(codepoint: &str) -> Text<'_> {

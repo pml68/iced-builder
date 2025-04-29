@@ -1,3 +1,4 @@
+mod appearance;
 mod config;
 mod dialogs;
 mod environment;
@@ -6,7 +7,6 @@ mod error;
 mod icon;
 mod options;
 mod panes;
-mod theme;
 mod types;
 mod values;
 mod widget;
@@ -24,14 +24,14 @@ use iced::advanced::widget::Id;
 use iced::widget::{
     Column, container, pane_grid, pick_list, row, text, text_editor,
 };
-use iced::{Alignment, Element, Length, Task, Theme, clipboard, keyboard};
+use iced::{Alignment, Length, Task, clipboard, keyboard};
 use iced_anim::transition::Easing;
 use iced_anim::{Animated, Animation};
 use iced_dialog::dialog::Dialog;
+use material_theme::Theme;
 use panes::{code_view, designer_view, element_list};
-use tokio::runtime;
 use types::{
-    Action, DesignerPane, DialogAction, DialogButtons, ElementName, Message,
+    Action, DesignerPane, DialogAction, DialogButtons, Element, Message,
     Project,
 };
 
@@ -47,23 +47,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let config_load = {
-        let rt = runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()?;
+    iced::application(
+        IcedBuilder::init,
+        IcedBuilder::update,
+        IcedBuilder::view,
+    )
+    .title(IcedBuilder::title)
+    .font(icon::FONT)
+    .theme(|state| state.theme.value().clone())
+    .subscription(IcedBuilder::subscription)
+    .antialiasing(true)
+    .centered()
+    .run()?;
 
-        rt.block_on(Config::load())
-    };
-
-    iced::application(App::title, App::update, App::view)
-        .font(icon::FONT)
-        .theme(|state| state.theme.value().clone())
-        .subscription(App::subscription)
-        .run_with(move || App::new(config_load))?;
     Ok(())
 }
 
-struct App {
+struct IcedBuilder {
     is_dirty: bool,
     is_loading: bool,
     project_path: Option<PathBuf>,
@@ -78,7 +78,6 @@ struct App {
     dialog_content: String,
     dialog_buttons: DialogButtons,
     dialog_action: DialogAction,
-    element_list: &'static [ElementName],
     editor_content: text_editor::Content,
 }
 
@@ -88,8 +87,8 @@ enum Panes {
     ElementList,
 }
 
-impl App {
-    fn new(config_load: Result<Config, Error>) -> (Self, Task<Message>) {
+impl IcedBuilder {
+    fn init() -> (Self, Task<Message>) {
         let state = pane_grid::State::with_configuration(
             pane_grid::Configuration::Split {
                 axis: pane_grid::Axis::Vertical,
@@ -99,24 +98,8 @@ impl App {
             },
         );
 
-        let config = Arc::new(config_load.unwrap_or_default());
+        let config = Arc::new(Config::default());
         let theme = config.selected_theme();
-
-        let task = if let Some(path) = config.last_project.clone() {
-            if path.exists() && path.is_file() {
-                Task::perform(
-                    Project::from_path(path, config.clone()),
-                    Message::FileOpened,
-                )
-            } else {
-                warning_dialog(format!(
-                    "The file {} does not exist, or isn't a file.",
-                    path.to_string_lossy()
-                ))
-            }
-        } else {
-            Task::none()
-        };
 
         (
             Self {
@@ -134,10 +117,9 @@ impl App {
                 dialog_content: String::new(),
                 dialog_buttons: DialogButtons::None,
                 dialog_action: DialogAction::None,
-                element_list: ElementName::ALL,
                 editor_content: text_editor::Content::new(),
             },
-            task,
+            Task::perform(Config::load(), Message::ConfigLoad),
         )
     }
 
@@ -163,6 +145,29 @@ impl App {
 
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
+            Message::ConfigLoad(result) => match result {
+                Ok(config) => {
+                    self.config = Arc::new(config);
+                    self.theme.update(self.config.selected_theme().into());
+
+                    return if let Some(path) = self.config.last_project() {
+                        if path.exists() && path.is_file() {
+                            Task::perform(
+                                Project::from_path(path.to_owned()),
+                                Message::FileOpened,
+                            )
+                        } else {
+                            warning_dialog(format!(
+                                "The file {} does not exist, or isn't a file.",
+                                path.to_string_lossy()
+                            ))
+                        }
+                    } else {
+                        Task::none()
+                    };
+                }
+                Err(error) => return error_dialog(error),
+            },
             Message::SwitchTheme(event) => self.theme.update(event),
             Message::CopyCode => {
                 return clipboard::write(self.editor_content.text());
@@ -173,15 +178,13 @@ impl App {
                     self.editor_content.perform(action);
                 }
             }
-            Message::RefreshEditorContent => {
-                match self.project.app_code(&self.config) {
-                    Ok(code) => {
-                        self.editor_content =
-                            text_editor::Content::with_text(&code);
-                    }
-                    Err(error) => return error_dialog(error),
+            Message::RefreshEditorContent => match self.project.app_code() {
+                Ok(code) => {
+                    self.editor_content =
+                        text_editor::Content::with_text(&code);
                 }
-            }
+                Err(error) => return error_dialog(error),
+            },
             Message::DropNewElement(name, point, _) => {
                 return iced_drop::zones_on_point(
                     move |zones| Message::HandleNew(name.clone(), zones),
@@ -277,7 +280,7 @@ impl App {
                         self.is_dirty = false;
                         self.is_loading = true;
                         return Task::perform(
-                            Project::from_file(self.config.clone()),
+                            Project::from_file(),
                             Message::FileOpened,
                         )
                         .chain(close_dialog_task);
@@ -307,7 +310,7 @@ impl App {
                         self.is_loading = true;
 
                         return Task::perform(
-                            Project::from_file(self.config.clone()),
+                            Project::from_file(),
                             Message::FileOpened,
                         );
                     } else {
@@ -392,7 +395,7 @@ impl App {
 
     fn view(&self) -> Element<'_, Message> {
         let header = row![pick_list(
-            self.config.theme.all.clone(),
+            self.config.themes(),
             Some(self.theme.target()),
             |theme| Message::SwitchTheme(theme.into())
         )]
@@ -405,16 +408,14 @@ impl App {
                     Panes::Designer => match &self.designer_page {
                         DesignerPane::DesignerView => designer_view::view(
                             self.project.element_tree.as_ref(),
-                            self.project.get_theme(&self.config),
+                            self.project.get_theme(),
                             is_focused,
                         ),
                         DesignerPane::CodeView => {
                             code_view::view(&self.editor_content, is_focused)
                         }
                     },
-                    Panes::ElementList => {
-                        element_list::view(self.element_list, is_focused)
-                    }
+                    Panes::ElementList => element_list::view(is_focused),
                 }
             },
         )

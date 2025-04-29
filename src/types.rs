@@ -8,14 +8,20 @@ pub use element_name::ElementName;
 use iced::advanced::widget::Id;
 use iced::widget::{pane_grid, text_editor};
 use iced_anim::Event;
+use material_theme::Theme;
 pub use project::Project;
 pub use rendered_element::*;
 
 use crate::Error;
+use crate::config::Config;
 
+pub type Element<'a, Message> = iced::Element<'a, Message, Theme>;
+
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone)]
 pub enum Message {
-    SwitchTheme(Event<iced::Theme>),
+    ConfigLoad(Result<Config, Error>),
+    SwitchTheme(Event<Theme>),
     CopyCode,
     SwitchPage(DesignerPane),
     EditorAction(text_editor::Action),

@@ -116,7 +116,7 @@ pub fn mix(color1: Color, color2: Color, p2: f32) -> Color {
     let p1 = 1.0 - p2;
 
     if (color1.a - 1.0).abs() > COLOR_ERROR_MARGIN
-        || (color2.a - 1.0) > COLOR_ERROR_MARGIN
+        || (color2.a - 1.0).abs() > COLOR_ERROR_MARGIN
     {
         let a = color1.a * p1 + color2.a * p2;
         if a > 0.0 {

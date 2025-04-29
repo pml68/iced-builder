@@ -14,17 +14,17 @@ use crate::{Error, environment};
 
 #[derive(Debug, Clone, Default)]
 pub struct Config {
-    theme: Appearance,
+    appearance: Appearance,
     last_project: Option<PathBuf>,
 }
 
 impl Config {
     pub fn selected_theme(&self) -> Theme {
-        self.theme.selected.clone()
+        self.appearance.selected.clone()
     }
 
     pub fn themes(&self) -> Arc<[Theme]> {
-        self.theme.all.clone()
+        self.appearance.all.clone()
     }
 
     pub fn last_project(&self) -> Option<&Path> {
@@ -77,10 +77,11 @@ impl Config {
             last_project,
         } = toml::from_str(content.as_ref())?;
 
-        let theme = Self::load_appearance(&theme).await.unwrap_or_default();
+        let appearance =
+            Self::load_appearance(&theme).await.unwrap_or_default();
 
         Ok(Self {
-            theme,
+            appearance,
             last_project,
         })
     }

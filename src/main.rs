@@ -199,8 +199,11 @@ impl IcedBuilder {
 
                 let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
                 if !ids.is_empty() {
-                    let eltree_clone = self.project.element_tree.clone();
-                    let action = Action::new(&ids, eltree_clone.as_ref(), None);
+                    let action = Action::new(
+                        &ids,
+                        self.project.element_tree.as_ref(),
+                        None,
+                    );
                     let result = name.handle_action(
                         self.project.element_tree.as_mut(),
                         action,
@@ -230,10 +233,9 @@ impl IcedBuilder {
             Message::HandleMove(element, zones) => {
                 let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
                 if !ids.is_empty() {
-                    let eltree_clone = self.project.element_tree.clone();
                     let action = Action::new(
                         &ids,
-                        eltree_clone.as_ref(),
+                        self.project.element_tree.as_ref(),
                         Some(element.id()),
                     );
                     let result = element.handle_action(

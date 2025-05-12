@@ -416,7 +416,7 @@ where
     fn overlay<'b>(
         &'b mut self,
         tree: &'b mut Tree,
-        layout: Layout<'_>,
+        layout: Layout<'b>,
         renderer: &Renderer,
         _viewport: &iced::Rectangle,
         _translation: Vector,
@@ -563,14 +563,5 @@ where
             cursor_position,
             &Rectangle::with_size(Size::INFINITY),
         );
-    }
-
-    fn is_over(
-        &self,
-        _layout: Layout<'_>,
-        _renderer: &Renderer,
-        _cursor_position: Point,
-    ) -> bool {
-        false
     }
 }

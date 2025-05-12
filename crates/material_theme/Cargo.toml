@@ -5,7 +5,7 @@ authors = ["pml68 <contact@pml68.dev>"]
 version = "0.14.0-dev"
 edition = "2024"
 license = "MIT"
-# readme = "README.md"
+readme = "README.md"
 repository = "https://github.com/pml68/iced_builder"
 categories = ["gui"]
 keywords = ["gui", "ui", "graphics", "interface", "widgets"]
@@ -21,8 +21,6 @@ animate = ["dep:iced_anim"]
 dialog = ["dep:iced_dialog"]
 # Provides support for the markdown widget.
 markdown = ["iced_widget/markdown"]
-# Provides support for the image widget.
-image = ["iced_widget/image"]
 # Provides support for the SVG widget.
 svg = ["iced_widget/svg"]
 # Provides support for the QR code widget.

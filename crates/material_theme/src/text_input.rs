@@ -36,10 +36,7 @@ pub fn default(theme: &Theme, status: Status) -> Style {
     match status {
         Status::Active => active,
         Status::Hovered => Style {
-            border: Border {
-                color: surface.on_surface,
-                ..active.border
-            },
+            border: active.border.color(surface.on_surface),
             ..active
         },
         Status::Disabled => Style {

@@ -48,14 +48,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     iced::application(
-        IcedBuilder::init,
+        IcedBuilder::boot,
         IcedBuilder::update,
         IcedBuilder::view,
     )
     .title(IcedBuilder::title)
-    .font(icon::FONT)
-    .theme(|state| state.theme.value().clone())
     .subscription(IcedBuilder::subscription)
+    .theme(|state| state.theme.value().clone())
+    .font(icon::FONT)
     .antialiasing(true)
     .centered()
     .run()?;
@@ -88,7 +88,7 @@ enum Panes {
 }
 
 impl IcedBuilder {
-    fn init() -> (Self, Task<Message>) {
+    fn boot() -> (Self, Task<Message>) {
         let state = pane_grid::State::with_configuration(
             pane_grid::Configuration::Split {
                 axis: pane_grid::Axis::Vertical,

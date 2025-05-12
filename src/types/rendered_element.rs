@@ -407,10 +407,10 @@ pub enum Action<'a> {
     Stop,
 }
 
-impl<'a> Action<'a> {
+impl<'a: 'b, 'b> Action<'a> {
     pub fn new(
         ids: &'a [Id],
-        element_tree: Option<&'a RenderedElement>,
+        element_tree: Option<&'b RenderedElement>,
         source_id: Option<&'a Id>,
     ) -> Self {
         let mut action = Self::Stop;

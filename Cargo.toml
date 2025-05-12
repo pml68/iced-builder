@@ -85,6 +85,7 @@ unused_results = "deny"
 
 [lints.clippy]
 type-complexity = "allow"
+uninlined_format_args = "allow"
 semicolon_if_nothing_returned = "deny"
 trivially-copy-pass-by-ref = "deny"
 default_trait_access = "deny"

@@ -69,6 +69,17 @@ impl Theme {
         })
     }
 
+    pub const fn new_const(
+        name: &'static str,
+        colorscheme: ColorScheme,
+    ) -> Self {
+        Self::Custom(Custom {
+            name: Cow::Borrowed(name),
+            is_dark: lightness(colorscheme.surface.color) <= 0.5,
+            colorscheme,
+        })
+    }
+
     pub fn name(&self) -> Cow<'static, str> {
         match self {
             Self::Dark => "Dark".into(),

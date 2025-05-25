@@ -225,7 +225,7 @@ where
                             }
                         }
                     }
-                    mouse::Event::CursorMoved { mut position } => match state
+                    &mouse::Event::CursorMoved { mut position } => match state
                         .action
                     {
                         Action::Select(start) | Action::Drag(start, _) => {

@@ -24,7 +24,7 @@ material_theme = { path = "crates/material_theme", features = ["animate", "serde
 serde.workspace = true
 serde_json = "1.0.140"
 toml.workspace = true
-tokio = { version = "1.44.2", features = ["fs"] }
+tokio = { version = "1.45.1", features = ["fs"] }
 tokio-stream = { version = "0.1", features = ["fs"] }
 # TODO: enable tokio when it doesn't crash anymore
 # rfd = { version = "0.15.2", default-features = false, features = ["tokio", "xdg-portal"]  }
@@ -39,7 +39,7 @@ iced_widget = "0.14.0-dev"
 iced_anim = { version = "0.2.1", features = ["derive"] }
 iced_dialog = { git = "https://github.com/pml68/iced_dialog", branch = "iced/personal" }
 serde = { version = "1.0.219", features = ["derive"] }
-toml = "0.8.21"
+toml = "0.8.22"
 
 [workspace.dependencies.iced]
 version = "0.14.0-dev"
@@ -50,7 +50,7 @@ features = ["wgpu", "tiny-skia", "web-colors", "auto-detect-theme", "advanced", 
 iced_fontello = { path = "crates/iced_fontello" }
 
 [target.'cfg(target_os = "macos")'.dependencies]
-xdg = "2.5.2"
+xdg = "3.0.0"
 
 [target.'cfg(windows)'.build-dependencies]
 embed-resource = "3.0.2"

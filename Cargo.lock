@@ -2102,7 +2102,7 @@ dependencies = [
 [[package]]
 name = "iced_dialog"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced_dialog?branch=iced%2Fpersonal#f751cf15df8533882ee9741701f0997df9529a6f"
+source = "git+https://github.com/pml68/iced_dialog?branch=iced%2Fpersonal#194df3a5f902ae72d9e216ce2d78734899fa64fc"
 dependencies = [
  "iced_core",
  "iced_widget",

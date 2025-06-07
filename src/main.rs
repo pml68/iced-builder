@@ -148,10 +148,10 @@ impl IcedBuilder {
             Message::ConfigLoad(result) => match result {
                 Ok(config) => {
                     self.config = Arc::new(config);
-                    self.theme.update(self.config.selected_theme().into());
+                    self.theme.settle_at(self.config.selected_theme());
 
-                    return if let Some(path) = self.config.last_project() {
-                        if path.exists() && path.is_file() {
+                    if let Some(path) = self.config.last_project() {
+                        return if path.exists() && path.is_file() {
                             Task::perform(
                                 Project::from_path(path.to_owned()),
                                 Message::FileOpened,
@@ -161,9 +161,7 @@ impl IcedBuilder {
                                 "The file {} does not exist, or isn't a file.",
                                 path.to_string_lossy()
                             ))
-                        }
-                    } else {
-                        Task::none()
+                        };
                     };
                 }
                 Err(error) => return error_dialog(error),

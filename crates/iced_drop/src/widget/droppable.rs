@@ -462,19 +462,17 @@ where
 
         let state = tree.state.downcast_ref::<State>();
 
-        if self.on_drop.is_none() && cursor.is_over(layout.bounds()) {
-            return mouse::Interaction::NotAllowed;
-        }
-
-        if let Action::Drag(_, _) = state.action {
-            return mouse::Interaction::Grabbing;
-        }
-
         if cursor.is_over(layout.bounds()) {
-            return mouse::Interaction::Pointer;
+            if self.on_drop.is_none() {
+                mouse::Interaction::NotAllowed
+            } else if let Action::Drag(_, _) = state.action {
+                mouse::Interaction::Grabbing
+            } else {
+                mouse::Interaction::Pointer
+            }
+        } else {
+            mouse::Interaction::default()
         }
-
-        mouse::Interaction::default()
     }
 }
 

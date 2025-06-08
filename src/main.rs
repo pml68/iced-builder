@@ -15,25 +15,18 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use config::Config;
-use dialogs::{
-    cancel_button, error_dialog, ok_button, unsaved_changes_dialog,
-    warning_dialog,
-};
+use dialogs::{Action as DialogAction, Dialog, UnsavedChanges};
 use error::Error;
 use iced::advanced::widget::Id;
-use iced::widget::{
-    Column, container, pane_grid, pick_list, row, text, text_editor,
+use iced::widget::{Column, container, pane_grid, pick_list, row, text_editor};
+use iced::{
+    Alignment, Length, Subscription, Task, clipboard, keyboard, window,
 };
-use iced::{Alignment, Length, Task, clipboard, keyboard};
 use iced_anim::transition::Easing;
 use iced_anim::{Animated, Animation};
-use iced_dialog::dialog::Dialog;
 use material_theme::Theme;
 use panes::{code_view, designer_view, element_list};
-use types::{
-    Action, DesignerPane, DialogAction, DialogButtons, Element, Message,
-    Project,
-};
+use types::{Action, DesignerPane, Element, Message, Project};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let version = std::env::args()
@@ -54,7 +47,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     )
     .title(IcedBuilder::title)
     .subscription(IcedBuilder::subscription)
-    .theme(|state| state.theme.value().clone())
+    .theme(IcedBuilder::theme)
+    .exit_on_close_request(false)
     .font(icon::FONT)
     .antialiasing(true)
     .centered()
@@ -73,11 +67,7 @@ struct IcedBuilder {
     pane_state: pane_grid::State<Panes>,
     focus: Option<pane_grid::Pane>,
     designer_page: DesignerPane,
-    dialog_is_open: bool,
-    dialog_title: &'static str,
-    dialog_content: String,
-    dialog_buttons: DialogButtons,
-    dialog_action: DialogAction,
+    dialog: Dialog,
     editor_content: text_editor::Content,
 }
 
@@ -112,11 +102,7 @@ impl IcedBuilder {
                 pane_state: state,
                 focus: None,
                 designer_page: DesignerPane::DesignerView,
-                dialog_is_open: false,
-                dialog_title: "",
-                dialog_content: String::new(),
-                dialog_buttons: DialogButtons::None,
-                dialog_action: DialogAction::None,
+                dialog: Dialog::default(),
                 editor_content: text_editor::Content::new(),
             },
             Task::perform(Config::load(), Message::ConfigLoad),
@@ -143,6 +129,10 @@ impl IcedBuilder {
         format!("iced Builder{project_name}{saved_state}")
     }
 
+    fn theme(&self) -> Theme {
+        self.theme.value().clone()
+    }
+
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::ConfigLoad(result) => match result {
@@ -151,20 +141,20 @@ impl IcedBuilder {
                     self.theme.settle_at(self.config.selected_theme());
 
                     if let Some(path) = self.config.last_project() {
-                        return if path.exists() && path.is_file() {
-                            Task::perform(
+                        if path.exists() && path.is_file() {
+                            return Task::perform(
                                 Project::from_path(path.to_owned()),
                                 Message::FileOpened,
-                            )
+                            );
                         } else {
-                            warning_dialog(format!(
+                            self.dialog = Dialog::warning(format!(
                                 "The file {} does not exist, or isn't a file.",
                                 path.to_string_lossy()
-                            ))
+                            ));
                         };
                     };
                 }
-                Err(error) => return error_dialog(error),
+                Err(error) => self.dialog = Dialog::error(error),
             },
             Message::SwitchTheme(event) => self.theme.update(event),
             Message::CopyCode => {
@@ -181,7 +171,7 @@ impl IcedBuilder {
                     self.editor_content =
                         text_editor::Content::with_text(&code);
                 }
-                Err(error) => return error_dialog(error),
+                Err(error) => self.dialog = Dialog::error(error),
             },
             Message::DropNewElement(name, point, _) => {
                 return iced_drop::zones_on_point(
@@ -192,9 +182,6 @@ impl IcedBuilder {
                 );
             }
             Message::HandleNew(name, zones) => {
-                let refresh_editor_task =
-                    Task::done(Message::RefreshEditorContent);
-
                 let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
                 if !ids.is_empty() {
                     let action = Action::new(
@@ -212,12 +199,11 @@ impl IcedBuilder {
                             self.project.element_tree = Some(element.clone());
                         }
                         Err(error) => {
-                            return error_dialog(error)
-                                .chain(refresh_editor_task);
+                            self.dialog = Dialog::error(error);
                         }
                         _ => {}
                     }
-                    return refresh_editor_task;
+                    return self.update(Message::RefreshEditorContent);
                 }
             }
             Message::MoveElement(element, point, _) => {
@@ -241,11 +227,11 @@ impl IcedBuilder {
                         action,
                     );
                     if let Err(error) = result {
-                        return error_dialog(error);
+                        self.dialog = Dialog::error(error);
                     }
 
                     self.is_dirty = true;
-                    return Task::done(Message::RefreshEditorContent);
+                    return self.update(Message::RefreshEditorContent);
                 }
             }
             Message::PaneResized(pane_grid::ResizeEvent { split, ratio }) => {
@@ -257,37 +243,53 @@ impl IcedBuilder {
                 target,
             }) => self.pane_state.drop(pane, target),
             Message::PaneDragged(_) => {}
-            Message::OpenDialog(title, content, buttons, action) => {
-                self.dialog_title = title;
-                self.dialog_content = content;
-                self.dialog_buttons = buttons;
-                self.dialog_action = action;
-                self.dialog_is_open = true;
+            Message::CloseDialog => self.dialog.close(),
+            Message::DialogYes => {
+                return if matches!(
+                    self.dialog.action(),
+                    DialogAction::UnsavedChanges(_)
+                ) {
+                    self.is_loading = true;
+                    Task::perform(
+                        self.project
+                            .clone()
+                            .write_to_file(self.project_path.clone()),
+                        Message::FileSaved,
+                    )
+                    .chain(Task::done(Message::DialogNo))
+                } else {
+                    self.update(Message::CloseDialog)
+                };
             }
-            Message::CloseDialog => self.dialog_is_open = false,
-            Message::DialogOk => {
-                let close_dialog_task = Task::done(Message::CloseDialog);
+            Message::DialogNo => {
+                let mut task = Task::done(Message::CloseDialog);
 
-                match self.dialog_action {
-                    DialogAction::None => {}
-                    DialogAction::NewFile => {
-                        self.is_dirty = false;
-                        self.project = Project::new();
-                        self.project_path = None;
-                        self.editor_content = text_editor::Content::new();
-                    }
-                    DialogAction::OpenFile => {
-                        self.is_dirty = false;
-                        self.is_loading = true;
-                        return Task::perform(
-                            Project::from_file(),
-                            Message::FileOpened,
-                        )
-                        .chain(close_dialog_task);
+                if let DialogAction::UnsavedChanges(unsaved_changes) =
+                    self.dialog.action()
+                {
+                    match unsaved_changes {
+                        UnsavedChanges::New => {
+                            self.is_dirty = false;
+                            self.project = Project::new();
+                            self.project_path = None;
+                            self.editor_content = text_editor::Content::new();
+                        }
+                        UnsavedChanges::Open => {
+                            self.is_dirty = false;
+                            self.is_loading = true;
+                            task = Task::perform(
+                                Project::from_file(),
+                                Message::FileOpened,
+                            )
+                            .chain(task);
+                        }
+                        UnsavedChanges::Exit => {
+                            return self.update(Message::CloseApp);
+                        }
                     }
                 }
 
-                return close_dialog_task;
+                return task;
             }
             Message::DialogCancel => return Task::done(Message::CloseDialog),
             Message::NewFile => {
@@ -297,9 +299,9 @@ impl IcedBuilder {
                         self.project_path = None;
                         self.editor_content = text_editor::Content::new();
                     } else {
-                        return unsaved_changes_dialog(
-                            "You have unsaved changes. Do you wish to discard these and create a new project?",
-                            DialogAction::NewFile,
+                        self.dialog = Dialog::unsaved_changes(
+                            "You have unsaved changes. Do you want to save them before creating a new project?",
+                            UnsavedChanges::New,
                         );
                     }
                 }
@@ -314,9 +316,9 @@ impl IcedBuilder {
                             Message::FileOpened,
                         );
                     } else {
-                        return unsaved_changes_dialog(
-                            "You have unsaved changes. Do you wish to discard these and open another project?",
-                            DialogAction::OpenFile,
+                        self.dialog = Dialog::unsaved_changes(
+                            "You have unsaved changes. Do you want to save them before opening another project?",
+                            UnsavedChanges::Open,
                         );
                     }
                 }
@@ -325,13 +327,13 @@ impl IcedBuilder {
                 self.is_loading = false;
                 self.is_dirty = false;
 
-                return match result {
+                match result {
                     Ok((path, project)) => {
                         self.project = project;
                         self.project_path = Some(path);
-                        Task::done(Message::RefreshEditorContent)
+                        return self.update(Message::RefreshEditorContent);
                     }
-                    Err(error) => return error_dialog(error),
+                    Err(error) => self.dialog = Dialog::error(error),
                 };
             }
             Message::SaveFile => {
@@ -364,16 +366,30 @@ impl IcedBuilder {
                         self.project_path = Some(path);
                         self.is_dirty = false;
                     }
-                    Err(error) => return error_dialog(error),
+                    Err(error) => self.dialog = Dialog::error(error),
                 }
             }
+            Message::CloseApp => {
+                return window::get_latest().and_then(window::close);
+            }
+            Message::WindowEvent(window::Event::CloseRequested) => {
+                if self.is_dirty {
+                    self.dialog = Dialog::unsaved_changes(
+                        "You have unsaved changes. Do you want to save them before closing iced Builder?",
+                        UnsavedChanges::Exit,
+                    );
+                } else {
+                    return self.update(Message::CloseApp);
+                }
+            }
+            Message::WindowEvent(_) => {}
         }
 
         Task::none()
     }
 
     fn subscription(&self) -> iced::Subscription<Message> {
-        keyboard::on_key_press(|key, modifiers| {
+        let keyboard = keyboard::on_key_press(|key, modifiers| {
             if modifiers.command() {
                 match key.as_ref() {
                     keyboard::Key::Character("o") => Some(Message::OpenFile),
@@ -390,7 +406,12 @@ impl IcedBuilder {
             } else {
                 None
             }
-        })
+        });
+
+        let window_events =
+            window::events().map(|(_id, event)| Message::WindowEvent(event));
+
+        Subscription::batch([keyboard, window_events])
     }
 
     fn view(&self) -> Element<'_, Message> {
@@ -433,17 +454,9 @@ impl IcedBuilder {
             .align_x(Alignment::Center)
             .width(Length::Fill);
 
-        let content = Dialog::with_buttons(
-            self.dialog_is_open,
-            container(base).height(Length::Fill),
-            text(&self.dialog_content),
-            match self.dialog_buttons {
-                DialogButtons::None => vec![],
-                DialogButtons::Ok => vec![ok_button()],
-                DialogButtons::OkCancel => vec![ok_button(), cancel_button()],
-            },
-        )
-        .title(self.dialog_title);
+        let content = self
+            .dialog
+            .as_iced_dialog(container(base).height(Length::Fill));
 
         Animation::new(&self.theme, content)
             .on_update(Message::SwitchTheme)

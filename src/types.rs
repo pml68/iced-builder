@@ -7,6 +7,7 @@ use std::path::PathBuf;
 pub use element_name::ElementName;
 use iced::advanced::widget::Id;
 use iced::widget::{pane_grid, text_editor};
+use iced::window;
 use iced_anim::Event;
 use material_theme::Theme;
 pub use project::Project;
@@ -33,9 +34,9 @@ pub enum Message {
     PaneResized(pane_grid::ResizeEvent),
     PaneClicked(pane_grid::Pane),
     PaneDragged(pane_grid::DragEvent),
-    OpenDialog(&'static str, String, DialogButtons, DialogAction),
     CloseDialog,
-    DialogOk,
+    DialogYes,
+    DialogNo,
     DialogCancel,
     NewFile,
     OpenFile,
@@ -43,22 +44,8 @@ pub enum Message {
     SaveFile,
     SaveFileAs,
     FileSaved(Result<PathBuf, Error>),
-}
-
-#[derive(Debug, Clone, Copy, Default)]
-pub enum DialogButtons {
-    #[default]
-    None,
-    Ok,
-    OkCancel,
-}
-
-#[derive(Debug, Clone, Copy, Default)]
-pub enum DialogAction {
-    #[default]
-    None,
-    NewFile,
-    OpenFile,
+    CloseApp,
+    WindowEvent(window::Event),
 }
 
 #[derive(Debug, Clone, Copy)]

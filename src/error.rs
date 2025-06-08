@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::io;
 use std::sync::Arc;
 
@@ -55,5 +56,11 @@ impl From<String> for Error {
 impl From<Error> for String {
     fn from(value: Error) -> Self {
         value.to_string()
+    }
+}
+
+impl From<Error> for Cow<'static, str> {
+    fn from(value: Error) -> Self {
+        value.to_string().into()
     }
 }

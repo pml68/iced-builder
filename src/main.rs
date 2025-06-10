@@ -28,7 +28,7 @@ use material_theme::Theme;
 use panes::{code_view, designer_view, element_list};
 use types::{Action, DesignerPane, Element, Message, Project};
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> iced::Result {
     let version = std::env::args()
         .nth(1)
         .is_some_and(|s| s == "--version" || s == "-V");
@@ -40,21 +40,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    iced::application(
-        IcedBuilder::boot,
-        IcedBuilder::update,
-        IcedBuilder::view,
-    )
-    .title(IcedBuilder::title)
-    .subscription(IcedBuilder::subscription)
-    .theme(IcedBuilder::theme)
-    .exit_on_close_request(false)
-    .font(icon::FONT)
-    .antialiasing(true)
-    .centered()
-    .run()?;
-
-    Ok(())
+    iced::application(IcedBuilder::boot, IcedBuilder::update, IcedBuilder::view)
+        .title(IcedBuilder::title)
+        .subscription(IcedBuilder::subscription)
+        .theme(IcedBuilder::theme)
+        .exit_on_close_request(false)
+        .font(icon::FONT)
+        .antialiasing(true)
+        .centered()
+        .run()
 }
 
 struct IcedBuilder {

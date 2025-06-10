@@ -92,7 +92,9 @@ impl RenderedElement {
     }
 
     pub fn remove(&mut self, element: &RenderedElement) {
-        let parent = self.find_parent(element).unwrap();
+        let Some(parent) = self.find_parent(element) else {
+            return;
+        };
         if let Some(child_elements) = parent.child_elements.as_mut() {
             if let Some(index) =
                 child_elements.iter().position(|x| x == element)
@@ -433,7 +435,9 @@ impl<'a: 'b, 'b> Action<'a> {
                 _ => ids.last().unwrap(),
             };
             let mut element_tree = element_tree.unwrap().clone();
-            let element = element_tree.find_by_id(id).unwrap();
+            let Some(element) = element_tree.find_by_id(id) else {
+                return Action::Stop;
+            };
 
             // Element is a parent and isn't a non-empty container
             if (element.is_empty() || !(element.name == ElementName::Container))

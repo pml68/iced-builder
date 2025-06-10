@@ -10,10 +10,6 @@ categories = ["gui"]
 keywords = ["gui", "ui", "graphics", "interface", "widgets"]
 rust-version = "1.85.0"
 
-[features]
-default = []
-debug = ["iced/debug"]
-
 [dependencies]
 iced.workspace = true
 iced_anim.workspace = true
@@ -44,7 +40,7 @@ toml = "0.8.22"
 [workspace.dependencies.iced]
 version = "0.14.0-dev"
 default-features = false
-features = ["wgpu", "tiny-skia", "web-colors", "auto-detect-theme", "advanced", "tokio", "image", "svg", "lazy"]
+features = ["wgpu", "tiny-skia", "web-colors", "advanced", "tokio", "image", "svg", "lazy"]
 
 [build-dependencies]
 iced_fontello = { path = "crates/iced_fontello" }

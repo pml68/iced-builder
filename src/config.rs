@@ -67,6 +67,10 @@ impl Config {
 
         let path = Self::config_file_path();
         if !path.try_exists()? {
+            let _ = fs::File::create(path)
+                .await
+                .expect("expected permissions to create config file");
+
             return Err(Error::ConfigMissing);
         }
 

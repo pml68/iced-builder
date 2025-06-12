@@ -8,7 +8,7 @@ use thiserror::Error;
 #[error(transparent)]
 pub enum Error {
     IO(Arc<io::Error>),
-    #[error("Config does not exist")]
+    #[error("Config file does not exist, so an empty one was created")]
     ConfigMissing,
     #[error("JSON parsing error: {0}")]
     SerdeJSON(Arc<serde_json::Error>),

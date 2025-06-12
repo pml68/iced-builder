@@ -14,7 +14,7 @@ rust-version = "1.85.0"
 iced.workspace = true
 iced_anim.workspace = true
 iced_custom_highlighter = { git = "https://github.com/pml68/iced_custom_highlighter", branch = "master" }
-iced_drop = { path = "crates/iced_drop" }
+iced_drop = { git = "https://github.com/pml68/iced_drop", branch = "iced/personal" }
 iced_dialog.workspace = true
 material_theme = { path = "crates/material_theme", features = ["animate", "serde", "dialog", "svg"] }
 serde.workspace = true

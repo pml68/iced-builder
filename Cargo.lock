@@ -1965,7 +1965,6 @@ source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#
 dependencies = [
  "iced_core",
  "iced_debug",
- "iced_devtools",
  "iced_futures",
  "iced_renderer",
  "iced_runtime",
@@ -1991,21 +1990,6 @@ source = "git+https://github.com/pml68/iced_anim#70acc72995d71b200c4db82a7e50a79
 dependencies = [
  "quote",
  "syn",
-]
-
-[[package]]
-name = "iced_beacon"
-version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#e0106e377b710160c2e022f3f8446040394afa7d"
-dependencies = [
- "bincode",
- "futures",
- "iced_core",
- "log",
- "semver",
- "serde",
- "thiserror 1.0.69",
- "tokio",
 ]
 
 [[package]]
@@ -2047,7 +2031,6 @@ dependencies = [
  "log",
  "num-traits",
  "rustc-hash 2.1.1",
- "serde",
  "smol_str",
  "thiserror 1.0.69",
  "web-time",
@@ -2068,20 +2051,8 @@ name = "iced_debug"
 version = "0.14.0-dev"
 source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#e0106e377b710160c2e022f3f8446040394afa7d"
 dependencies = [
- "iced_beacon",
  "iced_core",
  "iced_futures",
- "log",
-]
-
-[[package]]
-name = "iced_devtools"
-version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced?branch=feat%2Frehighlight-on-redraw#e0106e377b710160c2e022f3f8446040394afa7d"
-dependencies = [
- "iced_debug",
- "iced_program",
- "iced_widget",
  "log",
 ]
 
@@ -2097,6 +2068,7 @@ dependencies = [
 [[package]]
 name = "iced_drop"
 version = "0.1.0"
+source = "git+https://github.com/pml68/iced_drop?branch=iced%2Fpersonal#c55f7af824ac5adac85a88b91c2639d1bc32e158"
 dependencies = [
  "iced",
 ]
@@ -4285,9 +4257,6 @@ name = "semver"
 version = "1.0.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56e6fa9c48d24d85fb3de5ad847117517440f6beceb7798af16b4a87d616b8d0"
-dependencies = [
- "serde",
-]
 
 [[package]]
 name = "serde"
@@ -4894,19 +4863,7 @@ dependencies = [
  "mio",
  "pin-project-lite",
  "socket2",
- "tokio-macros",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "tokio-macros"
-version = "2.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e06d43f1345a3bcd39f6a56dbb7dcab2ba47e68e8ac134855e7e2bdbaf8cab8"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]

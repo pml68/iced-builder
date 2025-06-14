@@ -1,6 +1,6 @@
 mod appearance;
 mod config;
-mod dialogs;
+mod dialog;
 mod environment;
 mod error;
 #[allow(dead_code)]
@@ -14,7 +14,7 @@ mod widget;
 use std::path::PathBuf;
 
 use config::Config;
-use dialogs::{Action as DialogAction, Dialog, UnsavedChanges};
+use dialog::{Dialog, UnsavedChanges};
 use error::Error;
 use iced::advanced::widget::Id;
 use iced::widget::{Column, container, pane_grid, pick_list, row, text_editor};
@@ -234,7 +234,7 @@ impl IcedBuilder {
             Message::DialogYes => {
                 return if matches!(
                     self.dialog.action(),
-                    DialogAction::UnsavedChanges(_)
+                    dialog::Action::UnsavedChanges(_)
                 ) {
                     self.is_loading = true;
                     Task::perform(
@@ -251,7 +251,7 @@ impl IcedBuilder {
             Message::DialogNo => {
                 let mut task = Task::done(Message::CloseDialog);
 
-                if let DialogAction::UnsavedChanges(unsaved_changes) =
+                if let dialog::Action::UnsavedChanges(unsaved_changes) =
                     self.dialog.action()
                 {
                     match unsaved_changes {

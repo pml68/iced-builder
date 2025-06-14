@@ -3,7 +3,7 @@ mod config;
 mod dialogs;
 mod environment;
 mod error;
-#[allow(clippy::all, dead_code)]
+#[allow(dead_code)]
 mod icon;
 mod options;
 mod panes;
@@ -12,7 +12,6 @@ mod values;
 mod widget;
 
 use std::path::PathBuf;
-use std::sync::Arc;
 
 use config::Config;
 use dialogs::{Action as DialogAction, Dialog, UnsavedChanges};
@@ -26,7 +25,7 @@ use iced_anim::transition::Easing;
 use iced_anim::{Animated, Animation};
 use material_theme::Theme;
 use panes::{code_view, designer_view, element_list};
-use types::{Action, DesignerPane, Element, Message, Project};
+use types::{Action, DesignerPane, Element, Message, Panes, Project};
 
 fn main() -> iced::Result {
     let version = std::env::args()
@@ -42,8 +41,8 @@ fn main() -> iced::Result {
 
     iced::application(IcedBuilder::boot, IcedBuilder::update, IcedBuilder::view)
         .title(IcedBuilder::title)
-        .subscription(IcedBuilder::subscription)
         .theme(IcedBuilder::theme)
+        .subscription(IcedBuilder::subscription)
         .exit_on_close_request(false)
         .font(icon::FONT)
         .antialiasing(true)
@@ -56,19 +55,13 @@ struct IcedBuilder {
     is_loading: bool,
     project_path: Option<PathBuf>,
     project: Project,
-    config: Arc<Config>,
+    config: Config,
     theme: Animated<Theme>,
     pane_state: pane_grid::State<Panes>,
     focus: Option<pane_grid::Pane>,
     designer_page: DesignerPane,
     dialog: Dialog,
     editor_content: text_editor::Content,
-}
-
-#[derive(Clone, Copy, Debug)]
-enum Panes {
-    Designer,
-    ElementList,
 }
 
 impl IcedBuilder {
@@ -82,7 +75,7 @@ impl IcedBuilder {
             },
         );
 
-        let config = Arc::new(Config::default());
+        let config = Config::default();
         let theme = config.selected_theme();
 
         (
@@ -131,7 +124,7 @@ impl IcedBuilder {
         match message {
             Message::ConfigLoad(result) => match result {
                 Ok(config) => {
-                    self.config = Arc::new(config);
+                    self.config = config;
                     self.theme.settle_at(self.config.selected_theme());
 
                     if let Some(path) = self.config.last_project() {

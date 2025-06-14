@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use material_theme::Theme;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tokio_stream::StreamExt;
 use tokio_stream::wrappers::ReadDirStream;
 
@@ -57,8 +57,9 @@ impl Config {
 
     pub async fn load() -> Result<Self, Error> {
         use tokio::fs;
+        use tokio::io::AsyncWriteExt;
 
-        #[derive(Deserialize)]
+        #[derive(Deserialize, Serialize)]
         pub struct Configuration {
             #[serde(default)]
             pub theme: String,
@@ -67,9 +68,22 @@ impl Config {
 
         let path = Self::config_file_path();
         if !path.try_exists()? {
-            let _ = fs::File::create(path)
+            let mut config = fs::File::create(path)
                 .await
                 .expect("expected permissions to create config file");
+            let default_config = Configuration {
+                theme: Theme::default().to_string(),
+                last_project: None,
+            };
+
+            config
+                .write_all(
+                    toml::to_string_pretty(&default_config)
+                        .expect("stringify default configuration")
+                        .as_bytes(),
+                )
+                .await
+                .expect("expected config write operation to succeed");
 
             return Err(Error::ConfigMissing);
         }

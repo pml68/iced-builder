@@ -49,6 +49,12 @@ pub enum Message {
 }
 
 #[derive(Debug, Clone, Copy)]
+pub enum Panes {
+    Designer,
+    ElementList,
+}
+
+#[derive(Debug, Clone, Copy)]
 pub enum DesignerPane {
     DesignerView,
     CodeView,

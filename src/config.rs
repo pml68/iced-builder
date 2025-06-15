@@ -14,8 +14,15 @@ use crate::{Error, environment};
 
 #[derive(Debug, Clone, Default)]
 pub struct Config {
-    appearance: Appearance,
-    last_project: Option<PathBuf>,
+    pub appearance: Appearance,
+    pub last_project: Option<PathBuf>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct ConfigRepr {
+    #[serde(default)]
+    pub theme: String,
+    pub last_project: Option<PathBuf>,
 }
 
 impl Config {
@@ -57,40 +64,20 @@ impl Config {
 
     pub async fn load() -> Result<Self, Error> {
         use tokio::fs;
-        use tokio::io::AsyncWriteExt;
-
-        #[derive(Deserialize, Serialize)]
-        pub struct Configuration {
-            #[serde(default)]
-            pub theme: String,
-            pub last_project: Option<PathBuf>,
-        }
 
         let path = Self::config_file_path();
         if !path.try_exists()? {
-            let mut config = fs::File::create(path)
+            Self::default()
+                .save()
                 .await
-                .expect("expected permissions to create config file");
-            let default_config = Configuration {
-                theme: Theme::default().to_string(),
-                last_project: None,
-            };
-
-            config
-                .write_all(
-                    toml::to_string_pretty(&default_config)
-                        .expect("stringify default configuration")
-                        .as_bytes(),
-                )
-                .await
-                .expect("expected config write operation to succeed");
+                .expect("expected permission to write config file");
 
             return Err(Error::ConfigMissing);
         }
 
         let content = fs::read_to_string(path).await?;
 
-        let Configuration {
+        let ConfigRepr {
             theme,
             last_project,
         } = toml::from_str(content.as_ref())?;
@@ -145,5 +132,22 @@ impl Config {
             selected,
             all: all.into(),
         })
+    }
+
+    pub async fn save(self) -> Result<(), Error> {
+        use tokio::fs;
+        use tokio::io::AsyncWriteExt;
+
+        let mut file = fs::File::create(Self::config_file_path()).await?;
+
+        let config = ConfigRepr {
+            theme: self.appearance.selected.to_string(),
+            last_project: self.last_project,
+        };
+
+        file.write_all(toml::to_string_pretty(&config)?.as_bytes())
+            .await?;
+
+        Ok(())
     }
 }

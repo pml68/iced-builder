@@ -43,7 +43,7 @@ pub fn view(
                     tip::Position::FollowCursor
                 ),
                 button("Switch to Designer view")
-                    .on_press(Message::SwitchPage(DesignerPane::DesignerView))
+                    .on_press(DesignerPane::DesignerView.into())
             ]
             .spacing(20)
             .align_y(Alignment::Center),
@@ -57,7 +57,7 @@ pub fn view(
                     tip::Position::FollowCursor
                 ),
                 button(icon::switch())
-                    .on_press(Message::SwitchPage(DesignerPane::DesignerView))
+                    .on_press(DesignerPane::DesignerView.into())
             ]
             .spacing(20)
             .align_y(Alignment::Center),

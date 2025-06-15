@@ -22,9 +22,11 @@ pub type Element<'a, Message> = iced::Element<'a, Message, Theme>;
 #[derive(Debug, Clone)]
 pub enum Message {
     ConfigLoad(Result<Config, Error>),
+    ConfigWrite(Result<(), Error>),
+    SaveConfigChanges(ConfigChangeType),
     SwitchTheme(Event<Theme>),
     CopyCode,
-    SwitchPage(DesignerPane),
+    SwitchPane(DesignerPane),
     EditorAction(text_editor::Action),
     RefreshEditorContent,
     DropNewElement(ElementName, iced::Point, iced::Rectangle),
@@ -58,4 +60,22 @@ pub enum Panes {
 pub enum DesignerPane {
     DesignerView,
     CodeView,
+}
+
+impl From<DesignerPane> for Message {
+    fn from(pane: DesignerPane) -> Self {
+        Self::SwitchPane(pane)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum ConfigChangeType {
+    LastProject,
+    SelectedTheme,
+}
+
+impl From<ConfigChangeType> for Message {
+    fn from(change: ConfigChangeType) -> Self {
+        Self::SaveConfigChanges(change)
+    }
 }

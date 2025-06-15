@@ -25,7 +25,9 @@ use iced_anim::transition::Easing;
 use iced_anim::{Animated, Animation};
 use material_theme::Theme;
 use panes::{code_view, designer_view, element_list};
-use types::{Action, DesignerPane, Element, Message, Panes, Project};
+use types::{
+    Action, ConfigChangeType, DesignerPane, Element, Message, Panes, Project,
+};
 
 fn main() -> iced::Result {
     let version = std::env::args()
@@ -143,13 +145,38 @@ impl IcedBuilder {
                 }
                 Err(error) => self.dialog = Dialog::error(error),
             },
-            Message::SwitchTheme(event) => self.theme.update(event),
+            Message::ConfigWrite(result) => {
+                if let Err(error) = result {
+                    self.dialog = Dialog::error(error);
+                }
+            }
+            Message::SaveConfigChanges(change) => {
+                match change {
+                    ConfigChangeType::LastProject => {
+                        self.config.last_project = self.project_path.clone();
+                    }
+                    ConfigChangeType::SelectedTheme => {
+                        self.config.appearance.selected =
+                            self.theme.target().clone();
+                    }
+                }
+
+                return Task::perform(
+                    self.config.clone().save(),
+                    Message::ConfigWrite,
+                );
+            }
+            Message::SwitchTheme(event) => {
+                self.theme.update(event);
+
+                return self.update(ConfigChangeType::SelectedTheme.into());
+            }
             Message::CopyCode => {
                 return clipboard::write(self.editor_content.text());
             }
-            Message::SwitchPage(page) => self.designer_page = page,
+            Message::SwitchPane(pane) => self.designer_page = pane,
             Message::EditorAction(action) => {
-                if let text_editor::Action::Scroll { lines: _ } = action {
+                if matches!(action, text_editor::Action::Scroll { .. }) {
                     self.editor_content.perform(action);
                 }
             }
@@ -318,7 +345,11 @@ impl IcedBuilder {
                     Ok((path, project)) => {
                         self.project = project;
                         self.project_path = Some(path);
-                        return self.update(Message::RefreshEditorContent);
+
+                        return Task::done(
+                            ConfigChangeType::LastProject.into(),
+                        )
+                        .chain(Task::done(Message::RefreshEditorContent));
                     }
                     Err(error) => self.dialog = Dialog::error(error),
                 };
@@ -352,6 +383,9 @@ impl IcedBuilder {
                     Ok(path) => {
                         self.project_path = Some(path);
                         self.is_dirty = false;
+
+                        return self
+                            .update(ConfigChangeType::LastProject.into());
                     }
                     Err(error) => self.dialog = Dialog::error(error),
                 }

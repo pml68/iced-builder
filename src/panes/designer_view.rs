@@ -38,12 +38,11 @@ pub fn view<'a>(
         .controls(pane_grid::Controls::dynamic(
             row![
                 button("Switch to Code view")
-                    .on_press(Message::SwitchPage(DesignerPane::CodeView),)
+                    .on_press(DesignerPane::CodeView.into(),)
             ]
             .align_y(Alignment::Center),
             row![
-                button(icon::switch())
-                    .on_press(Message::SwitchPage(DesignerPane::CodeView),)
+                button(icon::switch()).on_press(DesignerPane::CodeView.into(),)
             ]
             .align_y(Alignment::Center),
         ))

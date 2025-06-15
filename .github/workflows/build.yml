@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust-version: [stable, nightly]
+        rust-version: [stable, nightly, 1.85.0]
     steps:
     - uses: hecrj/setup-rust-action@v2
       with:
@@ -30,7 +30,7 @@ jobs:
           target/
         key: ${{ runner.os }}-build-${{ matrix.rust-version }}-${{ hashFiles('**/Cargo.lock') }}
     - name: Build iced-builder binary
-      run: cargo build --verbose --profile ci
+      run: cargo build --verbose --release
     - name: Archive iced-builder binary
       if: matrix.rust-version == 'stable'
       uses: actions/upload-artifact@v4

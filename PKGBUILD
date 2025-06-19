@@ -1,7 +1,7 @@
 # Maintainer: pml68 <contact@pml68.dev>
 
 pkgname=iced-builder
-pkgver=0.1.0.r115.g77b2e89
+pkgver=0.1.0.r174.g7398f64
 pkgrel=1
 pkgdesc='UI builder for iced, built with iced.'
 arch=(x86_64)
@@ -10,6 +10,7 @@ license=('GPL-3.0-or-later')
 depends=(
   gcc-libs
   glibc
+  openssl
   rustfmt
 )
 makedepends=(
@@ -32,9 +33,9 @@ prepare() {
 pkgver() {
   cd "${pkgname}"
   printf "%s.r%s.g%s" \
-    $(cargo pkgid | cut -d@ -f2) \
-    $(git rev-list --count HEAD) \
-    $(git rev-parse --short HEAD)
+    "$(cargo pkgid | cut -d@ -f2)" \
+    "$(git rev-list --count HEAD)" \
+    "$(git rev-parse --short HEAD)"
 }
 
 build() {
@@ -43,6 +44,14 @@ build() {
   export RUSTUP_TOOLCHAIN=stable
   export CARGO_TARGET_DIR=target
   cargo build --frozen --release
+}
+
+check() {
+  cd "${pkgname}"
+
+  export RUSTUP_TOOLCHAIN=stable
+  export CARGO_TARGET_DIR=target
+  cargo test --frozen --release
 }
 
 package() {

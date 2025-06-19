@@ -1,9 +1,10 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 mod appearance;
 mod config;
 mod dialog;
 mod environment;
 mod error;
-#[allow(dead_code)]
 mod icon;
 mod options;
 mod panes;

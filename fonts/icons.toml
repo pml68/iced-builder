@@ -1,7 +1,7 @@
 module = "icon"
 
 [glyphs]
-save = "entypo-floppy"
-open = "fontawesome-folder-open-empty"
+# save = "entypo-floppy"
+# open = "fontawesome-folder-open-empty"
 copy = "fontawesome-file-code"
 switch = "entypo-switch"

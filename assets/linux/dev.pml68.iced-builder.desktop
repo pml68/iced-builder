@@ -7,5 +7,5 @@ TryExec=iced-builder
 Exec=iced-builder %f
 Terminal=false
 MimeType=application/json;
-Categories=GTK;GUIDesigner;Development;
+Categories=iced;GUIDesigner;Development;
 Keywords=iced;GUI;builder;designer;

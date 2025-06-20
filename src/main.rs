@@ -159,8 +159,10 @@ impl IcedBuilder {
                     self.config = config;
                     self.theme.settle_at(self.config.selected_theme());
 
-                    if let Some(path) = self.config.last_project()
-                        && self.project_path.is_none()
+                    if let Some(path) = self
+                        .config
+                        .last_project()
+                        .filter(|_| self.project_path.is_none())
                     {
                         if path.exists() && path.is_file() {
                             return Task::perform(

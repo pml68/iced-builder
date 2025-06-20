@@ -1,7 +1,7 @@
 # Maintainer: pml68 <contact@pml68.dev>
 
 pkgname=iced-builder
-pkgver=0.1.0.r174.g7398f64
+pkgver=0.1.0.r175.g0ade991
 pkgrel=1
 pkgdesc='UI builder for iced, built with iced.'
 arch=(x86_64)
@@ -58,5 +58,7 @@ package() {
   cd "${pkgname}"
 
   install -Dm755 "target/release/${pkgname}" "${pkgdir}/usr/bin/${pkgname}"
+
   install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  install -Dm644 "assets/linux/dev.pml68.${pkgname}.desktop" -t "${pkgdir}/usr/share/applications"
 }

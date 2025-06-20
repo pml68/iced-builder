@@ -62,7 +62,14 @@ impl Project {
         self,
         path: Option<PathBuf>,
     ) -> Result<PathBuf, Error> {
+        use tokio::fs;
+
         let path = if let Some(p) = path {
+            let parent = p.parent();
+            if parent.is_some_and(|parent| !parent.exists()) {
+                fs::create_dir_all(parent.unwrap()).await?;
+            }
+
             p
         } else {
             rfd::AsyncFileDialog::new()
@@ -77,7 +84,7 @@ impl Project {
         };
 
         let contents = serde_json::to_string(&self)?;
-        tokio::fs::write(&path, contents).await?;
+        fs::write(&path, contents).await?;
 
         Ok(path)
     }

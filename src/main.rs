@@ -12,6 +12,7 @@ mod types;
 mod values;
 mod widget;
 
+use std::io;
 use std::path::PathBuf;
 
 use config::Config;
@@ -30,27 +31,44 @@ use types::{
     Action, ConfigChangeType, DesignerPane, Element, Message, Panes, Project,
 };
 
-fn main() -> iced::Result {
-    let version = std::env::args()
-        .nth(1)
-        .is_some_and(|s| s == "--version" || s == "-V");
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut project_path = None;
 
-    if version {
-        println!("iced-builder {}", environment::formatted_version());
-        println!("{}", env!("CARGO_PKG_REPOSITORY"));
+    if let Some(arg) = std::env::args().nth(1) {
+        if arg == "-V" || arg == "--version" {
+            println!("iced-builder {}", environment::formatted_version());
+            println!("{}", env!("CARGO_PKG_REPOSITORY"));
 
-        return Ok(());
+            return Ok(());
+        } else {
+            let path = PathBuf::from(&arg);
+
+            if path.try_exists()? && !path.is_file() {
+                return Err(Box::new(io::Error::new(
+                    io::ErrorKind::IsADirectory,
+                    "Expected a file, directory given.",
+                )));
+            } else {
+                project_path = Some(path);
+            }
+        }
     }
 
-    iced::application(IcedBuilder::boot, IcedBuilder::update, IcedBuilder::view)
-        .title(IcedBuilder::title)
-        .theme(IcedBuilder::theme)
-        .subscription(IcedBuilder::subscription)
-        .exit_on_close_request(false)
-        .font(icon::FONT)
-        .antialiasing(true)
-        .centered()
-        .run()
+    iced::application(
+        move || IcedBuilder::boot(project_path.clone()),
+        IcedBuilder::update,
+        IcedBuilder::view,
+    )
+    .title(IcedBuilder::title)
+    .theme(IcedBuilder::theme)
+    .subscription(IcedBuilder::subscription)
+    .exit_on_close_request(false)
+    .font(icon::FONT)
+    .antialiasing(true)
+    .centered()
+    .run()?;
+
+    Ok(())
 }
 
 struct IcedBuilder {
@@ -68,7 +86,7 @@ struct IcedBuilder {
 }
 
 impl IcedBuilder {
-    fn boot() -> (Self, Task<Message>) {
+    fn boot(project_path: Option<PathBuf>) -> (Self, Task<Message>) {
         let state = pane_grid::State::with_configuration(
             pane_grid::Configuration::Split {
                 axis: pane_grid::Axis::Vertical,
@@ -81,11 +99,22 @@ impl IcedBuilder {
         let config = Config::default();
         let theme = config.selected_theme();
 
+        let mut tasks =
+            vec![Task::perform(Config::load(), Message::ConfigLoad)];
+        if let Some(path) = project_path.as_deref() {
+            if path.exists() && path.is_file() {
+                tasks.push(Task::perform(
+                    Project::from_path(path.to_path_buf()),
+                    Message::FileOpened,
+                ));
+            }
+        }
+
         (
             Self {
                 is_dirty: false,
                 is_loading: false,
-                project_path: None,
+                project_path,
                 project: Project::new(),
                 config,
                 theme: Animated::new(theme, Easing::EASE_IN),
@@ -95,7 +124,7 @@ impl IcedBuilder {
                 dialog: Dialog::default(),
                 editor_content: text_editor::Content::new(),
             },
-            Task::perform(Config::load(), Message::ConfigLoad),
+            Task::batch(tasks),
         )
     }
 
@@ -130,7 +159,9 @@ impl IcedBuilder {
                     self.config = config;
                     self.theme.settle_at(self.config.selected_theme());
 
-                    if let Some(path) = self.config.last_project() {
+                    if let Some(path) = self.config.last_project()
+                        && self.project_path.is_none()
+                    {
                         if path.exists() && path.is_file() {
                             return Task::perform(
                                 Project::from_path(path.to_owned()),

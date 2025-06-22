@@ -108,12 +108,13 @@ impl Theme {
 impl Default for Theme {
     fn default() -> Self {
         static DEFAULT: LazyLock<Theme> = LazyLock::new(|| {
-            match dark_light::detect().unwrap_or(dark_light::Mode::Unspecified)
+            if dark_light::detect()
+                .ok()
+                .is_none_or(|mode| mode == dark_light::Mode::Unspecified)
             {
-                dark_light::Mode::Dark | dark_light::Mode::Unspecified => {
-                    Theme::Dark
-                }
-                dark_light::Mode::Light => Theme::Light,
+                Theme::Dark
+            } else {
+                Theme::Light
             }
         });
 

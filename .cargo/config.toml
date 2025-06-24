@@ -1,4 +1,5 @@
 [alias]
+dev = "hot --features iced/hot"
 lint = "clippy --no-deps -- -D warnings"
 lint-all = "clippy --no-deps -- -D clippy::pedantic"
 

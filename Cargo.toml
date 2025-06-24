@@ -77,7 +77,7 @@ path = "src/main.rs"
 
 [workspace]
 members = ["crates/*"]
-default-members = ["crates/material_theme", "."]
+default-members = [".", "crates/material_theme"]
 
 [lints.rust]
 missing_debug_implementations = "deny"

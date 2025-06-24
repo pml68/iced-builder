@@ -21,6 +21,7 @@ pub fn inset(theme: &Theme) -> Style {
         fill_mode: FillMode::Padded(8),
         width: 1,
         radius: Radius::default(),
+        snap: cfg!(feature = "crisp"),
     }
 }
 pub fn full_width(theme: &Theme) -> Style {
@@ -29,5 +30,6 @@ pub fn full_width(theme: &Theme) -> Style {
         fill_mode: FillMode::Full,
         width: 1,
         radius: Radius::default(),
+        snap: cfg!(feature = "crisp"),
     }
 }

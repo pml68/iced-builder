@@ -32,6 +32,7 @@ fn button(
         text_color: foreground,
         border: border::rounded(400),
         shadow: shadow_from_elevation(elevation(elevation_level), shadow_color),
+        snap: cfg!(feature = "crisp"),
     };
 
     match status {

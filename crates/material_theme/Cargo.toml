@@ -17,6 +17,8 @@ default = []
 serde = ["dep:serde"]
 # Provides support for animating with `iced_anim`.
 animate = ["dep:iced_anim"]
+# Enables pixel snapping for crisp edges by default (can cause jitter!)
+crisp = ["iced_widget/crisp"]
 # Provides support for `iced_dialog`.
 dialog = ["dep:iced_dialog"]
 # Provides support for the markdown widget.

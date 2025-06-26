@@ -13,34 +13,50 @@ rust-version = "1.85.0"
 [dependencies]
 iced.workspace = true
 iced_anim.workspace = true
-iced_custom_highlighter = { git = "https://github.com/pml68/iced_custom_highlighter", branch = "master" }
-iced_drop = { git = "https://github.com/pml68/iced_drop", branch = "iced/personal" }
 iced_dialog.workspace = true
-iced_material = { git = "https://github.com/pml68/iced_material", branch = "iced/personal", features = ["animate", "serde", "dialog", "svg"] }
+iced_drop.workspace = true
+iced_material.workspace = true
+iced_custom_highlighter.workspace = true
 serde.workspace = true
-serde_json = "1.0.140"
+serde_json.workspace = true
 toml.workspace = true
+tokio.workspace = true
+tokio-stream.workspace = true
+rfd.workspace = true
+rust-format.workspace = true
+fxhash.workspace = true
+thiserror.workspace = true
+dirs-next.workspace = true
+
+[workspace.dependencies]
+iced_widget = { git = "https://github.com/pml68/iced", branch = "feat/rehighlight-on-redraw" }
+iced_anim = { git = "https://github.com/pml68/iced_anim", features = ["derive"] }
+iced_dialog = { git = "https://github.com/pml68/iced_dialog", branch = "iced/personal" }
+iced_drop = { git = "https://github.com/pml68/iced_drop", branch = "iced/personal" }
+iced_custom_highlighter = { git = "https://github.com/pml68/iced_custom_highlighter", branch = "master" }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+toml = "0.8.23"
 tokio = { version = "1.45.1", features = ["fs", "io-util"] }
-tokio-stream = { version = "0.1", features = ["fs"] }
+tokio-stream = { version = "0.1.17", features = ["fs"] }
 # TODO: enable tokio when it doesn't crash anymore
-# rfd = { version = "0.15.2", default-features = false, features = ["tokio", "xdg-portal"]  }
+# rfd = { version = "0.15.3", default-features = false, features = ["tokio", "xdg-portal"]  }
 rfd = "0.15.3"
 rust-format = "0.3.4"
 fxhash = "0.2.1"
 thiserror = "2.0.12"
 dirs-next = "2.0.0"
 
-[workspace.dependencies]
-iced_widget = "0.14.0-dev"
-iced_anim = { version = "0.2.1", features = ["derive"] }
-iced_dialog = { git = "https://github.com/pml68/iced_dialog", branch = "iced/personal" }
-serde = { version = "1.0.219", features = ["derive"] }
-toml = "0.8.22"
-
 [workspace.dependencies.iced]
-version = "0.14.0-dev"
+git = "https://github.com/pml68/iced"
+branch = "feat/rehighlight-on-redraw"
 default-features = false
 features = ["wgpu", "tiny-skia", "web-colors", "advanced", "tokio", "image", "svg", "lazy"]
+
+[workspace.dependencies.iced_material]
+git = "https://github.com/pml68/iced_material"
+branch = "iced/personal"
+features = ["animate", "serde", "dialog", "svg"]
 
 [build-dependencies]
 iced_fontello = { path = "iced_fontello" }
@@ -49,8 +65,8 @@ iced_fontello = { path = "iced_fontello" }
 xdg = "3.0.0"
 
 [target.'cfg(windows)'.build-dependencies]
-embed-resource = "3.0.2"
-windows_exe_info = "0.5"
+embed-resource = "3.0.4"
+windows_exe_info = "0.5.2"
 
 [profile.dev]
 opt-level = 1
@@ -100,8 +116,3 @@ needless_borrow = "deny"
 new_without_default = "deny"
 useless_conversion = "deny"
 clone_on_copy = "deny"
-
-[patch.crates-io]
-iced = { git = "https://github.com/pml68/iced", branch = "feat/rehighlight-on-redraw" }
-iced_anim = { git = "https://github.com/pml68/iced_anim" }
-iced_widget = { git = "https://github.com/pml68/iced", branch = "feat/rehighlight-on-redraw" }

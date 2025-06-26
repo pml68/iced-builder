@@ -9,7 +9,7 @@ use iced::advanced::widget::Id;
 use iced::widget::{pane_grid, text_editor};
 use iced::window;
 use iced_anim::Event;
-use material_theme::Theme;
+use iced_material::Theme;
 pub use project::Project;
 pub use rendered_element::*;
 

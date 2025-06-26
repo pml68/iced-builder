@@ -1,6 +1,6 @@
 use iced::widget::container::Style;
 use iced::{Background, Border};
-use material_theme::Theme;
+use iced_material::Theme;
 
 pub fn title_bar(theme: &Theme) -> Style {
     let surface = theme.colors().surface;

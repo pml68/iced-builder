@@ -2,7 +2,7 @@ use iced::widget::{
     button, center, container, pane_grid, responsive, row, text, themer,
 };
 use iced::{Alignment, Length};
-use material_theme::Theme;
+use iced_material::Theme;
 
 use super::style;
 use crate::icon;

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use material_theme::Theme;
+use iced_material::Theme;
 
 pub fn iced_theme_from_str(theme_name: &str) -> iced::Theme {
     match theme_name {

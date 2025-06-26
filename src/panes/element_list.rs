@@ -1,7 +1,7 @@
 use iced::widget::{Column, column, container, pane_grid, text};
 use iced::{Alignment, Length};
 use iced_drop::droppable;
-use material_theme::Theme;
+use iced_material::Theme;
 
 use super::style;
 use crate::types::{Element, ElementName, Message};

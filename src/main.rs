@@ -25,7 +25,7 @@ use iced::{
 };
 use iced_anim::transition::Easing;
 use iced_anim::{Animated, Animation};
-use material_theme::Theme;
+use iced_material::Theme;
 use panes::{code_view, designer_view, element_list};
 use types::{
     Action, ConfigChangeType, DesignerPane, Element, Message, Panes, Project,

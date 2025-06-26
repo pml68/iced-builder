@@ -1,5 +1,5 @@
 use iced::widget::{self, container, text, tooltip};
-use material_theme::Theme;
+use iced_material::Theme;
 
 use crate::types::Element;
 
@@ -15,7 +15,7 @@ pub fn tip<'a, Message: 'a>(
     tooltip(
         target,
         container(text(tip).size(14)).padding(5).style(|theme| {
-            let base = material_theme::container::surface_container_low(theme);
+            let base = iced_material::container::surface_container_low(theme);
             container::Style {
                 border: iced::border::rounded(4),
                 ..base

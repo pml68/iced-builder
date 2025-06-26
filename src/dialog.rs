@@ -91,7 +91,7 @@ impl Dialog {
     pub fn as_iced_dialog<'a>(
         &'a self,
         base: impl Into<Element<'a, Message>>,
-    ) -> iced_dialog::Dialog<'a, Message, material_theme::Theme> {
+    ) -> iced_dialog::Dialog<'a, Message, iced_material::Theme> {
         iced_dialog::Dialog::with_buttons(
             self.is_open,
             base,

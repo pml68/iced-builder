@@ -3,7 +3,7 @@ use iced::border::Radius;
 use iced::widget::{button, pane_grid, row, text, text_editor};
 use iced::{Alignment, Border, Font, Length};
 use iced_custom_highlighter::{Highlight, Highlighter, Scope, Settings};
-use material_theme::Theme;
+use iced_material::Theme;
 
 use super::style;
 use crate::icon;
@@ -38,7 +38,7 @@ pub fn view(
                     button(icon::copy())
                         .on_press(Message::CopyCode)
                         .padding([2, 7])
-                        .style(material_theme::button::text),
+                        .style(iced_material::button::text),
                     "Copy",
                     tip::Position::FollowCursor
                 ),
@@ -52,7 +52,7 @@ pub fn view(
                     button(icon::copy())
                         .on_press(Message::CopyCode)
                         .padding([2, 7])
-                        .style(material_theme::button::text),
+                        .style(iced_material::button::text),
                     "Copy",
                     tip::Position::FollowCursor
                 ),
@@ -74,7 +74,7 @@ pub fn view(
                 Highlight::to_format,
             )
             .style(|theme, _| {
-                let style = material_theme::text_editor::default(
+                let style = iced_material::text_editor::default(
                     theme,
                     text_editor::Status::Active,
                 );

@@ -178,7 +178,7 @@ impl RenderedElement {
         let mut view = String::new();
         let mut options = String::new();
 
-        for (k, v) in self.options.clone() {
+        for (k, v) in &self.options {
             if let Some(v) = v {
                 options = format!("{options}.{k}({v})");
             }

@@ -1,3 +1,4 @@
+use std::io;
 use std::path::{Path, PathBuf};
 
 extern crate fxhash;
@@ -103,7 +104,7 @@ impl Project {
 use iced::{{widget::{{{imports}}},Element}};
 
 fn main() -> iced::Result {{
-    iced::application(State::default, State::update, State::view).title("{}").theme(State::theme).run()
+    iced::application(State::default, State::update, State::view).title("{title}").theme(State::theme).run()
 }}
 
 #[derive(Default)]
@@ -113,28 +114,41 @@ struct State;
 enum Message {{}}
 
 impl State {{
-    fn update(&mut self, _message: Message) {{}}
+    fn update(&mut self, _message: Message) {{
+        // Insert your desired update logic here
+    }}
 
     fn theme(&self) -> iced::Theme {{
-        iced::Theme::{}
+        iced::Theme::{theme}
     }}
 
     fn view(&self) -> Element<Message> {{
         {view}.into()
     }}
 }}"#,
-                    match self.title {
+                    title = match self.title {
                         Some(ref t) => t,
                         None => "New app",
                     },
-                    theme.to_string().replace(" ", "")
+                    theme = theme.to_string().replace(" ", "")
                 );
+
                 let config = rust_format::Config::new_str()
                     .edition(Edition::Rust2021)
                     .option("trailing_comma", "Never")
                     .option("imports_granularity", "Crate");
                 let rustfmt = RustFmt::from_config(config);
-                Ok(rustfmt.format_str(app_code)?)
+
+                match rustfmt.format_str(&app_code) {
+                    Ok(code) => return Ok(code),
+                    // rustfmt is missing, that's fine, we fall back to manual formatting
+                    Err(rust_format::Error::IOError(err))
+                        if err.kind() == io::ErrorKind::NotFound =>
+                    {
+                        return Ok(app_code);
+                    }
+                    Err(err) => return Err(err.into()),
+                }
             }
             None => Err("No element tree present".into()),
         };

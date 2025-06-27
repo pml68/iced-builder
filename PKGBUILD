@@ -11,11 +11,11 @@ depends=(
   gcc-libs
   glibc
   openssl
-  rustfmt
 )
+optdepends=('rustfmt: better code formatting')
 makedepends=(
   git
-  cargo
+  'cargo>=1.85.0'
   clang
   mold
 )

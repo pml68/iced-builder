@@ -1,7 +1,7 @@
 # Maintainer: pml68 <contact@pml68.dev>
 
 pkgname=iced-builder
-pkgver=0.1.0.r187.g2bbe61b
+pkgver=0.1.0.r189.gec42d61
 pkgrel=1
 pkgdesc='UI builder for iced, built with iced.'
 arch=(x86_64)
@@ -16,8 +16,6 @@ optdepends=('rustfmt: better code formatting')
 makedepends=(
   git
   cargo
-  clang
-  mold
 )
 options=('!lto' '!strip' '!debug')
 source=("$pkgname::git+${url}.git")
@@ -25,6 +23,7 @@ sha256sums=('SKIP')
 
 prepare() {
   cd "${pkgname}"
+  rm .cargo/config.toml
 
   export RUSTUP_TOOLCHAIN=stable
   cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"

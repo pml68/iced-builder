@@ -1,7 +1,7 @@
 # Maintainer: pml68 <contact@pml68.dev>
 
 pkgname=iced-builder
-pkgver=0.1.0.r175.g0ade991
+pkgver=0.1.0.r187.g2bbe61b
 pkgrel=1
 pkgdesc='UI builder for iced, built with iced.'
 arch=(x86_64)
@@ -15,7 +15,7 @@ depends=(
 optdepends=('rustfmt: better code formatting')
 makedepends=(
   git
-  'cargo>=1.85.0'
+  cargo
   clang
   mold
 )
@@ -43,6 +43,7 @@ build() {
 
   export RUSTUP_TOOLCHAIN=stable
   export CARGO_TARGET_DIR=target
+  export RUSTFLAGS="${RUSTFLAGS} --remap-path-prefix $srcdir=src"
   cargo build --frozen --release
 }
 

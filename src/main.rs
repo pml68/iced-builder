@@ -101,13 +101,14 @@ impl IcedBuilder {
 
         let mut tasks =
             vec![Task::perform(Config::load(), Message::ConfigLoad)];
-        if let Some(path) = project_path.as_deref() {
-            if path.exists() && path.is_file() {
-                tasks.push(Task::perform(
-                    Project::from_path(path.to_path_buf()),
-                    Message::FileOpened,
-                ));
-            }
+        if let Some(path) = project_path.as_deref()
+            && path.exists()
+            && path.is_file()
+        {
+            tasks.push(Task::perform(
+                Project::from_path(path.to_path_buf()),
+                Message::FileOpened,
+            ));
         }
 
         (
@@ -159,10 +160,8 @@ impl IcedBuilder {
                     self.config = config;
                     self.theme.settle_at(self.config.selected_theme());
 
-                    if let Some(path) = self
-                        .config
-                        .last_project()
-                        .filter(|_| self.project_path.is_none())
+                    if let Some(path) = self.config.last_project()
+                        && self.project_path.is_none()
                     {
                         if path.exists() && path.is_file() {
                             return Task::perform(
@@ -378,7 +377,8 @@ impl IcedBuilder {
                 match result {
                     Ok((path, project)) => {
                         self.project = project;
-                        self.project_path = Some(path);
+                        self.project_path =
+                            Some(path.canonicalize().unwrap_or(path));
 
                         return Task::done(
                             ConfigChangeType::LastProject.into(),

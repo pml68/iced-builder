@@ -66,9 +66,10 @@ impl Project {
         use tokio::fs;
 
         let path = if let Some(p) = path {
-            let parent = p.parent();
-            if parent.is_some_and(|parent| !parent.exists()) {
-                fs::create_dir_all(parent.unwrap()).await?;
+            if let Some(parent) = p.parent()
+                && !parent.exists()
+            {
+                fs::create_dir_all(parent).await?;
             }
 
             p

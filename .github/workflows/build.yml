@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust-version: [stable, nightly, 1.85.0]
+        rust-version: [stable, nightly, 1.88.0]
     steps:
     - uses: hecrj/setup-rust-action@v2
       with:

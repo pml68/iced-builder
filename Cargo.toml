@@ -1,14 +1,14 @@
 [package]
 name = "iced_builder"
 description = "UI builder for iced, built with iced."
-version = "0.1.0"
-edition = "2024"
-authors = ["pml68 <contact@pml68.dev>"]
-repository = "https://github.com/pml68/iced-builder"
-license = "GPL-3.0-or-later"
-categories = ["gui"]
-keywords = ["gui", "ui", "graphics", "interface", "widgets"]
-rust-version = "1.85.0"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+categories.workspace = true
+keywords.workspace = true
+rust-version.workspace = true
 
 [dependencies]
 iced.workspace = true
@@ -27,6 +27,37 @@ rust-format.workspace = true
 fxhash.workspace = true
 thiserror.workspace = true
 dirs-next.workspace = true
+
+[build-dependencies]
+iced_fontello = { path = "iced_fontello" }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+xdg = "3.0.0"
+
+[target.'cfg(windows)'.build-dependencies]
+embed-resource = "3.0.4"
+windows_exe_info = "0.5.2"
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "iced-builder"
+path = "src/main.rs"
+
+[workspace]
+members = ["iced_fontello"]
+default-members = ["."]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = ["pml68 <contact@pml68.dev>"]
+repository = "https://github.com/pml68/iced-builder"
+license = "GPL-3.0-or-later"
+categories = ["gui"]
+keywords = ["gui", "ui", "graphics", "interface", "widgets"]
+rust-version = "1.88.0"
 
 [workspace.dependencies]
 iced_widget = { git = "https://github.com/pml68/iced", branch = "feat/rehighlight-on-redraw" }
@@ -58,16 +89,6 @@ git = "https://github.com/pml68/iced_material"
 branch = "iced/personal"
 features = ["animate", "serde", "dialog", "svg"]
 
-[build-dependencies]
-iced_fontello = { path = "iced_fontello" }
-
-[target.'cfg(target_os = "macos")'.dependencies]
-xdg = "3.0.0"
-
-[target.'cfg(windows)'.build-dependencies]
-embed-resource = "3.0.4"
-windows_exe_info = "0.5.2"
-
 [profile.dev]
 opt-level = 1
 
@@ -87,20 +108,12 @@ opt-level = 3
 overflow-checks = false
 strip = "debuginfo"
 
-[[bin]]
-name = "iced-builder"
-path = "src/main.rs"
-
-[workspace]
-members = ["iced_fontello"]
-default-members = ["."]
-
-[lints.rust]
+[workspace.lints.rust]
 missing_debug_implementations = "deny"
 unsafe_code = "deny"
 unused_results = "deny"
 
-[lints.clippy]
+[workspace.lints.clippy]
 type-complexity = "allow"
 uninlined_format_args = "allow"
 semicolon_if_nothing_returned = "deny"

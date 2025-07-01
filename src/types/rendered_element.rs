@@ -95,12 +95,11 @@ impl RenderedElement {
         let Some(parent) = self.find_parent(element) else {
             return;
         };
-        if let Some(child_elements) = parent.child_elements.as_mut() {
-            if let Some(index) =
+        if let Some(child_elements) = parent.child_elements.as_mut()
+            && let Some(index) =
                 child_elements.iter().position(|x| x == element)
-            {
-                let _ = child_elements.remove(index);
-            }
+        {
+            let _ = child_elements.remove(index);
         }
     }
 
@@ -525,25 +524,22 @@ pub fn container(content: Option<RenderedElement>) -> RenderedElement {
     ])
 }
 
-pub fn row(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {
-    RenderedElement::with(ElementName::Row, child_elements.unwrap_or_default())
-        .preset_options(&[
-            "spacing", "padding", "width", "height", "align_y", "clip",
-        ])
+pub fn row(child_elements: Vec<RenderedElement>) -> RenderedElement {
+    RenderedElement::with(ElementName::Row, child_elements).preset_options(&[
+        "spacing", "padding", "width", "height", "align_y", "clip",
+    ])
 }
 
-pub fn column(child_elements: Option<Vec<RenderedElement>>) -> RenderedElement {
-    RenderedElement::with(
-        ElementName::Column,
-        child_elements.unwrap_or_default(),
+pub fn column(child_elements: Vec<RenderedElement>) -> RenderedElement {
+    RenderedElement::with(ElementName::Column, child_elements).preset_options(
+        &[
+            "spacing",
+            "padding",
+            "width",
+            "height",
+            "max_width",
+            "align_x",
+            "clip",
+        ],
     )
-    .preset_options(&[
-        "spacing",
-        "padding",
-        "width",
-        "height",
-        "max_width",
-        "align_x",
-        "clip",
-    ])
 }

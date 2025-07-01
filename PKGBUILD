@@ -1,7 +1,7 @@
 # Maintainer: pml68 <contact@pml68.dev>
 
 pkgname=iced-builder
-pkgver=0.1.0.r189.gec42d61
+pkgver=0.1.0.r189.g04542e8
 pkgrel=1
 pkgdesc='UI builder for iced, built with iced.'
 arch=(x86_64)

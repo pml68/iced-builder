@@ -38,8 +38,8 @@ impl ElementName {
             Self::Svg(_) => svg(""),
             Self::Image(_) => image(""),
             Self::Container => container(None),
-            Self::Row => row(None),
-            Self::Column => column(None),
+            Self::Row => row(vec![]),
+            Self::Column => column(vec![]),
         };
         match action {
             Action::Stop | Action::Drop => Ok(None),

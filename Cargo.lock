@@ -2130,7 +2130,7 @@ dependencies = [
 [[package]]
 name = "iced_material"
 version = "0.14.0-dev"
-source = "git+https://github.com/pml68/iced_material?branch=iced%2Fpersonal#c991b2cf06989a161f3f5300b733e731503039c0"
+source = "git+https://github.com/pml68/iced_material?branch=iced%2Fpersonal#aa49e1cd966c48d499a029ff4dd7e5f45d13a801"
 dependencies = [
  "dark-light",
  "iced_anim",

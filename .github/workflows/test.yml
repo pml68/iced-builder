@@ -4,7 +4,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      RUSTFLAGS: --deny warnings
+      RUSTFLAGS: -C linker=clang -C link-arg=-fuse-ld=mold --deny warnings
     steps:
     - uses: hecrj/setup-rust-action@v2
     - uses: actions/checkout@master

@@ -60,7 +60,7 @@ keywords = ["gui", "ui", "graphics", "interface", "widgets"]
 rust-version = "1.88.0"
 
 [workspace.dependencies]
-iced_widget = { git = "https://github.com/pml68/iced", branch = "feat/rehighlight-on-redraw" }
+iced_widget = "0.14.0-dev"
 iced_anim = { git = "https://github.com/pml68/iced_anim", features = ["derive"] }
 iced_dialog = { git = "https://github.com/pml68/iced_dialog", branch = "iced/personal" }
 iced_drop = { git = "https://github.com/pml68/iced_drop", branch = "iced/personal" }
@@ -79,8 +79,7 @@ thiserror = "2.0.12"
 dirs-next = "2.0.0"
 
 [workspace.dependencies.iced]
-git = "https://github.com/pml68/iced"
-branch = "feat/rehighlight-on-redraw"
+version = "0.14.0-dev"
 default-features = false
 features = ["wgpu", "tiny-skia", "web-colors", "advanced", "tokio", "image", "svg", "lazy"]
 
@@ -129,3 +128,8 @@ needless_borrow = "deny"
 new_without_default = "deny"
 useless_conversion = "deny"
 clone_on_copy = "deny"
+
+[patch.crates-io]
+iced_core = { git = "https://github.com/pml68/iced", branch = "feat/rehighlight-on-redraw" }
+iced_widget = { git = "https://github.com/pml68/iced", branch = "feat/rehighlight-on-redraw" }
+iced = { git = "https://github.com/pml68/iced", branch = "feat/rehighlight-on-redraw" }

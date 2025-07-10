@@ -67,7 +67,7 @@ iced_drop = { git = "https://github.com/pml68/iced_drop", branch = "iced/persona
 iced_custom_highlighter = { git = "https://github.com/pml68/iced_custom_highlighter", branch = "master" }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
-toml = "0.8.23"
+toml = "0.9.0"
 tokio = { version = "1.45.1", features = ["fs", "io-util"] }
 tokio-stream = { version = "0.1.17", features = ["fs"] }
 # TODO: enable tokio when it doesn't crash anymore

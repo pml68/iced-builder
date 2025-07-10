@@ -7,12 +7,12 @@ repository = "https://github.com/hecrj/iced_fontello"
 license = "MIT"
 categories = ["gui"]
 keywords = ["gui", "ui", "graphics", "interface", "widgets"]
-rust-version = "1.85"
+rust-version = "1.88"
 
 [dependencies]
 reqwest = { version = "0.12", features = ["blocking", "json", "multipart"] }
 sha2 = "0.10"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-toml = "0.8"
+toml = "0.9"
 zip = "4"

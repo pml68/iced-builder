@@ -10,7 +10,7 @@ pub const UNSAVED_CHANGES_TITLE: &str = "Hold on for a sec!";
 pub const WARNING_TITLE: &str = "Heads up!";
 pub const ERROR_TITLE: &str = "Oops! Something went wrong.";
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub enum Action {
     #[default]
     None,
@@ -18,7 +18,7 @@ pub enum Action {
     UnsavedChanges(UnsavedChanges),
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum UnsavedChanges {
     New,
     Open,
@@ -99,5 +99,9 @@ impl Dialog {
             self.action.into(),
         )
         .title(&*self.title)
+        .on_press_maybe(
+            matches!(self.action, Action::Close)
+                .then_some(Message::CloseDialog),
+        )
     }
 }

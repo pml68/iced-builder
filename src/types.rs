@@ -47,6 +47,7 @@ pub enum Message {
     SaveFileAs,
     FileSaved(Result<PathBuf, Error>),
     CloseApp,
+    EscapePressed,
     WindowEvent(window::Event),
 }
 

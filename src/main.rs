@@ -427,6 +427,12 @@ impl IcedBuilder {
             Message::CloseApp => {
                 return window::get_latest().and_then(window::close);
             }
+            Message::EscapePressed
+                if self.dialog.action() == dialog::Action::Close =>
+            {
+                self.dialog.close();
+            }
+            Message::EscapePressed => {}
             Message::WindowEvent(window::Event::CloseRequested) => {
                 if self.is_dirty {
                     self.dialog = Dialog::unsaved_changes(
@@ -458,6 +464,10 @@ impl IcedBuilder {
                     keyboard::Key::Character("n") => Some(Message::NewFile),
                     _ => None,
                 }
+            } else if key.as_ref()
+                == keyboard::Key::Named(keyboard::key::Named::Escape)
+            {
+                Some(Message::EscapePressed)
             } else {
                 None
             }

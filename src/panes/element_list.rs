@@ -14,9 +14,11 @@ fn items_list_view<'a>() -> Element<'a, Message> {
 
     for item in ElementName::ALL {
         column = column.push(
-            droppable(text(item.clone().to_string())).on_drop(|point, rect| {
-                Message::DropNewElement(item.clone(), point, rect)
-            }),
+            droppable(text(item.clone().to_string()))
+                .drag_center(true)
+                .on_drop(|point, rect| {
+                    Message::DropNewElement(item.clone(), point, rect)
+                }),
         );
     }
 

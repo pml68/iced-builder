@@ -231,16 +231,19 @@ impl IcedBuilder {
             Message::HandleNew(name, zones) => {
                 let ids: Vec<Id> = zones.into_iter().map(|z| z.0).collect();
                 if !ids.is_empty() {
+                    self.is_dirty = true;
+
                     let action = Action::new(
                         &ids,
                         self.project.element_tree.as_ref(),
                         None,
                     );
+
                     let result = name.handle_action(
                         self.project.element_tree.as_mut(),
                         action,
                     );
-                    self.is_dirty = true;
+
                     match result {
                         Ok(Some(ref element)) => {
                             self.project.element_tree = Some(element.clone());
@@ -269,10 +272,12 @@ impl IcedBuilder {
                         self.project.element_tree.as_ref(),
                         Some(element.id()),
                     );
+
                     let result = element.handle_action(
                         self.project.element_tree.as_mut(),
                         action,
                     );
+
                     if let Err(error) = result {
                         self.dialog = Dialog::error(error);
                     }

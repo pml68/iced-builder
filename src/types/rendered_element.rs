@@ -392,6 +392,7 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
         iced_drop::droppable(content)
             .id(value.id().clone())
             .drag_hide(true)
+            .drag_center(true)
             .on_drop(move |point, rect| {
                 Message::MoveElement(value.clone(), point, rect)
             })

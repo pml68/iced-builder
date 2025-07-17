@@ -1,7 +1,9 @@
 use std::collections::BTreeMap;
 
+use iced::Element;
 use iced::advanced::widget::Id;
-use iced::{Element, widget};
+use iced::widget::text::IntoFragment;
+use iced::widget::{self};
 use serde::{Deserialize, Serialize};
 
 use crate::Error;
@@ -293,21 +295,25 @@ impl std::fmt::Display for RenderedElement {
 
 impl<'a> From<RenderedElement> for Element<'a, Message> {
     fn from(value: RenderedElement) -> Self {
+        fn text<'a>(string: impl IntoFragment<'a>) -> widget::Text<'a> {
+            widget::text(string).style(widget::text::base)
+        }
+
         let copy = value.clone();
         let child_elements = copy.child_elements.unwrap_or_default();
 
         let content: Element<'a, Message> = match copy.name {
             ElementName::Text(s) => if s.is_empty() {
-                widget::text("New Text")
+                text("New Text")
             } else {
-                widget::text(s)
+                text(s)
             }
             .apply_options(copy.options)
             .into(),
             ElementName::Button(s) => widget::button(if s.is_empty() {
-                widget::text("New Button")
+                text("New Button")
             } else {
-                widget::text(s)
+                text(s)
             })
             .apply_options(copy.options)
             .into(),
@@ -320,7 +326,7 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
             ElementName::Container => if child_elements.len() == 1 {
                 widget::container(child_elements[0].clone())
             } else {
-                widget::container("New Container").style(
+                widget::container(text("New Container")).style(
                     |theme: &iced::Theme| widget::container::Style {
                         border: iced::Border {
                             color: theme.palette().text,
@@ -345,7 +351,7 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
                     .into()
                 } else {
                     widget::container(
-                        widget::row!["New Row"]
+                        widget::row![text("New Row")]
                             .padding(20)
                             .apply_options(copy.options),
                     )
@@ -371,7 +377,7 @@ impl<'a> From<RenderedElement> for Element<'a, Message> {
                     .into()
                 } else {
                     widget::container(
-                        widget::column!["New Column"]
+                        widget::column![text("New Column")]
                             .padding(20)
                             .apply_options(copy.options),
                     )

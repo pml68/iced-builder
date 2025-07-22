@@ -3,6 +3,7 @@ use iced_material::Theme;
 
 use crate::types::Element;
 
+pub mod button;
 pub mod tip {
     pub use super::tooltip::Position;
 }

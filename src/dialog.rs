@@ -1,10 +1,12 @@
 use std::borrow::Cow;
 
-use iced::widget::text;
+use iced::widget::{Space, text};
 use iced_dialog::button;
+use iced_material::button::filled_tonal;
 
 use crate::Message;
 use crate::types::Element;
+use crate::widget::button::danger;
 
 pub const UNSAVED_CHANGES_TITLE: &str = "Hold on for a sec!";
 pub const WARNING_TITLE: &str = "Heads up!";
@@ -31,8 +33,11 @@ impl From<Action> for Vec<Element<'_, Message>> {
             Action::None => vec![],
             Action::Close => vec![button("Close", Message::DialogYes).into()],
             Action::UnsavedChanges(_) => vec![
-                button("Don't Save", Message::DialogNo).into(),
-                button("Save", Message::DialogYes).into(),
+                button("Don't Save", Message::DialogNo).style(danger).into(),
+                Space::with_width(20).into(),
+                button("Save", Message::DialogYes)
+                    .style(filled_tonal)
+                    .into(),
                 button("Cancel", Message::DialogCancel).into(),
             ],
         }

@@ -81,6 +81,7 @@ iced_material.branch = "iced/personal"
 iced_material.features = ["animate", "serde", "dialog", "svg"]
 
 iced_anim.git = "https://github.com/pml68/iced_anim"
+iced_anim.branch = "main"
 iced_anim.features = ["derive"]
 
 iced_dialog.git = "https://github.com/pml68/iced_dialog"

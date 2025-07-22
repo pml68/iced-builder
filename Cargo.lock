@@ -2028,7 +2028,7 @@ dependencies = [
 [[package]]
 name = "iced_custom_highlighter"
 version = "0.1.0"
-source = "git+https://github.com/pml68/iced_custom_highlighter?branch=master#c14309113052ec2592b4c79435b12f02e9a79042"
+source = "git+https://github.com/pml68/iced_custom_highlighter#c14309113052ec2592b4c79435b12f02e9a79042"
 dependencies = [
  "iced_core",
  "syntect",

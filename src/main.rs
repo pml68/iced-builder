@@ -10,6 +10,7 @@ mod options;
 mod panes;
 mod types;
 mod values;
+#[allow(dead_code)]
 mod widget;
 
 use std::io;
@@ -209,7 +210,7 @@ impl IcedBuilder {
             }
             Message::SwitchPane(pane) => self.designer_page = pane,
             Message::EditorAction(action) => {
-                if matches!(action, text_editor::Action::Scroll { .. }) {
+                if !action.is_edit() {
                     self.editor_content.perform(action);
                 }
             }

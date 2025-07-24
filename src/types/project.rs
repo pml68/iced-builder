@@ -1,4 +1,3 @@
-use std::io;
 use std::path::{Path, PathBuf};
 
 extern crate fxhash;
@@ -143,9 +142,7 @@ impl State {{
                 match rustfmt.format_str(&app_code) {
                     Ok(code) => return Ok(code),
                     // rustfmt is missing, that's fine, we fall back to manual formatting
-                    Err(rust_format::Error::IOError(err))
-                        if err.kind() == io::ErrorKind::NotFound =>
-                    {
+                    Err(rust_format::Error::IOError(_)) => {
                         return Ok(app_code);
                     }
                     Err(err) => return Err(err.into()),

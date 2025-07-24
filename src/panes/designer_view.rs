@@ -1,7 +1,7 @@
+use iced::Length;
 use iced::widget::{
-    button, center, container, pane_grid, responsive, row, text, themer,
+    button, center, container, pane_grid, responsive, text, themer,
 };
-use iced::{Alignment, Length};
 use iced_material::Theme;
 
 use super::style;
@@ -30,21 +30,15 @@ pub fn view<'a>(
     };
 
     let content = container(themer(designer_theme, el_tree))
-        .id(iced::widget::container::Id::new("drop_zone"))
+        .id("drop_zone")
         .height(Length::Fill)
         .width(Length::Fill);
 
     let title_bar = pane_grid::TitleBar::new(text("Designer").center())
         .controls(pane_grid::Controls::dynamic(
-            row![
-                button("Switch to Code view")
-                    .on_press(DesignerPane::CodeView.into(),)
-            ]
-            .align_y(Alignment::Center),
-            row![
-                button(icon::switch()).on_press(DesignerPane::CodeView.into(),)
-            ]
-            .align_y(Alignment::Center),
+            button("Switch to Code view")
+                .on_press(DesignerPane::CodeView.into()),
+            button(icon::switch()).on_press(DesignerPane::CodeView.into()),
         ))
         .padding(10)
         .style(style::title_bar);

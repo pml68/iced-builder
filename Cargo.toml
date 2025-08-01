@@ -95,7 +95,7 @@ iced_custom_highlighter.git = "https://github.com/pml68/iced_custom_highlighter"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 toml = "0.9.2"
-tokio = { version = "1.46.1", features = ["fs", "io-util"] }
+tokio = { version = "1.47.1", features = ["fs", "io-util"] }
 tokio-stream = { version = "0.1.17", features = ["fs"] }
 rfd = "0.15.4"
 rust-format = "0.3.4"

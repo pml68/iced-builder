@@ -205,6 +205,9 @@ impl IcedBuilder {
 
                 return self.update(ConfigChangeType::SelectedTheme.into());
             }
+            Message::SystemThemeChanged(theme) => {
+                Theme::update_system_theme(theme);
+            }
             Message::CopyCode => {
                 return clipboard::write(self.editor_content.text());
             }
@@ -482,7 +485,10 @@ impl IcedBuilder {
         let window_events =
             window::events().map(|(_id, event)| Message::WindowEvent(event));
 
-        Subscription::batch([keyboard, window_events])
+        let system_theme =
+            Theme::subscription().map(Message::SystemThemeChanged);
+
+        Subscription::batch([keyboard, window_events, system_theme])
     }
 
     fn view(&self) -> Element<'_, Message> {

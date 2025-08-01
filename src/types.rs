@@ -25,6 +25,7 @@ pub enum Message {
     ConfigWrite(Result<(), Error>),
     SaveConfigChanges(ConfigChangeType),
     SwitchTheme(Event<Theme>),
+    SystemThemeChanged(Theme),
     CopyCode,
     SwitchPane(DesignerPane),
     EditorAction(text_editor::Action),
